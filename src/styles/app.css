@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+/* ============================================================
+   LAYBEL — Tailwind v4 theme tokens (single source of truth)
+   Purple (60%) / Teal (30%) / Amber (10%) on dark chrome
+   ============================================================ */
+
+@theme {
+  /* Purple */
+  --color-p-50:  #EEEDFE;
+  --color-p-100: #DAD6FB;
+  --color-p-200: #AFA9EC;
+  --color-p-300: #8B82DE;
+  --color-p-500: #6A60C9;
+  --color-p-600: #534AB7;
+  --color-p-700: #443B9F;
+  --color-p-800: #3C3489;
+  --color-p-900: #251F5C;
+
+  /* Teal */
+  --color-t-50:  #E1F5EE;
+  --color-t-100: #C4ECDE;
+  --color-t-200: #8FDDC2;
+  --color-t-400: #1D9E75;
+  --color-t-500: #178761;
+  --color-t-600: #117153;
+  --color-t-800: #085041;
+
+  /* Amber */
+  --color-a-50:  #FAEEDA;
+  --color-a-100: #F6DEB4;
+  --color-a-200: #EF9F27;
+  --color-a-400: #BA7517;
+  --color-a-900: #412402;
+
+  /* Chrome / surfaces */
+  --color-chrome:   #0F0E1A;
+  --color-panel:    #1A1826;
+  --color-panel-2:  #221F32;
+  --color-canvas:   #13121F;
+
+  /* Text */
+  --color-text:        #E7E5F5;
+  --color-text-muted:  #9D98C2;
+  --color-text-faint:  #6F6A92;
+
+  /* Hairlines — kept as semantic CSS vars (alpha colors don't slot into Tailwind palette) */
+  --hairline:          color-mix(in srgb, #AFA9EC 12%, transparent);
+  --hairline-strong:   color-mix(in srgb, #AFA9EC 22%, transparent);
+
+  /* Fonts */
+  --font-display: "Bricolage Grotesque", "Syne", system-ui, sans-serif;
+  --font-ui:      "DM Sans", "Outfit", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* ShadCN-style semantic aliases mapped to Laybel tokens */
+  --color-background: var(--color-chrome);
+  --color-foreground: var(--color-text);
+  --color-muted:            var(--color-panel-2);
+  --color-muted-foreground: var(--color-text-muted);
+  --color-card:             var(--color-panel);
+  --color-card-foreground:  var(--color-text);
+  --color-popover:          var(--color-panel);
+  --color-popover-foreground: var(--color-text);
+  --color-primary:            var(--color-t-400);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary:          var(--color-p-600);
+  --color-secondary-foreground: #FFFFFF;
+  --color-accent:             var(--color-p-700);
+  --color-accent-foreground:  #FFFFFF;
+  --color-destructive:        #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border:             var(--hairline);
+  --color-input:              var(--hairline);
+  --color-ring:               var(--color-p-300);
+
+  --radius:    0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body, #root { height: 100%; margin: 0; }
+  body {
+    background: var(--color-chrome);
+    color: var(--color-text);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+  button { font-family: inherit; color: inherit; }
+  input, textarea, select { font-family: inherit; color: inherit; }
+  input:focus, textarea:focus, button:focus { outline: none; }
+}
+
+/* ============================================================
+   UTILITY LAYER — Laybel-specific composites that don't read
+   cleanly as utility chains (multi-stop backgrounds, pseudo
+   elements, clip-paths, etc.)
+   ============================================================ */
+@layer utilities {
+  /* Logo stacked-tag mark */
+  .logo-tag {
+    position: absolute;
+    width: 16px;
+    height: 12px;
+    border-radius: 3px 6px 3px 3px;
+    clip-path: polygon(0 0, 78% 0, 100% 50%, 78% 100%, 0 100%);
+  }
+  .logo-tag-back  { left: 0;  top: 0; background: var(--color-p-600); }
+  .logo-tag-mid   { left: 3px; top: 4px; background: var(--color-p-300); opacity: 0.85; }
+  .logo-tag-front { left: 6px; top: 8px; background: var(--color-t-400); }
+
+  /* Dotted canvas grid */
+  .bg-dot-grid {
+    background-image: radial-gradient(circle, color-mix(in srgb, #AFA9EC 18%, transparent) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: center;
+  }
+  .bg-dot-grid-dense { background-size: 14px 14px; }
+
+  /* Bell notification dot with chrome ring */
+  .bell-dot {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 6px; height: 6px;
+    border-radius: 9999px;
+    background: var(--color-t-400);
+    box-shadow: 0 0 0 1.5px var(--color-chrome);
+  }
+
+  /* Active-rail underline */
+  .rail-active-underline::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 1.5px;
+    background: var(--color-t-400);
+    border-radius: 1px;
+  }
+
+  /* Artboard glow + shadow */
+  .artboard-frame {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, #AFA9EC 15%, transparent),
+      0 30px 80px rgba(0, 0, 0, 0.5),
+      0 0 80px color-mix(in srgb, #AFA9EC 6%, transparent);
+  }
+
+  /* PRO lock gradient */
+  .pro-lock {
+    background: linear-gradient(180deg,
+      color-mix(in srgb, #EF9F27 6%, transparent),
+      color-mix(in srgb, #EF9F27 2%, transparent));
+    border: 1px solid color-mix(in srgb, #EF9F27 18%, transparent);
+  }
+
+  /* Watermark composite on canvas */
+  .art-watermark-pill {
+    background: rgba(15, 14, 26, 0.3);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Selected-image gradient thumb */
+  .selected-thumb-inner {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0 2px, transparent 2px 6px);
+  }
+
+  /* Upload-thumb placeholder gradients */
+  .upload-thumb-0 { background: linear-gradient(135deg, var(--color-p-600), var(--color-t-400)); }
+  .upload-thumb-1 { background: linear-gradient(135deg, var(--color-a-200), #D85C8A); }
+  .upload-thumb-2 {
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 6px, transparent 6px 12px),
+      var(--color-p-800);
+  }
+
+  /* Hairline border helpers (composes with `border`) */
+  .border-hairline        { border-color: var(--hairline); }
+  .border-hairline-strong { border-color: var(--hairline-strong); }
+  .bg-hairline            { background-color: var(--hairline); }
+
+  /* Mockup thumb decoration */
+  .mockup-thumb {
+    background: linear-gradient(135deg,
+      color-mix(in srgb, #AFA9EC 15%, transparent),
+      color-mix(in srgb, #1D9E75 8%, transparent));
+  }
+}
