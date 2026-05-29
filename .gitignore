@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-ssr
+.vite
+*.local
+.DS_Store
+.idea
+.vscode
+.claude*
+learn/
