@@ -1,0 +1,4758 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laybel — Motion editor for everyone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <style>/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("39ff6f71-4b26-4068-b802-9b81c136c49c") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("9bba9683-62ac-4f51-84ce-6de8c8a8601d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("16d7e1ea-b3fa-4d7c-b7c7-65cd928f3e30") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("39ff6f71-4b26-4068-b802-9b81c136c49c") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("9bba9683-62ac-4f51-84ce-6de8c8a8601d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("16d7e1ea-b3fa-4d7c-b7c7-65cd928f3e30") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("39ff6f71-4b26-4068-b802-9b81c136c49c") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("9bba9683-62ac-4f51-84ce-6de8c8a8601d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("16d7e1ea-b3fa-4d7c-b7c7-65cd928f3e30") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("39ff6f71-4b26-4068-b802-9b81c136c49c") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("9bba9683-62ac-4f51-84ce-6de8c8a8601d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("16d7e1ea-b3fa-4d7c-b7c7-65cd928f3e30") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("ec699b62-69c1-4b5c-94dd-c5ff0788840b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("66edf367-3c82-41d1-837b-9a3af5a350e4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("ec699b62-69c1-4b5c-94dd-c5ff0788840b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("66edf367-3c82-41d1-837b-9a3af5a350e4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("ec699b62-69c1-4b5c-94dd-c5ff0788840b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("66edf367-3c82-41d1-837b-9a3af5a350e4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("ec699b62-69c1-4b5c-94dd-c5ff0788840b") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("66edf367-3c82-41d1-837b-9a3af5a350e4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e38bff0c-fd1e-4498-bc49-a8f4e7db7508") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("563d9aaf-594f-47c3-b178-29c323d04caa") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c78c8dc0-1eab-4241-ac51-1374cf057eb8") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("36347709-0ae7-4e35-845a-b5df1614bd34") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6a2549d1-8186-4dda-b379-e96919746d3a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0fd4b380-0ee4-4ab5-bec7-35f5b0ff1384") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("e38bff0c-fd1e-4498-bc49-a8f4e7db7508") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("563d9aaf-594f-47c3-b178-29c323d04caa") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c78c8dc0-1eab-4241-ac51-1374cf057eb8") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("36347709-0ae7-4e35-845a-b5df1614bd34") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6a2549d1-8186-4dda-b379-e96919746d3a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("0fd4b380-0ee4-4ab5-bec7-35f5b0ff1384") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("e38bff0c-fd1e-4498-bc49-a8f4e7db7508") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("563d9aaf-594f-47c3-b178-29c323d04caa") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c78c8dc0-1eab-4241-ac51-1374cf057eb8") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("36347709-0ae7-4e35-845a-b5df1614bd34") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6a2549d1-8186-4dda-b379-e96919746d3a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0fd4b380-0ee4-4ab5-bec7-35f5b0ff1384") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+  <style>
+/* ============================================================
+   LAYBEL — full app styles
+   Colors: Purple (60%) / Teal (30%) / Amber (10%) on dark chrome
+   ============================================================ */
+
+:root {
+  /* Purple */
+  --p50: #EEEDFE;
+  --p100: #DAD6FB;
+  --p200: #AFA9EC;
+  --p300: #8B82DE;
+  --p500: #6A60C9;
+  --p600: #534AB7;
+  --p700: #443B9F;
+  --p800: #3C3489;
+  --p900: #251F5C;
+
+  /* Teal */
+  --t50: #E1F5EE;
+  --t100: #C4ECDE;
+  --t200: #8FDDC2;
+  --t400: #1D9E75;
+  --t500: #178761;
+  --t600: #117153;
+  --t800: #085041;
+
+  /* Amber */
+  --a50: #FAEEDA;
+  --a100: #F6DEB4;
+  --a200: #EF9F27;
+  --a400: #BA7517;
+  --a900: #412402;
+
+  /* Chrome */
+  --chrome: #0F0E1A;
+  --panel: #1A1826;
+  --panel-2: #221F32;
+  --canvas: #13121F;
+  --hairline: rgba(175, 169, 236, 0.12);
+  --hairline-strong: rgba(175, 169, 236, 0.22);
+
+  /* Text */
+  --text: #E7E5F5;
+  --text-muted: #9D98C2;
+  --text-faint: #6F6A92;
+
+  /* Fonts */
+  --font-display: 'Bricolage Grotesque', 'Syne', system-ui, sans-serif;
+  --font-ui: 'DM Sans', 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  background: var(--chrome);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+button {
+  font-family: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+input, textarea, select {
+  font-family: inherit;
+  color: inherit;
+}
+input:focus, textarea:focus, button:focus { outline: none; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.laybel-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--chrome);
+  position: relative;
+}
+.laybel-main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar {
+  height: 48px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--hairline);
+  position: relative;
+  z-index: 30;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-center { display: flex; justify-content: center; position: relative; }
+.topbar-right { display: flex; justify-content: flex-end; align-items: center; gap: 8px; position: relative; }
+
+.logo { display: flex; align-items: center; gap: 8px; padding: 4px 6px; }
+.logo-mark {
+  position: relative;
+  width: 22px; height: 22px;
+}
+.logo-tag {
+  position: absolute;
+  width: 16px; height: 12px;
+  border-radius: 3px 6px 3px 3px;
+  clip-path: polygon(0 0, 78% 0, 100% 50%, 78% 100%, 0 100%);
+}
+.logo-tag-back  { left: 0; top: 0;  background: var(--p600); }
+.logo-tag-mid   { left: 3px; top: 4px; background: var(--p300); opacity: 0.85; }
+.logo-tag-front { left: 6px; top: 8px; background: var(--t400); }
+.logo-word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.free-pill {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--a200);
+  color: var(--a900);
+}
+
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+}
+.topbar-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--hairline);
+  margin: 0 2px;
+}
+.size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.12s;
+}
+.size-selector:hover, .size-selector-open { background: rgba(175, 169, 236, 0.08); }
+.size-selector-val { font-family: var(--font-mono); font-size: 11.5px; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+.icon-btn:hover { background: rgba(175, 169, 236, 0.1); color: var(--text); }
+.icon-btn-sm { width: 22px; height: 22px; }
+.icon-btn-bell .bell-dot {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--t400);
+  box-shadow: 0 0 0 1.5px var(--chrome);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition: background 0.12s, border-color 0.12s, transform 0.06s;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(0.5px); }
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-primary {
+  background: var(--t400);
+  color: white;
+}
+.btn-primary:hover { background: var(--t500); }
+.btn-active { background: var(--t500); }
+.btn-ghost {
+  border: 1px solid var(--hairline-strong);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { border-color: var(--p300); color: var(--text); background: rgba(175, 169, 236, 0.05); }
+.btn-teal-strong {
+  background: var(--t400);
+  color: white;
+  border-radius: 999px;
+  padding: 6px 14px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 0 0 1px rgba(29, 158, 117, 0.4);
+}
+.btn-teal-strong:hover { background: var(--t500); }
+.btn-text {
+  color: var(--t200);
+  font-size: 12px;
+  padding: 4px 6px;
+  font-weight: 500;
+}
+.btn-text:hover { color: var(--t400); }
+
+/* ============================================================
+   LEFT RAIL (60px)
+   ============================================================ */
+.rail {
+  width: 60px;
+  background: var(--panel);
+  border-right: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+}
+.rail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 4px;
+  scrollbar-width: none;
+}
+.rail-scroll::-webkit-scrollbar { display: none; }
+.rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 8px 2px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+}
+.rail-btn:hover {
+  background: rgba(175, 169, 236, 0.1);
+  color: var(--text);
+}
+.rail-btn:hover .rail-ic { color: var(--t400); }
+.rail-btn-active {
+  background: rgba(175, 169, 236, 0.14);
+  color: var(--text);
+}
+.rail-btn-active .rail-ic { color: var(--t400); }
+.rail-btn-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 1.5px;
+  background: var(--t400);
+  border-radius: 1px;
+}
+.rail-ic { display: flex; align-items: center; justify-content: center; }
+.rail-lbl { line-height: 1.1; }
+.rail-pro-dot {
+  position: absolute;
+  top: 6px; right: 8px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--a200);
+}
+.rail-excl {
+  position: absolute;
+  top: 6px; right: 8px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--t400);
+  box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.2);
+}
+.rail-bottom {
+  padding: 8px 4px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.rail-fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--t400);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(29, 158, 117, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  transition: background 0.12s, transform 0.08s;
+}
+.rail-fab:hover { background: var(--t500); transform: translateY(-1px); }
+.rail-divider {
+  width: 28px;
+  height: 1px;
+  background: var(--hairline);
+  margin: 2px 0;
+}
+.rail-btn-customize { width: 100%; }
+
+/* ============================================================
+   PANEL (290px)
+   ============================================================ */
+.panel {
+  width: 290px;
+  background: var(--panel);
+  border-right: 1px solid var(--hairline);
+  flex-shrink: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p600) transparent;
+  z-index: 10;
+}
+.panel::-webkit-scrollbar { width: 6px; }
+.panel::-webkit-scrollbar-thumb { background: rgba(83, 74, 183, 0.4); border-radius: 3px; }
+.panel-body {
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--p200);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-help {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  line-height: 1.5;
+}
+.panel-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.panel-link {
+  font-size: 11.5px;
+  color: var(--t200);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  margin: 2px 0 4px;
+}
+.panel-link:hover { color: var(--t400); }
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--p200);
+  margin: 12px 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.muted-mini {
+  font-size: 9.5px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.link-mini {
+  font-size: 10px;
+  color: var(--t200);
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.new-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: var(--t800);
+  color: var(--t200);
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+/* PRO badge */
+.pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: var(--a200);
+  color: var(--a900);
+  padding: 2px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.pro-badge-sm { font-size: 8.5px; padding: 2px 4px; gap: 2px; }
+.laybel-app[data-no-pro="true"] .pro-badge,
+.laybel-app[data-no-pro="true"] .rail-pro-dot { display: none !important; }
+
+/* Key badge */
+.key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  background: rgba(238, 237, 254, 0.08);
+  color: var(--p100);
+  border: 1px solid var(--hairline);
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+/* Integration rows */
+.integration-list { display: flex; flex-direction: column; gap: 6px; }
+.integration-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: rgba(255, 255, 255, 0.01);
+  color: var(--text);
+  font-size: 12px;
+  transition: background 0.12s, border-color 0.12s;
+  text-align: left;
+}
+.integration-row:hover { background: rgba(175, 169, 236, 0.06); border-color: var(--hairline-strong); }
+.integration-row > span:nth-child(2) { flex: 1; }
+.integration-ic {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--p200);
+}
+
+/* Select-style row */
+.select-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  background: rgba(15, 14, 26, 0.4);
+  color: var(--text);
+  font-size: 12px;
+  width: 100%;
+}
+.select-row:hover { border-color: var(--p500); }
+
+/* Tab pill */
+.tab-pill {
+  display: flex;
+  padding: 3px;
+  background: rgba(15, 14, 26, 0.6);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  gap: 2px;
+}
+.tab-pill-btn {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 5px;
+  transition: background 0.12s, color 0.12s;
+}
+.tab-pill-btn:hover { color: var(--text); }
+.tab-pill-active {
+  background: var(--p700);
+  color: white;
+}
+
+/* Slider */
+.slider-row { display: flex; flex-direction: column; gap: 6px; }
+.slider-head { display: flex; justify-content: space-between; align-items: center; }
+.slider-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--p200);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.slider-value {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text);
+  background: rgba(238, 237, 254, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.slider-track {
+  position: relative;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.slider-track::before {
+  content: "";
+  position: absolute;
+  inset: 5px 0;
+  background: rgba(175, 169, 236, 0.18);
+  border-radius: 2px;
+}
+.slider-fill {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  bottom: 5px;
+  background: var(--t400);
+  border-radius: 2px;
+}
+.slider-thumb {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(15, 14, 26, 0.4);
+  top: 0;
+  pointer-events: none;
+}
+.slider-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Toggle */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.toggle-text { flex: 1; min-width: 0; }
+.toggle-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--p200);
+}
+.toggle-desc {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 3px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.toggle {
+  width: 30px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(175, 169, 236, 0.2);
+  position: relative;
+  transition: background 0.16s;
+  flex-shrink: 0;
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.16s;
+}
+.toggle-on { background: var(--t400); }
+.toggle-on .toggle-knob { left: 14px; }
+
+/* Gradient editor */
+.gradient-stops {
+  position: relative;
+  height: 24px;
+  margin: 4px 0 10px;
+}
+.gradient-bar {
+  position: absolute;
+  inset: 6px 0;
+  border-radius: 4px;
+  border: 1px solid var(--hairline);
+}
+.gradient-handle {
+  position: absolute;
+  top: 0;
+  width: 16px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+  cursor: grab;
+}
+
+.dir-grid {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.dir-wheel {
+  position: relative;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(175, 169, 236, 0.05), rgba(15, 14, 26, 0.6));
+  border: 1px solid var(--hairline-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dir-wheel-track {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(175, 169, 236, 0.18);
+}
+.dir-wheel-needle {
+  position: absolute;
+  width: 2px;
+  height: 32px;
+  background: var(--t400);
+  border-radius: 1px;
+  transform-origin: bottom center;
+  top: 8px;
+  left: calc(50% - 1px);
+  box-shadow: 0 0 8px rgba(29, 158, 117, 0.5);
+}
+.dir-wheel-center {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text);
+  background: var(--chrome);
+  padding: 3px 5px;
+  border-radius: 3px;
+  z-index: 1;
+}
+.dir-side { display: flex; flex-direction: column; gap: 8px; }
+.dir-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--p200);
+}
+.seg-toggle {
+  display: flex;
+  padding: 2px;
+  background: rgba(15, 14, 26, 0.6);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+.seg-btn {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.seg-active { background: var(--p700); color: white; }
+.seg-sm .seg-btn { padding: 4px 6px; }
+
+/* Swatches */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.swatch-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.12s;
+}
+.swatch-cell:hover { transform: scale(1.06); border-color: var(--p300); }
+.swatch-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.swatch-sm {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  cursor: pointer;
+}
+
+/* Annotation grid */
+.annot-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.annot-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 2px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: background 0.12s, color 0.12s;
+}
+.annot-cell:hover { background: rgba(175, 169, 236, 0.1); color: var(--text); }
+.annot-cell:hover .annot-ic { color: var(--t400); }
+.annot-ic {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  background: rgba(238, 237, 254, 0.04);
+}
+.annot-lbl {
+  font-size: 9.5px;
+  line-height: 1;
+}
+
+/* Selected image row */
+.selected-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: rgba(15, 14, 26, 0.4);
+}
+.selected-thumb {
+  width: 36px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--p600), var(--t400));
+  padding: 3px;
+}
+.selected-thumb-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0 2px, transparent 2px 6px);
+}
+.selected-meta { flex: 1; min-width: 0; }
+.selected-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--p200);
+}
+.selected-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* Color stepper row */
+.color-step-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  background: rgba(15, 14, 26, 0.4);
+}
+.color-step-swatch {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--hairline);
+}
+.color-step-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  flex: 1;
+}
+.stepper { display: flex; }
+.stepper button {
+  width: 22px; height: 22px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(175, 169, 236, 0.08);
+  border-radius: 4px;
+}
+.stepper button:first-child { border-radius: 4px 0 0 4px; }
+.stepper button:last-child { border-radius: 0 4px 4px 0; margin-left: 1px; }
+.stepper button:hover { background: rgba(175, 169, 236, 0.16); color: var(--text); }
+.stepper-vert { display: flex; flex-direction: column; gap: 1px; }
+.stepper-vert button {
+  width: 22px; height: 12px;
+  background: rgba(175, 169, 236, 0.08);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+}
+
+/* Preset grids */
+.preset-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.preset-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.preset-cell {
+  aspect-ratio: 1.2;
+  border-radius: 6px;
+  background: rgba(15, 14, 26, 0.6);
+  border: 1px solid var(--hairline);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.12s, transform 0.1s;
+}
+.preset-cell:hover { border-color: var(--p400); transform: translateY(-1px); }
+.preset-border {
+  width: 100%; height: 100%;
+  background: rgba(175, 169, 236, 0.1);
+  border: 2px solid var(--p300);
+}
+.preset-border-0 { border-radius: 0; }
+.preset-border-1 { border-radius: 4px; }
+.preset-border-2 { border-radius: 50%; }
+.preset-border-3 { border-style: dashed; border-radius: 4px; }
+.preset-border-4 { border-style: dotted; border-radius: 4px; }
+.preset-border-5 { border-radius: 4px; box-shadow: 4px 4px 0 var(--t400); }
+
+.preset-3d {
+  perspective: 200px;
+  padding: 6px;
+}
+.preset-3d-card {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--p500), var(--t400));
+  border-radius: 3px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Shadow preview */
+.shadow-preview {
+  flex: 1;
+  height: 50px;
+  background: var(--p50);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+.shadow-preview-card {
+  width: 70%;
+  height: 100%;
+  background: white;
+  border-radius: 3px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Position align grid */
+.align-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  background: rgba(15, 14, 26, 0.6);
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  width: 110px;
+}
+.align-cell {
+  aspect-ratio: 1;
+  border: 1px dashed rgba(175, 169, 236, 0.25);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  transition: border-color 0.12s, background 0.12s;
+}
+.align-cell span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+.align-cell:hover { border-color: var(--p300); }
+.align-active {
+  border: 1px solid var(--t400);
+  background: rgba(29, 158, 117, 0.18);
+}
+.align-active span { background: var(--t400); }
+
+.xy-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.xy-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 14, 26, 0.4);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.xy-row label span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.xy-row label input {
+  background: transparent;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  width: 100%;
+}
+
+/* PRO lock block */
+.pro-lock-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+  background: linear-gradient(180deg, rgba(239, 159, 39, 0.06), rgba(239, 159, 39, 0.02));
+  border: 1px solid rgba(239, 159, 39, 0.18);
+  border-radius: 10px;
+  text-align: center;
+}
+.pro-lock-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(239, 159, 39, 0.12);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--a200);
+}
+.pro-lock-text {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Layout grid in panel */
+.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.layout-grid.locked { opacity: 0.5; pointer-events: none; }
+.layout-cell {
+  aspect-ratio: 1.2;
+  background: rgba(15, 14, 26, 0.6);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 6px;
+}
+.layout-cell-inner {
+  width: 100%; height: 100%;
+  border: 1px dashed rgba(175, 169, 236, 0.3);
+  border-radius: 3px;
+}
+.layout-cell-0 .layout-cell-inner { background: linear-gradient(180deg, var(--p500) 0 50%, transparent 50%); border-style: solid; }
+.layout-cell-1 .layout-cell-inner { background: linear-gradient(90deg, var(--p500) 0 33%, transparent 33% 66%, var(--p500) 66%); border-style: solid; }
+.layout-cell-2 .layout-cell-inner { background: var(--p500); border-style: solid; }
+.layout-cell-3 .layout-cell-inner { background: linear-gradient(90deg, var(--p500) 50%, transparent 50%); border-style: solid; }
+.layout-cell-4 .layout-cell-inner {
+  background: conic-gradient(from 45deg, var(--p500) 0 25%, transparent 25% 50%, var(--p500) 50% 75%, transparent 75%);
+  border-style: solid;
+}
+.layout-cell-5 .layout-cell-inner { background: radial-gradient(circle, var(--p500) 40%, transparent 41%); border-style: solid; }
+
+/* Brand list */
+.brand-list { display: flex; flex-direction: column; gap: 6px; }
+.brand-list.locked { opacity: 0.55; }
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: rgba(15, 14, 26, 0.3);
+}
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.brand-name { font-size: 12px; color: var(--text); font-weight: 500; }
+.brand-meta { font-size: 10.5px; color: var(--text-faint); }
+.brand-row > div:nth-child(2) { flex: 1; }
+.brand-lock { color: var(--a200); }
+
+/* Mockup grid */
+.mockup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.mockup-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  background: rgba(15, 14, 26, 0.5);
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+  font-size: 9.5px;
+}
+.mockup-cell:hover { border-color: var(--p400); color: var(--text); }
+.mockup-thumb {
+  width: 100%;
+  aspect-ratio: 1.4;
+  background: linear-gradient(135deg, rgba(175, 169, 236, 0.15), rgba(29, 158, 117, 0.08));
+  border-radius: 4px;
+  border: 1px solid var(--hairline-strong);
+}
+
+/* AI textarea */
+.ai-textarea {
+  background: rgba(15, 14, 26, 0.5);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 80px;
+}
+.ai-textarea:focus { border-color: var(--p500); }
+.ai-quick { display: flex; flex-wrap: wrap; gap: 5px; }
+.ai-chip {
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(175, 169, 236, 0.1);
+  color: var(--text);
+  border: 1px solid var(--hairline);
+  transition: background 0.12s;
+}
+.ai-chip:hover { background: rgba(175, 169, 236, 0.18); }
+
+/* Upload grid */
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.upload-thumb {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  background: var(--canvas);
+  position: relative;
+  overflow: hidden;
+}
+.upload-thumb-0 { background: linear-gradient(135deg, var(--p600), var(--t400)); }
+.upload-thumb-1 { background: linear-gradient(135deg, var(--a200), #D85C8A); }
+.upload-thumb-2 {
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 6px, transparent 6px 12px),
+    var(--p800);
+}
+
+/* Templates */
+.template-search {
+  position: relative;
+}
+.template-search input {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(15, 14, 26, 0.5);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+}
+.template-search input::placeholder { color: var(--text-faint); }
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.template-card {
+  aspect-ratio: 16/10;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  position: relative;
+}
+.template-card-0 { background: linear-gradient(135deg, #2C2151, #6B4FE6); }
+.template-card-1 { background: linear-gradient(135deg, var(--t800), var(--t400)); }
+.template-card-2 { background: linear-gradient(135deg, #1A1826, #534AB7); }
+.template-card-3 { background: linear-gradient(135deg, var(--a400), var(--a200)); }
+.template-card-4 { background: linear-gradient(180deg, #0F0E1A, #1D9E75); }
+.template-card-5 { background: radial-gradient(circle at 30% 30%, var(--p300), var(--p900)); }
+
+/* Header / inputs */
+.text-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(15, 14, 26, 0.4);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+.text-input:focus { border-color: var(--p500); }
+
+/* Empty block */
+.empty-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  background: rgba(15, 14, 26, 0.4);
+  border: 1px dashed var(--hairline-strong);
+  border-radius: 10px;
+  color: var(--text-faint);
+  text-align: center;
+  font-size: 11.5px;
+}
+.empty-block p { margin: 0; line-height: 1.5; }
+.empty-block-ic {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(175, 169, 236, 0.08);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--p300);
+}
+
+/* Sequence bar */
+.sequence-bar {
+  display: flex;
+  gap: 3px;
+  padding: 5px;
+  background: rgba(15, 14, 26, 0.6);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sequence-bar::-webkit-scrollbar { display: none; }
+.seq-item {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  color: white;
+  cursor: grab;
+}
+.seq-item-1 { background: var(--p600); }
+.seq-item-2 { background: var(--p500); }
+.seq-item-3 { background: var(--t400); }
+.seq-item-4 { background: var(--p700); }
+
+/* Hotkeys list */
+.hotkey-list { display: flex; flex-direction: column; gap: 4px; }
+.hotkey-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(15, 14, 26, 0.4);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* ============================================================
+   CANVAS AREA
+   ============================================================ */
+.canvas-area {
+  flex: 1;
+  background: var(--canvas);
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.canvas-wrap {
+  position: absolute;
+  inset: 0;
+  bottom: 80px; /* timeline space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: radial-gradient(circle, rgba(175, 169, 236, 0.18) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center;
+}
+.laybel-app[data-grid="off"] .canvas-wrap { background-image: none; }
+.laybel-app[data-grid="dense"] .canvas-wrap {
+  background-image: radial-gradient(circle, rgba(175, 169, 236, 0.18) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.laybel-app:not([data-grid]) .canvas-wrap,
+.laybel-app[data-grid="normal"] .canvas-wrap {
+  background-size: 24px 24px;
+}
+
+.canvas-stage {
+  position: relative;
+}
+
+.canvas-artboard {
+  position: relative;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(175, 169, 236, 0.15),
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(175, 169, 236, 0.06);
+}
+.artboard-glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at center, rgba(175, 169, 236, 0.12), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Empty state on canvas */
+.artboard-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #6F6A92;
+  background: white;
+}
+.empty-iconring {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--p50);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--p600);
+}
+.empty-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--p800);
+  letter-spacing: -0.01em;
+}
+.empty-sub {
+  font-size: 13px;
+  color: var(--p600);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.empty-sub .key-badge {
+  background: var(--p50);
+  color: var(--p600);
+  border-color: var(--p100);
+}
+.empty-orbtn { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.empty-or {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Selected element demo */
+.artboard-content {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #2E1C5F 0%, #5F3DBD 50%, #1D9E75 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  overflow: hidden;
+}
+.art-screenshot {
+  position: relative;
+  width: 65%;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform-origin: center;
+}
+.art-screenshot-chrome {
+  height: 24px;
+  background: #F4F2F8;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 5px;
+  border-bottom: 1px solid #EAE6F2;
+}
+.art-screenshot-chrome span {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #DAD3EA;
+}
+.art-screenshot-chrome span:nth-child(1) { background: #FF5F57; }
+.art-screenshot-chrome span:nth-child(2) { background: #FEBC2E; }
+.art-screenshot-chrome span:nth-child(3) { background: #28C840; }
+.art-screenshot-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.art-ss-row {
+  height: 8px;
+  background: #EAE6F2;
+  border-radius: 2px;
+}
+.art-ss-row-h { width: 40%; height: 12px; background: #C7BFE3; }
+.art-ss-row-1 { width: 100%; }
+.art-ss-row-2 { width: 85%; }
+.art-ss-row-3 { width: 60%; }
+.art-ss-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.art-ss-grid div {
+  aspect-ratio: 1.4;
+  background: linear-gradient(135deg, #F0EBFA, #E1D9F0);
+  border-radius: 4px;
+}
+
+.art-title {
+  position: absolute;
+  left: 7%;
+  top: 12%;
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  max-width: 38%;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+.art-arrow {
+  position: absolute;
+  right: 14%;
+  bottom: 16%;
+  width: 180px;
+  height: 100px;
+  pointer-events: none;
+}
+.art-label {
+  position: absolute;
+  right: 6%;
+  bottom: 12%;
+  background: white;
+  color: var(--t800);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.2s;
+}
+
+.art-select-box {
+  position: absolute;
+  left: calc(50% - 32.5%);
+  top: 30%;
+  width: 65%;
+  height: 50%;
+  border: 1.5px solid var(--t400);
+  pointer-events: none;
+}
+.sel-handle {
+  position: absolute;
+  width: 8px; height: 8px;
+  background: white;
+  border: 1.5px solid var(--t400);
+  border-radius: 1px;
+}
+.sel-tl { top: -5px; left: -5px; }
+.sel-tr { top: -5px; right: -5px; }
+.sel-bl { bottom: -5px; left: -5px; }
+.sel-br { bottom: -5px; right: -5px; }
+.sel-t { top: -5px; left: calc(50% - 4px); }
+.sel-b { bottom: -5px; left: calc(50% - 4px); }
+.sel-l { top: calc(50% - 4px); left: -5px; }
+.sel-r { top: calc(50% - 4px); right: -5px; }
+
+.art-watermark {
+  position: absolute;
+  bottom: 8px; right: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.04em;
+  background: rgba(15, 14, 26, 0.3);
+  padding: 3px 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+.art-size-tag {
+  position: absolute;
+  top: -22px; left: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+}
+
+/* Zoom controls */
+.zoom-controls {
+  position: absolute;
+  bottom: 92px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  z-index: 6;
+}
+.icon-btn-soft {
+  width: 24px; height: 24px;
+  border-radius: 5px;
+  font-size: 14px;
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn-soft:hover { background: rgba(175, 169, 236, 0.1); color: var(--text); }
+.zoom-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  padding: 0 4px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.canvas-hints {
+  position: absolute;
+  bottom: 92px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 6;
+  white-space: nowrap;
+}
+.hint-link {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hint-link:hover { color: var(--text); }
+.hint-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+.hint-shortcuts .key-badge { font-size: 9.5px; padding: 2px 5px; }
+
+/* Element toolbar (floating above selected) */
+.elem-toolbar-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+}
+.elem-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+.elem-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--text);
+  transition: background 0.12s;
+}
+.elem-btn:hover { background: rgba(175, 169, 236, 0.1); }
+.elem-active { background: rgba(29, 158, 117, 0.18); color: var(--t200); }
+.elem-icon { padding: 5px 7px; }
+.elem-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--hairline);
+  margin: 0 2px;
+}
+
+/* ============================================================
+   TIMELINE BAR
+   ============================================================ */
+.timeline-wrap {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+}
+.timeline-bar {
+  height: 80px;
+  background: var(--panel);
+  border-top: 1px solid var(--hairline-strong);
+  display: grid;
+  grid-template-columns: 200px 1fr 110px;
+  gap: 0;
+}
+.tl-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-right: 1px solid var(--hairline);
+}
+.tl-play {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--t400);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset, 0 4px 12px rgba(29, 158, 117, 0.3);
+}
+.tl-play:hover { background: var(--t500); }
+.tl-time {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-mono);
+}
+.tl-time-now { font-size: 14px; color: var(--text); font-weight: 500; }
+.tl-time-sep { color: var(--text-faint); }
+.tl-time-total { font-size: 11px; color: var(--text-faint); }
+.tl-loop {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+}
+.tl-loop:hover { background: rgba(175, 169, 236, 0.1); color: var(--text); }
+.tl-loop-on { background: rgba(29, 158, 117, 0.15); color: var(--t400); }
+
+.tl-center {
+  position: relative;
+  padding: 6px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.tl-ruler {
+  position: relative;
+  height: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+.tl-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 6px;
+  background: var(--hairline);
+}
+.tl-tick span {
+  position: absolute;
+  bottom: 6px;
+  left: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-faint);
+}
+.tl-tracks {
+  position: relative;
+  flex: 1;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: ew-resize;
+}
+.tl-track {
+  flex: 1;
+  position: relative;
+  min-height: 8px;
+  background: rgba(15, 14, 26, 0.4);
+  border-radius: 3px;
+}
+.tl-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 6px;
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  color: white;
+  cursor: grab;
+  transition: box-shadow 0.12s;
+  user-select: none;
+  overflow: hidden;
+}
+.tl-clip-0 { background: linear-gradient(90deg, var(--p600), var(--p500)); }
+.tl-clip-1 { background: linear-gradient(90deg, var(--p500), var(--p300)); color: var(--p900); }
+.tl-clip-2 { background: linear-gradient(90deg, var(--t400), var(--t500)); }
+.tl-clip-3 { background: linear-gradient(90deg, var(--p700), var(--p600)); }
+.tl-clip-sel { box-shadow: 0 0 0 1.5px white, 0 0 12px rgba(255, 255, 255, 0.3); z-index: 2; }
+.tl-clip-label { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-clip-tag {
+  font-size: 8.5px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.tl-clip-handle {
+  width: 4px; height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+.tl-clip-handle-l { margin-left: -8px; margin-right: 4px; }
+.tl-clip-handle-r { margin-right: -8px; margin-left: 4px; }
+
+.tl-playhead {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  pointer-events: none;
+  z-index: 3;
+}
+.tl-playhead-cap {
+  position: absolute;
+  top: -2px;
+  left: -5px;
+  width: 11px;
+  height: 11px;
+  background: var(--t400);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  box-shadow: 0 0 8px rgba(29, 158, 117, 0.6);
+}
+.tl-playhead-line {
+  position: absolute;
+  top: 8px; bottom: 0;
+  left: 0;
+  width: 1.5px;
+  background: var(--t400);
+  box-shadow: 0 0 8px rgba(29, 158, 117, 0.6);
+}
+
+.tl-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 14px;
+  border-left: 1px solid var(--hairline);
+}
+.tl-fps {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+}
+
+.timeline-collapsed {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 28px;
+  background: var(--panel);
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.timeline-collapsed:hover { background: var(--panel-2); color: var(--text); }
+
+/* ============================================================
+   DROPDOWNS / MODALS
+   ============================================================ */
+.overlay-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+}
+.dropdown-anchor {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+}
+.export-anchor {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 100px;
+  z-index: 40;
+}
+
+/* Canvas size picker */
+.size-picker {
+  width: 820px;
+  max-width: calc(100vw - 32px);
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+.size-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--hairline);
+}
+.size-platform {
+  background: var(--panel);
+  padding: 12px 14px;
+  min-height: 160px;
+}
+.size-platform-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+.size-platform-ic {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  background: rgba(175, 169, 236, 0.1);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--p200);
+}
+.size-platform-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.size-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 6px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-align: left;
+}
+.size-row:hover { background: rgba(175, 169, 236, 0.08); color: var(--text); }
+.size-row-active { background: rgba(29, 158, 117, 0.12); color: var(--t200); }
+.size-dim {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+}
+.size-row:hover .size-dim { color: var(--text-muted); }
+
+.size-picker-footer {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--hairline);
+  background: var(--panel-2);
+}
+.size-footer-left { display: flex; gap: 10px; align-items: center; }
+.size-footer-mid { display: flex; align-items: center; gap: 6px; }
+.size-footer-right { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+.dim-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--chrome);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+.dim-input span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.dim-input input {
+  background: transparent;
+  border: none;
+  width: 48px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+}
+.scale-pills {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 8px;
+  border-left: 1px solid var(--hairline);
+  margin-left: 4px;
+}
+.scale-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  padding: 0 4px;
+}
+.scale-btn {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+.scale-btn:hover { background: rgba(175, 169, 236, 0.1); color: var(--text); }
+.scale-active { background: var(--p700); color: white; }
+.check-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.check-row input { accent-color: var(--t400); }
+
+/* Export menu */
+.export-menu {
+  width: 280px;
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  padding: 8px;
+}
+.export-head {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--p200);
+  padding: 8px 10px 6px;
+}
+.export-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 6px;
+}
+.export-check:hover { background: rgba(175, 169, 236, 0.06); }
+.export-check input { accent-color: var(--t400); }
+.export-check > span:nth-of-type(1) { flex: 1; }
+.export-divider {
+  height: 1px;
+  background: var(--hairline);
+  margin: 6px 0;
+}
+.export-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: var(--text);
+  border-radius: 6px;
+  text-align: left;
+}
+.export-row:hover { background: rgba(175, 169, 236, 0.06); }
+.export-row > span:nth-of-type(1) { flex: 1; }
+.export-row .key-badge { background: rgba(238, 237, 254, 0.04); }
+.export-adv {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--p200);
+  border-radius: 6px;
+}
+.export-adv:hover { background: rgba(175, 169, 236, 0.06); }
+.export-adv-body {
+  padding: 4px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Modals */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 14, 26, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 32px;
+}
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 64px);
+  overflow: hidden;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+.modal-head-left { display: flex; align-items: center; gap: 10px; }
+.modal-head-right { display: flex; align-items: center; gap: 8px; }
+.modal-head-label { font-size: 12px; color: var(--text-muted); }
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+.modal-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  padding: 12px 16px 0;
+  margin: 0;
+}
+.modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-body-list { padding: 8px 16px 16px; }
+.platform-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(175, 169, 236, 0.1);
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+.muted-ic { color: var(--text-faint); }
+
+/* Social preview modal */
+.modal-preview { width: 560px; }
+.modal-preview .modal-body { background: var(--chrome); padding: 24px; }
+.social-card {
+  background: white;
+  color: #1A1826;
+  border-radius: 10px;
+  padding: 16px;
+  font-family: var(--font-ui);
+}
+.preview-dark .social-card {
+  background: #1B1F23;
+  color: #E8E8E8;
+}
+.preview-dark .social-meta, .preview-dark .social-actions { color: #9B9B9B; }
+.social-head { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.social-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--p500), var(--t400));
+  flex-shrink: 0;
+}
+.social-name { font-weight: 600; font-size: 13px; }
+.social-meta { font-size: 11px; color: #6F6A92; }
+.social-caption { font-size: 13px; line-height: 1.55; margin: 8px 0 12px; }
+.social-image {
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, #2E1C5F, #5F3DBD 50%, #1D9E75);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.social-image-inner {
+  position: absolute;
+  inset: 16px;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.15), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
+  border-radius: 4px;
+}
+.social-image-label {
+  position: absolute;
+  bottom: 6px; right: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.social-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6F6A92;
+}
+
+/* Customize sidebar modal */
+.modal-customize { width: 420px; }
+.customize-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: rgba(15, 14, 26, 0.3);
+  margin-bottom: 4px;
+}
+.customize-row:hover { background: rgba(175, 169, 236, 0.06); }
+.drag-handle {
+  color: var(--text-faint);
+  cursor: grab;
+  display: flex; align-items: center;
+}
+.customize-ic {
+  color: var(--p200);
+  display: flex; align-items: center;
+}
+.customize-name { flex: 1; font-size: 13px; color: var(--text); }
+.excl-pill {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(29, 158, 117, 0.15);
+  color: var(--t400);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+  </style>
+  <script src="89bcf5dc-fad8-4355-83d4-bb923e1c809e" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="ce183e4d-9f83-4fe8-adb4-ad13b38e3584" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="e96e2a62-503e-4dcc-84c7-3509828231fb" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+
+/* ====== tweaks-panel.jsx ====== */
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+
+/* ====== icons.jsx ====== */
+// Lucide-style line icons (1.5px stroke). All accept size + className + style.
+const Icon = ({ children, size = 18, className = "", style, strokeWidth = 1.5, viewBox = "0 0 24 24" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox={viewBox}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    style={style}
+    aria-hidden="true"
+  >
+    {children}
+  </svg>
+);
+
+const IconSparkle = (p) => (
+  <Icon {...p}>
+    <path d="M12 3v4M12 17v4M5 12H1M23 12h-4M6.2 6.2l2.8 2.8M15 15l2.8 2.8M6.2 17.8 9 15M15 9l2.8-2.8" />
+  </Icon>
+);
+const IconUpload = (p) => (
+  <Icon {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+  </Icon>
+);
+const IconGrid = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </Icon>
+);
+const IconImage = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <circle cx="9" cy="9" r="1.6" />
+    <path d="m21 15-5-5L5 21" />
+  </Icon>
+);
+const IconPen = (p) => (
+  <Icon {...p}>
+    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+  </Icon>
+);
+const IconPattern = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+  </Icon>
+);
+const IconPhone = (p) => (
+  <Icon {...p}>
+    <rect x="6" y="2" width="12" height="20" rx="2.5" />
+    <path d="M11 18h2" />
+  </Icon>
+);
+const IconCrosshair = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+    <circle cx="12" cy="12" r="1.5" />
+  </Icon>
+);
+const IconCube = (p) => (
+  <Icon {...p}>
+    <path d="m21 16.5-9 5-9-5V8l9-5 9 5v8.5Z" />
+    <path d="m3.3 7.7 8.7 5 8.7-5M12 12.7V22" />
+  </Icon>
+);
+const IconShadow = (p) => (
+  <Icon {...p}>
+    <circle cx="10" cy="10" r="6" />
+    <path d="M14 14a6 6 0 0 1-4 4 6 6 0 0 0 8-8 6 6 0 0 1-4 4Z" />
+  </Icon>
+);
+const IconBorder = (p) => (
+  <Icon {...p}>
+    <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+  </Icon>
+);
+const IconLayout = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M3 9h18M9 9v12" />
+  </Icon>
+);
+const IconType = (p) => (
+  <Icon {...p}>
+    <path d="M4 7V5h16v2M9 5v14M15 19H9" />
+  </Icon>
+);
+const IconStamp = (p) => (
+  <Icon {...p}>
+    <path d="M5 22h14M9 14V9a3 3 0 0 1 6 0v5M5 18h14a0 0 0 0 1 0 0v0a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v0Z" />
+  </Icon>
+);
+const IconBrand = (p) => (
+  <Icon {...p}>
+    <path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z" />
+  </Icon>
+);
+const IconMotion = (p) => (
+  <Icon {...p}>
+    <path d="M5 3v18l16-9-16-9Z" />
+  </Icon>
+);
+const IconGear = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+  </Icon>
+);
+const IconPlus = (p) => (
+  <Icon {...p}><path d="M12 5v14M5 12h14" /></Icon>
+);
+const IconUndo = (p) => (
+  <Icon {...p}><path d="M3 7v6h6M21 17a8 8 0 0 0-13.7-5.7L3 13" /></Icon>
+);
+const IconRedo = (p) => (
+  <Icon {...p}><path d="M21 7v6h-6M3 17a8 8 0 0 1 13.7-5.7L21 13" /></Icon>
+);
+const IconEye = (p) => (
+  <Icon {...p}>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </Icon>
+);
+const IconChevDown = (p) => (
+  <Icon {...p}><path d="m6 9 6 6 6-6" /></Icon>
+);
+const IconChevUp = (p) => (
+  <Icon {...p}><path d="m6 15 6-6 6 6" /></Icon>
+);
+const IconChevRight = (p) => (
+  <Icon {...p}><path d="m9 6 6 6-6 6" /></Icon>
+);
+const IconBell = (p) => (
+  <Icon {...p}>
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  </Icon>
+);
+const IconDownload = (p) => (
+  <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></Icon>
+);
+const IconArrowRight = (p) => (
+  <Icon {...p}><path d="M5 12h14M13 5l7 7-7 7" /></Icon>
+);
+const IconLock = (p) => (
+  <Icon {...p}>
+    <rect x="4" y="11" width="16" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 1 1 8 0v4" />
+  </Icon>
+);
+const IconInfo = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></Icon>
+);
+const IconClipboard = (p) => (
+  <Icon {...p}>
+    <rect x="8" y="3" width="8" height="4" rx="1" />
+    <path d="M16 5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2" />
+  </Icon>
+);
+const IconClose = (p) => (
+  <Icon {...p}><path d="M18 6 6 18M6 6l18 12" /></Icon>
+);
+const IconPlay = (p) => (
+  <Icon {...p}><path d="M6 4v16l14-8L6 4Z" /></Icon>
+);
+const IconPause = (p) => (
+  <Icon {...p}><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></Icon>
+);
+const IconLoop = (p) => (
+  <Icon {...p}><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" /></Icon>
+);
+const IconTrash = (p) => (
+  <Icon {...p}><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" /></Icon>
+);
+const IconCrop = (p) => (
+  <Icon {...p}><path d="M6 2v16a2 2 0 0 0 2 2h16M2 6h16a2 2 0 0 1 2 2v16" /></Icon>
+);
+const IconHighlight = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="9" /></Icon>
+);
+const IconPadding = (p) => (
+  <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="1.5" /><rect x="7" y="7" width="10" height="10" rx="1" /></Icon>
+);
+const IconBlur = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 3v18M3 12h18" strokeDasharray="2 3" /></Icon>
+);
+const IconDots = (p) => (
+  <Icon {...p}><circle cx="5" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="19" cy="12" r="1.2" /></Icon>
+);
+const IconArrowDR = (p) => (
+  <Icon {...p}><path d="M7 7h10v10M7 17 17 7" /></Icon>
+);
+const IconRect = (p) => (
+  <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="1.5" /></Icon>
+);
+const IconCircle = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /></Icon>
+);
+const IconBlob = (p) => (
+  <Icon {...p}><path d="M14 3c3 0 7 2 7 7s-2 5-3 8-3 3-7 3-9-2-9-8 5-5 6-7 3-3 6-3Z" /></Icon>
+);
+const IconLine = (p) => (
+  <Icon {...p}><path d="M4 20 20 4" /></Icon>
+);
+const IconHash = (p) => (
+  <Icon {...p}><path d="M9 3 6 21M18 3l-3 18M3 9h18M2 15h18" /></Icon>
+);
+const IconEmoji = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M9 10h.01M15 10h.01M8 15s1.5 2 4 2 4-2 4-2" /></Icon>
+);
+const IconBadge = (p) => (
+  <Icon {...p}><path d="M12 2 14.5 5l4 .5L16 8.5 17 13l-5-2-5 2 1-4.5L5.5 5.5l4-.5L12 2Z" /></Icon>
+);
+const IconQR = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3M21 14v3M14 18v3h3M21 21v0" />
+  </Icon>
+);
+const IconWireframe = (p) => (
+  <Icon {...p}><rect x="3" y="4" width="18" height="16" rx="1.5" /><path d="M3 9h18M7 14h6M7 17h10" /></Icon>
+);
+const IconLabel = (p) => (
+  <Icon {...p}><path d="M20 12a2 2 0 0 0-.6-1.4l-7-7A2 2 0 0 0 11 3H4a1 1 0 0 0-1 1v7a2 2 0 0 0 .6 1.4l7 7a2 2 0 0 0 2.8 0l5.2-5.2A2 2 0 0 0 20 12Z" /><circle cx="7.5" cy="7.5" r=".8" /></Icon>
+);
+const IconText = (p) => (
+  <Icon {...p}><path d="M6 4v16M2 4h8M10 12h12M16 12v8M12 20h8" /></Icon>
+);
+const IconIconBox = (p) => (
+  <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M12 8v8M8 12h8" /></Icon>
+);
+const IconReset = (p) => (
+  <Icon {...p}><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" /></Icon>
+);
+const IconCheck = (p) => (
+  <Icon {...p}><path d="m5 12 5 5 9-12" /></Icon>
+);
+const IconSun = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></Icon>
+);
+const IconMoon = (p) => (
+  <Icon {...p}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" /></Icon>
+);
+const IconDragHandle = (p) => (
+  <Icon {...p}><circle cx="9" cy="6" r="1.2" /><circle cx="9" cy="12" r="1.2" /><circle cx="9" cy="18" r="1.2" /><circle cx="15" cy="6" r="1.2" /><circle cx="15" cy="12" r="1.2" /><circle cx="15" cy="18" r="1.2" /></Icon>
+);
+const IconEyeOff = (p) => (
+  <Icon {...p}><path d="M2 2l20 20M10.6 10.6a3 3 0 0 0 4.2 4.2M9.4 5.2A11 11 0 0 1 12 5c7 0 11 7 11 7a18 18 0 0 1-3.4 4.3M6.6 6.6A18 18 0 0 0 1 12s4 7 11 7a11 11 0 0 0 5.5-1.6" /></Icon>
+);
+const IconLink = (p) => (
+  <Icon {...p}><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></Icon>
+);
+
+// Brand icons used in size picker columns (simplified glyphs — not the actual logos)
+const IconBrandIG = (p) => (
+  <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17" cy="7" r=".8" /></Icon>
+);
+const IconBrandX = (p) => (
+  <Icon {...p}><path d="m4 4 16 16M20 4 4 20" /></Icon>
+);
+const IconBrandBluesky = (p) => (
+  <Icon {...p}><path d="M12 14c-2-4-5-8-8-8 0 4 1 7 4 8-3 1-4 4-4 8 4 0 6-3 8-7 2 4 4 7 8 7 0-4-1-7-4-8 3-1 4-4 4-8-3 0-6 4-8 8Z" /></Icon>
+);
+const IconBrandLI = (p) => (
+  <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 13v4" /></Icon>
+);
+const IconBrandFB = (p) => (
+  <Icon {...p}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z" /></Icon>
+);
+const IconBrandYT = (p) => (
+  <Icon {...p}><rect x="2" y="6" width="20" height="12" rx="3" /><path d="m10 9 5 3-5 3V9Z" fill="currentColor" stroke="none" /></Icon>
+);
+const IconBrandDribbble = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M8 3.5c4 4 7 9 8 17.5M3.5 11c6-.5 12 .5 17 4.5M21 9c-5 1.5-12 1.5-18-1" /></Icon>
+);
+const IconBrandPH = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M10 7v10M10 7h4a3 3 0 0 1 0 6h-4" /></Icon>
+);
+const IconFigma = (p) => (
+  <Icon {...p}><path d="M9 3h6v6H9zM9 9h6a3 3 0 0 1 0 6H9zM9 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM15 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" /></Icon>
+);
+const IconChrome = (p) => (
+  <Icon {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.5" /><path d="M21.2 8H12M3.4 7.5l4.4 7.6M14.5 21.5l4.3-7.5" /></Icon>
+);
+
+Object.assign(window, {
+  Icon,
+  IconSparkle, IconUpload, IconGrid, IconImage, IconPen, IconPattern, IconPhone, IconCrosshair,
+  IconCube, IconShadow, IconBorder, IconLayout, IconType, IconStamp, IconBrand, IconMotion, IconGear,
+  IconPlus, IconUndo, IconRedo, IconEye, IconChevDown, IconChevUp, IconChevRight, IconBell, IconDownload,
+  IconArrowRight, IconLock, IconInfo, IconClipboard, IconClose, IconPlay, IconPause, IconLoop, IconTrash,
+  IconCrop, IconHighlight, IconPadding, IconBlur, IconDots, IconArrowDR, IconRect, IconCircle, IconBlob,
+  IconLine, IconHash, IconEmoji, IconBadge, IconQR, IconWireframe, IconLabel, IconText, IconIconBox,
+  IconReset, IconCheck, IconSun, IconMoon, IconDragHandle, IconEyeOff, IconLink,
+  IconBrandIG, IconBrandX, IconBrandBluesky, IconBrandLI, IconBrandFB, IconBrandYT, IconBrandDribbble, IconBrandPH,
+  IconFigma, IconChrome,
+});
+
+
+/* ====== panels.jsx ====== */
+// All panel bodies for Laybel. Each panel is ~290px wide.
+// Shared primitives first, then individual panel components.
+
+const PanelTitle = ({ children, badge }) => (
+  <div className="panel-title">
+    <span>{children}</span>
+    {badge}
+  </div>
+);
+
+const ProBadge = ({ small }) => (
+  <span className={"pro-badge" + (small ? " pro-badge-sm" : "")}>
+    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 1 1 8 0v4" />
+    </svg>
+    PRO
+  </span>
+);
+
+const SectionLabel = ({ children, right }) => (
+  <div className="section-label">
+    <span>{children}</span>
+    {right}
+  </div>
+);
+
+const Slider = ({ label, value, unit = "", min = 0, max = 100, onChange, leftIcon }) => {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className="slider-row">
+      <div className="slider-head">
+        <span className="slider-label">{leftIcon}{label}</span>
+        <span className="slider-value">{value}{unit}</span>
+      </div>
+      <div className="slider-track">
+        <div className="slider-fill" style={{ width: pct + "%" }} />
+        <div className="slider-thumb" style={{ left: `calc(${pct}% - 7px)` }} />
+        <input type="range" min={min} max={max} value={value} onChange={(e) => onChange && onChange(+e.target.value)} className="slider-input" />
+      </div>
+    </div>
+  );
+};
+
+const Toggle = ({ on, onChange, label, description }) => (
+  <div className="toggle-row" onClick={() => onChange && onChange(!on)}>
+    <div className="toggle-text">
+      <div className="toggle-label">{label}</div>
+      {description && <div className="toggle-desc">{description}</div>}
+    </div>
+    <div className={"toggle " + (on ? "toggle-on" : "")}>
+      <div className="toggle-knob" />
+    </div>
+  </div>
+);
+
+const TabPill = ({ items, active, onChange }) => (
+  <div className="tab-pill">
+    {items.map((it) => (
+      <button key={it} className={"tab-pill-btn " + (active === it ? "tab-pill-active" : "")} onClick={() => onChange && onChange(it)}>
+        {it}
+      </button>
+    ))}
+  </div>
+);
+
+const KeyBadge = ({ children }) => <span className="key-badge">{children}</span>;
+
+const ColorSwatch = ({ color, ring }) => (
+  <div className={"color-swatch" + (ring ? " color-swatch-ring" : "")} style={{ background: color }} />
+);
+
+// --- IMAGES PANEL ---
+const ImagesPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>IMAGES</PanelTitle>
+    <button className="btn btn-primary btn-block">
+      <IconUpload size={14} /> Upload Image
+    </button>
+    <p className="panel-help">Or paste <KeyBadge>⌘V</KeyBadge> from your clipboard</p>
+    <a className="panel-link">
+      <IconInfo size={12} /> How to use the copy/paste feature
+    </a>
+
+    <SectionLabel>MORE INTEGRATIONS</SectionLabel>
+    <div className="integration-list">
+      <button className="integration-row">
+        <span className="integration-ic"><IconBrandX size={14} /></span>
+        <span>Import Tweet</span>
+        <ProBadge small />
+      </button>
+      <button className="integration-row">
+        <span className="integration-ic"><IconImage size={14} /></span>
+        <span>Screenshot Website</span>
+        <ProBadge small />
+      </button>
+      <button className="integration-row">
+        <span className="integration-ic"><IconFigma size={14} /></span>
+        <span>Install Figma Plugin</span>
+      </button>
+      <button className="integration-row">
+        <span className="integration-ic"><IconChrome size={14} /></span>
+        <span>Install Chrome Extension</span>
+      </button>
+    </div>
+  </div>
+);
+
+// --- BACKGROUND PANEL ---
+const BackgroundPanel = () => {
+  const [tab, setTab] = React.useState("Settings");
+  const [gradType, setGradType] = React.useState("Linear");
+  const [direction, setDirection] = React.useState(135);
+  const swatches = [
+    "#6E5BFF", "#A06FFF", "#3FCBA6", "#1D9E75", "#EF9F27", "#FF7A59",
+    "#0F0E1A", "#1A1826", "#3C3489", "#534AB7", "#AFA9EC", "#EEEDFE",
+    "linear-gradient(135deg,#6E5BFF,#3FCBA6)",
+    "linear-gradient(135deg,#EF9F27,#FF5577)",
+    "linear-gradient(135deg,#0F0E1A,#534AB7)",
+    "linear-gradient(135deg,#FAEEDA,#EF9F27)",
+    "linear-gradient(135deg,#1D9E75,#085041)",
+    "linear-gradient(135deg,#AFA9EC,#3C3489)",
+  ];
+  return (
+    <div className="panel-body">
+      <PanelTitle>BACKGROUND</PanelTitle>
+      <TabPill items={["Saved", "Settings", "Effects"]} active={tab} onChange={setTab} />
+
+      <SectionLabel>TYPE</SectionLabel>
+      <button className="select-row">
+        Gradient <IconChevDown size={12} />
+      </button>
+
+      <SectionLabel>GRADIENT</SectionLabel>
+      <div className="gradient-stops">
+        <div className="gradient-bar" style={{ background: "linear-gradient(90deg,#6E5BFF,#3FCBA6)" }} />
+        <div className="gradient-handle" style={{ left: "8%", background: "#6E5BFF" }} />
+        <div className="gradient-handle" style={{ left: "92%", background: "#3FCBA6" }} />
+      </div>
+
+      <div className="dir-grid">
+        <div className="dir-wheel">
+          <div className="dir-wheel-track" />
+          <div className="dir-wheel-needle" style={{ transform: `rotate(${direction}deg)` }} />
+          <div className="dir-wheel-center">{direction}°</div>
+        </div>
+        <div className="dir-side">
+          <div className="dir-label">DIRECTION</div>
+          <div className="seg-toggle">
+            <button className={"seg-btn " + (gradType === "Linear" ? "seg-active" : "")} onClick={() => setGradType("Linear")}>Linear</button>
+            <button className={"seg-btn " + (gradType === "Conic" ? "seg-active" : "")} onClick={() => setGradType("Conic")}>Conic</button>
+          </div>
+        </div>
+      </div>
+
+      <a className="panel-link">
+        Create gradients from a color
+        <span className="new-badge">NEW</span>
+      </a>
+
+      <SectionLabel>GALLERY</SectionLabel>
+      <div className="swatch-grid">
+        {swatches.map((s, i) => (
+          <div key={i} className="swatch-cell" style={{ background: s }} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- ANNOTATION PANEL ---
+const AnnotationPanel = () => {
+  const items = [
+    { icon: <IconImage size={16} />, label: "Image" },
+    { icon: <IconText size={16} />, label: "Text" },
+    { icon: <IconIconBox size={16} />, label: "Icons" },
+    { icon: <IconArrowDR size={16} />, label: "Arrow" },
+    { icon: <IconRect size={16} />, label: "Rectangle" },
+    { icon: <IconCircle size={16} />, label: "Circle" },
+    { icon: <IconBlob size={16} />, label: "Blob" },
+    { icon: <IconLine size={16} />, label: "Line" },
+    { icon: <IconHash size={16} />, label: "Number" },
+    { icon: <IconEmoji size={16} />, label: "Emoji" },
+    { icon: <IconBadge size={16} />, label: "Badge" },
+    { icon: <IconQR size={16} />, label: "QR Code" },
+    { icon: <IconWireframe size={16} />, label: "Wireframe" },
+    { icon: <IconLabel size={16} />, label: "Label" },
+  ];
+  return (
+    <div className="panel-body">
+      <PanelTitle>ANNOTATION</PanelTitle>
+      <SectionLabel>ADD ANNOTATION</SectionLabel>
+      <div className="annot-grid">
+        {items.map((it) => (
+          <button key={it.label} className="annot-cell">
+            <span className="annot-ic">{it.icon}</span>
+            <span className="annot-lbl">{it.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- SELECTED IMAGE preview (shared by Border/3D/Shadow) ---
+const SelectedImageRow = ({ right }) => (
+  <div className="selected-row">
+    <div className="selected-thumb">
+      <div className="selected-thumb-inner" />
+    </div>
+    <div className="selected-meta">
+      <div className="selected-label">SELECTED IMAGE</div>
+      <div className="selected-name">screenshot.png</div>
+    </div>
+    {right}
+  </div>
+);
+
+// --- BORDER PANEL ---
+const BorderPanel = () => {
+  const [w, setW] = React.useState(2);
+  const [r, setR] = React.useState(12);
+  return (
+    <div className="panel-body">
+      <PanelTitle>BORDER</PanelTitle>
+      <SelectedImageRow />
+
+      <SectionLabel>COLOR</SectionLabel>
+      <div className="color-step-row">
+        <div className="color-step-swatch" style={{ background: "#534AB7" }} />
+        <div className="color-step-val">#534AB7</div>
+        <div className="stepper"><button>−</button><button>+</button></div>
+      </div>
+
+      <Slider label="BORDER WIDTH" value={w} unit="px" max={20} onChange={setW} />
+      <Slider label="BORDER RADIUS" value={r} unit="px" max={64} onChange={setR} />
+
+      <SectionLabel>CHOOSE A PRESET</SectionLabel>
+      <div className="preset-grid-3">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="preset-cell">
+            <div className={"preset-border preset-border-" + i} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- 3D EFFECT PANEL ---
+const ThreeDPanel = () => {
+  const [tx, setTx] = React.useState(-12);
+  const [ty, setTy] = React.useState(8);
+  const [tz, setTz] = React.useState(0);
+  const [int, setInt] = React.useState(60);
+  const [shadow, setShadow] = React.useState(true);
+  return (
+    <div className="panel-body">
+      <PanelTitle>3D EFFECT</PanelTitle>
+      <SelectedImageRow right={<button className="icon-btn" title="Reset"><IconReset size={13} /></button>} />
+
+      <Slider label="TILT X" value={tx} unit="°" min={-45} max={45} onChange={setTx} />
+      <Slider label="TILT Y" value={ty} unit="°" min={-45} max={45} onChange={setTy} />
+      <Slider label="TILT Z" value={tz} unit="°" min={-45} max={45} onChange={setTz} />
+      <Slider label="INTENSITY" value={int} unit="%" onChange={setInt} />
+
+      <Toggle on={shadow} onChange={setShadow} label="INNER 3D SHADOW" />
+
+      <SectionLabel>OR CHOOSE A PRESET</SectionLabel>
+      <div className="preset-grid-4">
+        {Array.from({ length: 12 }).map((_, i) => {
+          const rx = ((i % 4) - 1.5) * 15;
+          const ry = (Math.floor(i / 4) - 1) * 15;
+          return (
+            <div key={i} className="preset-cell preset-3d">
+              <div className="preset-3d-card" style={{ transform: `perspective(120px) rotateX(${ry}deg) rotateY(${rx}deg)` }} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- SHADOW PANEL ---
+const ShadowPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>SHADOW</PanelTitle>
+    <SelectedImageRow />
+
+    <SectionLabel>PICK SHADOW</SectionLabel>
+    <div className="color-step-row">
+      <div className="shadow-preview">
+        <div className="shadow-preview-card" />
+      </div>
+      <div className="stepper-vert"><button><IconChevUp size={10} /></button><button><IconChevDown size={10} /></button></div>
+    </div>
+
+    <SectionLabel>COLOR</SectionLabel>
+    <div className="color-step-row">
+      <div className="color-step-swatch" style={{ background: "#0F0E1A" }} />
+      <div className="color-step-val">#0F0E1A</div>
+      <div className="stepper"><button>−</button><button>+</button></div>
+    </div>
+
+    <button className="btn btn-ghost btn-block">
+      <IconTrash size={13} /> Remove shadow
+    </button>
+  </div>
+);
+
+// --- POSITION PANEL ---
+const PositionPanel = () => {
+  const [active, setActive] = React.useState(4);
+  const [borderRadius, setBorderRadius] = React.useState(true);
+  const [scale, setScale] = React.useState(100);
+  return (
+    <div className="panel-body">
+      <PanelTitle>POSITION</PanelTitle>
+      <p className="panel-desc">Adjust the position of the active Layout or the selected annotation layer.</p>
+
+      <div className="align-grid">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <button key={i} className={"align-cell " + (active === i ? "align-active" : "")} onClick={() => setActive(i)}>
+            <span />
+          </button>
+        ))}
+      </div>
+
+      <Toggle on={borderRadius} onChange={setBorderRadius} label="TAKE BORDER RADIUS INTO ACCOUNT" />
+
+      <SectionLabel>POSITION</SectionLabel>
+      <div className="xy-row">
+        <label><span>X</span><input defaultValue="0" /></label>
+        <label><span>Y</span><input defaultValue="0" /></label>
+      </div>
+      <Slider label="SCALE" value={scale} unit="%" max={200} onChange={setScale} />
+    </div>
+  );
+};
+
+// --- LAYOUT PANEL (PRO gated) ---
+const LayoutPanel = () => (
+  <div className="panel-body">
+    <PanelTitle badge={<ProBadge />}>LAYOUT</PanelTitle>
+    <div className="pro-lock-block">
+      <div className="pro-lock-icon"><IconLock size={20} /></div>
+      <p className="pro-lock-text">You can arrange your images with custom Layouts only on the PRO plan.</p>
+      <button className="btn btn-primary btn-block">
+        <IconLock size={12} /> Unlock Layouts
+      </button>
+    </div>
+
+    <SectionLabel>PICK A LAYOUT</SectionLabel>
+    <div className="layout-grid locked">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className={"layout-cell layout-cell-" + i}>
+          <div className="layout-cell-inner" />
+        </div>
+      ))}
+    </div>
+
+    <SectionLabel>LAYOUT CONFIG</SectionLabel>
+    <TabPill items={["Start", "Center", "End"]} active="Center" onChange={() => { }} />
+    <Slider label="SPACING" value={16} unit="px" max={64} />
+    <Slider label="SCALE" value={100} unit="%" max={200} />
+    <Toggle label="FORCE EQUAL WIDTH" />
+    <Toggle label="FORCE SAME ASPECT RATIO" />
+  </div>
+);
+
+// --- BRANDS PANEL (PRO gated) ---
+const BrandsPanel = () => (
+  <div className="panel-body">
+    <PanelTitle badge={<ProBadge />}>BRANDS</PanelTitle>
+    <p className="panel-desc">Save your brand assets (colors, logos, fonts, etc.) as a Brand to create on-brand graphics in a few clicks.</p>
+    <div className="pro-lock-block">
+      <div className="pro-lock-icon"><IconLock size={20} /></div>
+      <button className="btn btn-primary btn-block">
+        <IconLock size={12} /> Unlock Brands
+      </button>
+    </div>
+    <SectionLabel>SAMPLE BRANDS</SectionLabel>
+    <div className="brand-list locked">
+      {["Acme Co.", "Vela", "Northpeak"].map((n, i) => (
+        <div key={n} className="brand-row">
+          <div className="brand-mark" style={{ background: ["#534AB7", "#1D9E75", "#EF9F27"][i] }}>
+            {n.slice(0, 1)}
+          </div>
+          <div>
+            <div className="brand-name">{n}</div>
+            <div className="brand-meta">3 colors · 2 fonts</div>
+          </div>
+          <IconLock size={12} className="brand-lock" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// --- MOTION PANEL ---
+const MotionPanel = ({ elementSelected = true, entrance, setEntrance, duration, setDuration, delay, setDelay, easing, setEasing, exit, setExit }) => (
+  <div className="panel-body">
+    <PanelTitle>MOTION</PanelTitle>
+
+    {!elementSelected ? (
+      <div className="empty-block">
+        <div className="empty-block-ic"><IconMotion size={18} /></div>
+        <p>Select an element on the canvas to animate it.</p>
+      </div>
+    ) : (
+      <>
+        <SelectedImageRow />
+
+        <SectionLabel right={<span className="muted-mini">IN</span>}>ENTRANCE</SectionLabel>
+        <button className="select-row">
+          {entrance} <IconChevDown size={12} />
+        </button>
+        <Slider label="DURATION" value={duration} unit="s" min={1} max={30} onChange={(v) => setDuration(v)} />
+        <Slider label="DELAY" value={delay} unit="s" min={0} max={20} onChange={(v) => setDelay(v)} />
+        <button className="select-row">
+          {easing} <IconChevDown size={12} />
+        </button>
+
+        <SectionLabel right={<span className="muted-mini">OUT</span>}>EXIT</SectionLabel>
+        <button className="select-row">
+          {exit} <IconChevDown size={12} />
+        </button>
+
+        <SectionLabel>SEQUENCE</SectionLabel>
+        <div className="sequence-bar">
+          <div className="seq-item seq-item-1">screenshot</div>
+          <div className="seq-item seq-item-2">title</div>
+          <div className="seq-item seq-item-3">label</div>
+          <div className="seq-item seq-item-4">arrow</div>
+        </div>
+        <p className="panel-help">Drag to reorder. Order defines stagger.</p>
+      </>
+    )}
+  </div>
+);
+
+// --- MOCKUP PANEL (extra) ---
+const MockupPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>MOCKUP</PanelTitle>
+    <SectionLabel>DEVICE</SectionLabel>
+    <div className="mockup-grid">
+      {["iPhone 15", "iPhone 14 Pro", "MacBook Air", "Macbook Pro", "iPad Air", "Browser"].map((m) => (
+        <button key={m} className="mockup-cell">
+          <div className="mockup-thumb" data-kind={m} />
+          <span>{m}</span>
+        </button>
+      ))}
+    </div>
+    <SectionLabel>FRAME COLOR</SectionLabel>
+    <div className="swatch-row">
+      {["#0F0E1A", "#3C3489", "#AFA9EC", "#EEEDFE", "#1D9E75", "#BA7517"].map((c) => (
+        <div key={c} className="swatch-sm" style={{ background: c }} />
+      ))}
+    </div>
+  </div>
+);
+
+// --- AI PANEL ---
+const AiPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>AI</PanelTitle>
+    <SectionLabel>DESCRIBE WHAT YOU WANT</SectionLabel>
+    <textarea className="ai-textarea" defaultValue="Make this screenshot pop with a teal gradient background and 3D tilt." />
+    <button className="btn btn-primary btn-block"><IconSparkle size={13} /> Generate</button>
+    <SectionLabel>QUICK ACTIONS</SectionLabel>
+    <div className="ai-quick">
+      {["Bg from image", "Caption it", "Match brand", "Add motion"].map((q) => (
+        <button key={q} className="ai-chip">{q}</button>
+      ))}
+    </div>
+  </div>
+);
+
+// --- UPLOADS PANEL ---
+const UploadsPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>UPLOADS</PanelTitle>
+    <button className="btn btn-primary btn-block"><IconUpload size={13} /> Upload from device</button>
+    <p className="panel-help">PNG, JPG, SVG, MP4 · up to 50MB</p>
+    <SectionLabel right={<a className="link-mini">View all</a>}>RECENT</SectionLabel>
+    <div className="upload-grid">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div key={i} className={"upload-thumb upload-thumb-" + (i % 3)} />
+      ))}
+    </div>
+  </div>
+);
+
+// --- TEMPLATES PANEL ---
+const TemplatesPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>TEMPLATES</PanelTitle>
+    <div className="template-search">
+      <input placeholder="Search templates…" />
+    </div>
+    <SectionLabel>CATEGORIES</SectionLabel>
+    <div className="ai-quick">
+      {["Launches", "Quotes", "Tweets", "Stats", "Promos"].map((q) => (
+        <button key={q} className="ai-chip">{q}</button>
+      ))}
+    </div>
+    <SectionLabel right={<span className="muted-mini">128</span>}>FEATURED</SectionLabel>
+    <div className="template-grid">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className={"template-card template-card-" + i} />
+      ))}
+    </div>
+  </div>
+);
+
+// --- HEADER PANEL ---
+const HeaderPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>HEADER</PanelTitle>
+    <SectionLabel>TITLE</SectionLabel>
+    <input className="text-input" defaultValue="Introducing Laybel" />
+    <SectionLabel>SUBTITLE</SectionLabel>
+    <input className="text-input" defaultValue="Static & motion graphics, made effortless." />
+    <SectionLabel>FONT</SectionLabel>
+    <button className="select-row">Bricolage Grotesque <IconChevDown size={12} /></button>
+    <Slider label="SIZE" value={48} unit="px" min={12} max={120} />
+    <Slider label="WEIGHT" value={600} min={300} max={900} />
+  </div>
+);
+
+// --- WATERMARK PANEL ---
+const WatermarkPanel = () => (
+  <div className="panel-body">
+    <PanelTitle>WATERMARK</PanelTitle>
+    <Toggle label="SHOW WATERMARK" on={true} description="Free plan shows 'Made with Laybel'." />
+    <SectionLabel>POSITION</SectionLabel>
+    <div className="align-grid">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <button key={i} className={"align-cell " + (i === 8 ? "align-active" : "")}><span /></button>
+      ))}
+    </div>
+    <Slider label="OPACITY" value={80} unit="%" />
+    <button className="btn btn-ghost btn-block"><IconLock size={12} /> Remove watermark (PRO)</button>
+  </div>
+);
+
+// --- CUSTOMIZE PANEL ---
+const CustomizePanel = ({ onOpenModal }) => (
+  <div className="panel-body">
+    <PanelTitle>CUSTOMIZE</PanelTitle>
+    <p className="panel-desc">Tailor the sidebar and theme to fit your flow.</p>
+    <button className="btn btn-ghost btn-block" onClick={onOpenModal}>Customize Sidebar</button>
+    <SectionLabel>APPEARANCE</SectionLabel>
+    <Toggle on={true} label="DARK MODE" />
+    <Toggle on={true} label="SHOW DOTTED GRID" />
+    <Toggle label="REDUCE MOTION" />
+    <SectionLabel>HOTKEYS</SectionLabel>
+    <div className="hotkey-list">
+      <div className="hotkey-row"><span>Export</span><KeyBadge>⌘E</KeyBadge></div>
+      <div className="hotkey-row"><span>Copy</span><KeyBadge>⌘C</KeyBadge></div>
+      <div className="hotkey-row"><span>Paste</span><KeyBadge>⌘V</KeyBadge></div>
+      <div className="hotkey-row"><span>Undo</span><KeyBadge>⌘Z</KeyBadge></div>
+    </div>
+  </div>
+);
+
+Object.assign(window, {
+  PanelTitle, ProBadge, SectionLabel, Slider, Toggle, TabPill, KeyBadge, ColorSwatch, SelectedImageRow,
+  ImagesPanel, BackgroundPanel, AnnotationPanel, BorderPanel, ThreeDPanel, ShadowPanel,
+  PositionPanel, LayoutPanel, BrandsPanel, MotionPanel, MockupPanel, AiPanel, UploadsPanel,
+  TemplatesPanel, HeaderPanel, WatermarkPanel, CustomizePanel,
+});
+
+
+/* ====== overlays.jsx ====== */
+// Overlays: Canvas Size Picker, Export menu, Social Preview modal, Customize Sidebar modal,
+// Element Toolbar, Animation Timeline Bar.
+
+// --- CANVAS SIZE PICKER (top bar dropdown) ---
+const CanvasSizePicker = ({ onClose, current, setCurrent }) => {
+  const platforms = [
+    { name: "Instagram", icon: <IconBrandIG size={13} />, sizes: [
+      ["Post (Square)", "1080 × 1080"],
+      ["Story", "1080 × 1920"],
+      ["Reel Cover", "1080 × 1920"],
+      ["Carousel", "1080 × 1350"],
+    ]},
+    { name: "Twitter / X", icon: <IconBrandX size={13} />, sizes: [
+      ["In-stream", "1600 × 900"],
+      ["Card", "1200 × 628"],
+      ["Header", "1500 × 500"],
+    ]},
+    { name: "Bluesky", icon: <IconBrandBluesky size={13} />, sizes: [
+      ["Post", "1200 × 675"],
+      ["Profile", "3000 × 1000"],
+    ]},
+    { name: "LinkedIn", icon: <IconBrandLI size={13} />, sizes: [
+      ["Post", "1200 × 1200"],
+      ["Article", "1920 × 1080"],
+      ["Banner", "1584 × 396"],
+    ]},
+    { name: "Facebook", icon: <IconBrandFB size={13} />, sizes: [
+      ["Post", "1200 × 630"],
+      ["Cover", "820 × 312"],
+    ]},
+    { name: "YouTube", icon: <IconBrandYT size={13} />, sizes: [
+      ["Thumbnail", "1280 × 720"],
+      ["Channel art", "2560 × 1440"],
+    ]},
+    { name: "Dribbble", icon: <IconBrandDribbble size={13} />, sizes: [
+      ["Shot", "1600 × 1200"],
+      ["Hi-res", "2400 × 1800"],
+    ]},
+    { name: "Product Hunt", icon: <IconBrandPH size={13} />, sizes: [
+      ["Gallery", "2400 × 1350"],
+      ["Thumbnail", "240 × 240"],
+    ]},
+  ];
+
+  return (
+    <div className="size-picker">
+      <div className="size-picker-grid">
+        {platforms.map((p) => (
+          <div key={p.name} className="size-platform">
+            <div className="size-platform-head">
+              <span className="size-platform-ic">{p.icon}</span>
+              <span>{p.name}</span>
+            </div>
+            <div className="size-platform-list">
+              {p.sizes.map(([label, dim]) => (
+                <button
+                  key={label}
+                  className={"size-row " + (current === dim ? "size-row-active" : "")}
+                  onClick={() => { setCurrent(dim); onClose(); }}
+                >
+                  <span>{label}</span>
+                  <span className="size-dim">{dim}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="size-picker-footer">
+        <div className="size-footer-left">
+          <button className="btn btn-ghost btn-sm">More size presets</button>
+          <button className="btn-text">+ Create size preset</button>
+        </div>
+        <div className="size-footer-mid">
+          <label className="dim-input"><span>W</span><input defaultValue="2400" /></label>
+          <label className="dim-input"><span>H</span><input defaultValue="1350" /></label>
+          <button className="icon-btn icon-btn-sm"><IconLink size={12} /></button>
+          <div className="scale-pills">
+            <span className="scale-label">SCALE</span>
+            {["0.5×", "1×", "2×", "3×"].map((s) => (
+              <button key={s} className={"scale-btn " + (s === "1×" ? "scale-active" : "")}>{s}</button>
+            ))}
+          </div>
+        </div>
+        <div className="size-footer-right">
+          <button className="btn btn-primary btn-sm">Fit canvas to image</button>
+          <label className="check-row">
+            <input type="checkbox" defaultChecked /> Keep equal padding around
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- EXPORT MENU ---
+const ExportMenu = ({ onClose }) => {
+  const [adv, setAdv] = React.useState(false);
+  return (
+    <div className="export-menu">
+      <div className="export-head">EXPORT OPTIONS</div>
+      <label className="export-check">
+        <input type="checkbox" /> <span>Remove watermark</span> <ProBadge small />
+      </label>
+      <label className="export-check">
+        <input type="checkbox" /> <span>Remove background</span> <ProBadge small />
+      </label>
+      <div className="export-divider" />
+      <button className="export-row">
+        <IconDownload size={14} /> <span>Download PNG</span> <KeyBadge>⌘B</KeyBadge>
+      </button>
+      <button className="export-row">
+        <IconDownload size={14} /> <span>Download JPG</span>
+      </button>
+      <button className="export-row">
+        <IconDownload size={14} /> <span>Download WebP</span>
+      </button>
+      <button className="export-row">
+        <IconDownload size={14} /> <span>Download PDF</span>
+      </button>
+      <div className="export-divider" />
+      <button className="export-row">
+        <IconMotion size={14} /> <span>Download GIF</span>
+      </button>
+      <button className="export-row">
+        <IconMotion size={14} /> <span>Download MP4</span> <ProBadge small />
+      </button>
+      <button className="export-row">
+        <IconMotion size={14} /> <span>Download Lottie / JSON</span> <ProBadge small />
+      </button>
+      <div className="export-divider" />
+      <button className="export-row">
+        <IconClipboard size={14} /> <span>Copy to clipboard</span> <KeyBadge>⌘C</KeyBadge>
+      </button>
+      <button className="export-adv" onClick={() => setAdv(!adv)}>
+        ADVANCE OPTIONS <IconChevDown size={11} style={{ transform: adv ? "rotate(180deg)" : "none" }} />
+      </button>
+      {adv && (
+        <div className="export-adv-body">
+          <div className="hotkey-row"><span>Scale</span><KeyBadge>2×</KeyBadge></div>
+          <div className="hotkey-row"><span>Quality</span><KeyBadge>90%</KeyBadge></div>
+          <div className="hotkey-row"><span>FPS (motion)</span><KeyBadge>30</KeyBadge></div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- SOCIAL PREVIEW MODAL ---
+const SocialPreviewModal = ({ onClose }) => {
+  const [platform, setPlatform] = React.useState("LinkedIn");
+  const [dark, setDark] = React.useState(false);
+  return (
+    <div className="modal-scrim" onClick={onClose}>
+      <div className={"modal modal-preview " + (dark ? "preview-dark" : "")} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <div className="modal-head-left">
+            <span className="modal-head-label">Preview on</span>
+            <button className="platform-pill">
+              <IconBrandLI size={12} /> {platform} <IconChevDown size={11} />
+            </button>
+          </div>
+          <div className="modal-head-right">
+            <div className="seg-toggle seg-sm">
+              <button className={"seg-btn " + (!dark ? "seg-active" : "")} onClick={() => setDark(false)}><IconSun size={12} /></button>
+              <button className={"seg-btn " + (dark ? "seg-active" : "")} onClick={() => setDark(true)}><IconMoon size={12} /></button>
+            </div>
+            <div className="seg-toggle seg-sm">
+              <button className="seg-btn">−</button>
+              <button className="seg-btn">+</button>
+            </div>
+            <button className="icon-btn" onClick={onClose}><IconClose size={13} /></button>
+          </div>
+        </div>
+        <div className="modal-body">
+          <div className="social-card">
+            <div className="social-head">
+              <div className="social-avatar" />
+              <div>
+                <div className="social-name">Marina Castillo</div>
+                <div className="social-meta">Founder · Vela Labs · 1d</div>
+              </div>
+            </div>
+            <p className="social-caption">Shipping something we've been quietly cooking for months. It changes how we think about graphics. Sneak peek ↓</p>
+            <div className="social-image">
+              <div className="social-image-inner" />
+              <div className="social-image-label">your design</div>
+            </div>
+            <div className="social-actions">
+              <span>👍 142</span><span>💬 18</span><span>↗ 9</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- CUSTOMIZE SIDEBAR MODAL ---
+const CustomizeSidebarModal = ({ onClose, tools, toggleVisible }) => (
+  <div className="modal-scrim" onClick={onClose}>
+    <div className="modal modal-customize" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-head">
+        <div className="modal-head-left">
+          <span className="modal-title">Customize Sidebar</span>
+          <IconInfo size={13} className="muted-ic" />
+        </div>
+        <button className="icon-btn" onClick={onClose}><IconClose size={13} /></button>
+      </div>
+      <p className="modal-desc">Drag to reorder. Hide tools you rarely use to keep the rail focused.</p>
+      <div className="modal-body modal-body-list">
+        {tools.map((t) => (
+          <div key={t.key} className="customize-row">
+            <span className="drag-handle"><IconDragHandle size={14} /></span>
+            <span className="customize-ic">{t.icon}</span>
+            <span className="customize-name">{t.label}</span>
+            {t.key === "motion" && <span className="excl-pill">Laybel exclusive</span>}
+            <button className="icon-btn" onClick={() => toggleVisible(t.key)}>
+              {t.hidden ? <IconEyeOff size={13} /> : <IconEye size={13} />}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// --- ELEMENT TOOLBAR (floating above selected element) ---
+const ElementToolbar = ({ x, y, onAction }) => (
+  <div className="elem-toolbar" style={{ left: x, top: y }}>
+    <button className="elem-btn elem-active">
+      <IconSparkle size={13} /> <span>AI Tools</span> <IconChevDown size={10} />
+    </button>
+    <div className="elem-sep" />
+    <button className="elem-btn"><IconCrop size={13} /> Crop</button>
+    <button className="elem-btn"><IconHighlight size={13} /> Highlight</button>
+    <button className="elem-btn"><IconPadding size={13} /> Padding</button>
+    <button className="elem-btn"><IconBlur size={13} /> Blur</button>
+    <div className="elem-sep" />
+    <button className="elem-btn elem-icon"><IconDots size={13} /></button>
+    <button className="elem-btn elem-icon" onClick={() => onAction && onAction("close")}><IconClose size={13} /></button>
+  </div>
+);
+
+// --- ANIMATION TIMELINE BAR ---
+const TimelineBar = ({
+  playing, setPlaying, time, setTime, duration, looping, setLooping,
+  layers, selectedLayer, setSelectedLayer, collapsed, setCollapsed,
+}) => {
+  const trackRef = React.useRef(null);
+
+  const onScrub = (e) => {
+    const rect = trackRef.current.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setTime(pct * duration);
+  };
+
+  const onScrubStart = (e) => {
+    onScrub(e);
+    const move = (ev) => onScrub(ev);
+    const up = () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  };
+
+  if (collapsed) {
+    return (
+      <div className="timeline-collapsed" onClick={() => setCollapsed(false)}>
+        <IconMotion size={12} />
+        <span>Motion Timeline</span>
+        <IconChevUp size={12} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="timeline-bar">
+      <div className="tl-left">
+        <button className="tl-play" onClick={() => setPlaying(!playing)}>
+          {playing ? <IconPause size={14} /> : <IconPlay size={14} />}
+        </button>
+        <div className="tl-time">
+          <span className="tl-time-now">{time.toFixed(1)}s</span>
+          <span className="tl-time-sep">/</span>
+          <span className="tl-time-total">{duration.toFixed(1)}s</span>
+        </div>
+        <button className={"tl-loop " + (looping ? "tl-loop-on" : "")} onClick={() => setLooping(!looping)} title="Loop">
+          <IconLoop size={13} />
+        </button>
+      </div>
+
+      <div className="tl-center">
+        <div className="tl-ruler">
+          {Array.from({ length: Math.floor(duration) + 1 }).map((_, i) => (
+            <div key={i} className="tl-tick" style={{ left: `${(i / duration) * 100}%` }}>
+              <span>{i}s</span>
+            </div>
+          ))}
+        </div>
+        <div className="tl-tracks" ref={trackRef} onMouseDown={onScrubStart}>
+          {layers.map((l, i) => {
+            const start = (l.start / duration) * 100;
+            const width = ((l.end - l.start) / duration) * 100;
+            return (
+              <div key={l.id} className="tl-track">
+                <div
+                  className={"tl-clip tl-clip-" + (i % 4) + (selectedLayer === l.id ? " tl-clip-sel" : "")}
+                  style={{ left: start + "%", width: width + "%" }}
+                  onMouseDown={(e) => { e.stopPropagation(); setSelectedLayer(l.id); }}
+                >
+                  <div className="tl-clip-handle tl-clip-handle-l" />
+                  <span className="tl-clip-label">{l.label}</span>
+                  <span className="tl-clip-tag">{l.anim}</span>
+                  <div className="tl-clip-handle tl-clip-handle-r" />
+                </div>
+              </div>
+            );
+          })}
+          <div className="tl-playhead" style={{ left: `${(time / duration) * 100}%` }}>
+            <div className="tl-playhead-cap" />
+            <div className="tl-playhead-line" />
+          </div>
+        </div>
+      </div>
+
+      <div className="tl-right">
+        <span className="tl-fps">30 FPS</span>
+        <button className="icon-btn" onClick={() => setCollapsed(true)} title="Collapse">
+          <IconChevDown size={13} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, {
+  CanvasSizePicker, ExportMenu, SocialPreviewModal, CustomizeSidebarModal, ElementToolbar, TimelineBar,
+});
+
+
+/* ====== app.jsx ====== */
+// Laybel app shell — top bar, left rail, panel host, canvas, timeline.
+
+const TOOLS = [
+  { key: "ai", label: "AI", icon: <IconSparkle size={18} /> },
+  { key: "uploads", label: "Uploads", icon: <IconUpload size={18} /> },
+  { key: "templates", label: "Templates", icon: <IconGrid size={18} /> },
+  { key: "images", label: "Images", icon: <IconImage size={18} /> },
+  { key: "annotation", label: "Annotation", icon: <IconPen size={18} /> },
+  { key: "background", label: "Background", icon: <IconPattern size={18} /> },
+  { key: "mockup", label: "Mockup", icon: <IconPhone size={18} /> },
+  { key: "position", label: "Position", icon: <IconCrosshair size={18} /> },
+  { key: "3d", label: "3D", icon: <IconCube size={18} /> },
+  { key: "shadow", label: "Shadow", icon: <IconShadow size={18} /> },
+  { key: "border", label: "Border", icon: <IconBorder size={18} /> },
+  { key: "layout", label: "Layout", icon: <IconLayout size={18} />, pro: true },
+  { key: "header", label: "Header", icon: <IconType size={18} /> },
+  { key: "watermark", label: "Watermark", icon: <IconStamp size={18} /> },
+  { key: "brands", label: "Brands", icon: <IconBrand size={18} />, pro: true },
+  { key: "motion", label: "Motion", icon: <IconMotion size={18} />, exclusive: true },
+];
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "elementSelected": false,
+  "showTimeline": true,
+  "showProBadges": true,
+  "gridDensity": "normal",
+  "showWatermark": true
+}/*EDITMODE-END*/;
+
+function LaybelApp() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  const [activeTool, setActiveTool] = React.useState("images");
+  const [hoverTool, setHoverTool] = React.useState(null);
+  const [sizePickerOpen, setSizePickerOpen] = React.useState(false);
+  const [exportOpen, setExportOpen] = React.useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = React.useState(false);
+  const [customizeModalOpen, setCustomizeModalOpen] = React.useState(false);
+  const [canvasSize, setCanvasSize] = React.useState("2400 × 1350");
+  const [zoom, setZoom] = React.useState(62);
+
+  // Motion / timeline state
+  const [playing, setPlaying] = React.useState(false);
+  const [time, setTime] = React.useState(0);
+  const duration = 3.2;
+  const [looping, setLooping] = React.useState(true);
+  const [tlCollapsed, setTlCollapsed] = React.useState(false);
+  const [selectedLayer, setSelectedLayer] = React.useState("title");
+
+  // When paused at the start (time=0), show the finished composition so the
+  // user sees the final design. Once they hit play or scrub, show real time.
+  const effectiveTime = (!playing && time === 0) ? duration : time;
+
+  const togglePlay = () => {
+    if (playing) {
+      setPlaying(false);
+    } else {
+      setTime(0);
+      setPlaying(true);
+    }
+  };
+
+  // Motion panel state
+  const [entrance, setEntrance] = React.useState("Slide Up");
+  const [exit, setExit] = React.useState("Fade Out");
+  const [mDuration, setMDuration] = React.useState(8); // tenths
+  const [mDelay, setMDelay] = React.useState(2);
+  const [easing, setEasing] = React.useState("Ease Out");
+
+  // Customize sidebar state
+  const [hiddenTools, setHiddenTools] = React.useState({});
+
+  const visibleTools = TOOLS.filter((t) => !hiddenTools[t.key]);
+
+  const layers = [
+    { id: "screenshot", label: "screenshot", anim: "Blur In", start: 0.0, end: 1.2 },
+    { id: "title", label: "title", anim: "Slide Up", start: 0.4, end: 1.8 },
+    { id: "label", label: "label", anim: "Pop", start: 0.9, end: 2.0 },
+    { id: "arrow", label: "arrow", anim: "Draw", start: 1.4, end: 2.4 },
+    { id: "badge", label: "badge", anim: "Fade In", start: 2.0, end: 3.0 },
+  ];
+
+  // Play loop
+  React.useEffect(() => {
+    if (!playing) return;
+    let raf, last = performance.now();
+    const tick = (now) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      setTime((t) => {
+        let nt = t + dt;
+        if (nt >= duration) {
+          if (looping) nt = nt % duration;
+          else { setPlaying(false); nt = duration; }
+        }
+        return nt;
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, looping, duration]);
+
+  const closeAllOverlays = () => {
+    setSizePickerOpen(false);
+    setExportOpen(false);
+  };
+
+  // ESC closes modals
+  React.useEffect(() => {
+    const k = (e) => { if (e.key === "Escape") { setPreviewModalOpen(false); setCustomizeModalOpen(false); closeAllOverlays(); } };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, []);
+
+  const renderPanel = () => {
+    switch (activeTool) {
+      case "ai": return <AiPanel />;
+      case "uploads": return <UploadsPanel />;
+      case "templates": return <TemplatesPanel />;
+      case "images": return <ImagesPanel />;
+      case "annotation": return <AnnotationPanel />;
+      case "background": return <BackgroundPanel />;
+      case "mockup": return <MockupPanel />;
+      case "position": return <PositionPanel />;
+      case "3d": return <ThreeDPanel />;
+      case "shadow": return <ShadowPanel />;
+      case "border": return <BorderPanel />;
+      case "layout": return <LayoutPanel />;
+      case "header": return <HeaderPanel />;
+      case "watermark": return <WatermarkPanel />;
+      case "brands": return <BrandsPanel />;
+      case "motion": return <MotionPanel
+        elementSelected={tweaks.elementSelected}
+        entrance={entrance} setEntrance={setEntrance}
+        exit={exit} setExit={setExit}
+        duration={mDuration} setDuration={setMDuration}
+        delay={mDelay} setDelay={setMDelay}
+        easing={easing} setEasing={setEasing}
+      />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="laybel-app" data-grid={tweaks.gridDensity} data-no-pro={tweaks.showProBadges ? undefined : "true"}>
+      {/* TOP BAR */}
+      <header className="topbar">
+        <div className="topbar-left">
+          <div className="logo">
+            <div className="logo-mark">
+              <div className="logo-tag logo-tag-back" />
+              <div className="logo-tag logo-tag-mid" />
+              <div className="logo-tag logo-tag-front" />
+            </div>
+            <span className="logo-word">Laybel</span>
+          </div>
+          <span className="free-pill">FREE</span>
+        </div>
+
+        <div className="topbar-center">
+          <div className="topbar-tools">
+            <button className="icon-btn" title="Undo"><IconUndo size={14} /></button>
+            <button className="icon-btn" title="Redo"><IconRedo size={14} /></button>
+            <div className="topbar-sep" />
+            <button className="icon-btn" title="Preview" onClick={() => setPreviewModalOpen(true)}><IconEye size={14} /></button>
+            <div className="topbar-sep" />
+            <button className={"size-selector " + (sizePickerOpen ? "size-selector-open" : "")} onClick={() => { setSizePickerOpen(!sizePickerOpen); setExportOpen(false); }}>
+              <span className="size-selector-val">{canvasSize} px</span>
+              <IconChevDown size={12} />
+            </button>
+          </div>
+          {sizePickerOpen && (
+            <div className="dropdown-anchor">
+              <CanvasSizePicker
+                current={canvasSize}
+                setCurrent={setCanvasSize}
+                onClose={() => setSizePickerOpen(false)}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="topbar-right">
+          <button className="btn btn-ghost btn-sm">Save as Template</button>
+          <button className={"btn btn-primary btn-sm " + (exportOpen ? "btn-active" : "")} onClick={() => { setExportOpen(!exportOpen); setSizePickerOpen(false); }}>
+            <IconDownload size={13} /> Export
+          </button>
+          {exportOpen && (
+            <div className="export-anchor">
+              <ExportMenu onClose={() => setExportOpen(false)} />
+            </div>
+          )}
+          <button className="icon-btn icon-btn-bell" title="Notifications">
+            <IconBell size={14} />
+            <span className="bell-dot" />
+          </button>
+          <button className="btn btn-teal-strong btn-sm">
+            Sign In <IconArrowRight size={12} />
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN */}
+      <div className="laybel-main">
+        {/* LEFT RAIL */}
+        <nav className="rail">
+          <div className="rail-scroll">
+            {visibleTools.map((t) => (
+              <button
+                key={t.key}
+                className={"rail-btn " + (activeTool === t.key ? "rail-btn-active" : "")}
+                onMouseEnter={() => setHoverTool(t.key)}
+                onMouseLeave={() => setHoverTool(null)}
+                onClick={() => setActiveTool(t.key)}
+              >
+                <span className="rail-ic">{t.icon}</span>
+                <span className="rail-lbl">{t.label}</span>
+                {t.pro && tweaks.showProBadges && <span className="rail-pro-dot" />}
+                {t.exclusive && <span className="rail-excl" />}
+              </button>
+            ))}
+          </div>
+          <div className="rail-bottom">
+            <button className="rail-fab" title="Add">
+              <IconPlus size={18} />
+            </button>
+            <div className="rail-divider" />
+            <button className={"rail-btn rail-btn-customize " + (activeTool === "customize" ? "rail-btn-active" : "")} onClick={() => setActiveTool("customize")}>
+              <span className="rail-ic"><IconGear size={18} /></span>
+              <span className="rail-lbl">Customize</span>
+            </button>
+          </div>
+        </nav>
+
+        {/* PANEL */}
+        <aside className="panel">
+          {activeTool === "customize"
+            ? <CustomizePanel onOpenModal={() => setCustomizeModalOpen(true)} />
+            : renderPanel()}
+        </aside>
+
+        {/* CANVAS AREA */}
+        <main className="canvas-area">
+          <div className="canvas-wrap">
+            <Canvas
+              size={canvasSize}
+              zoom={zoom}
+              elementSelected={tweaks.elementSelected}
+              showWatermark={tweaks.showWatermark}
+              time={effectiveTime}
+              duration={duration}
+              layers={layers}
+            />
+          </div>
+
+          {/* zoom controls */}
+          <div className="zoom-controls">
+            <button className="icon-btn-soft" onClick={() => setZoom(Math.max(20, zoom - 10))}>−</button>
+            <span className="zoom-val">{zoom}%</span>
+            <button className="icon-btn-soft" onClick={() => setZoom(Math.min(200, zoom + 10))}>+</button>
+          </div>
+
+          {/* feedback / shortcuts hint */}
+          <div className="canvas-hints">
+            <a className="hint-link">Share Feedback</a>
+            <div className="hint-shortcuts">
+              <KeyBadge>⌘V</KeyBadge> paste
+              <KeyBadge>⌘E</KeyBadge> export
+              <KeyBadge>Space</KeyBadge> pan
+            </div>
+          </div>
+
+          {/* timeline */}
+          {tweaks.showTimeline && (
+            <div className="timeline-wrap">
+              <TimelineBar
+                playing={playing} setPlaying={togglePlay}
+                time={time} setTime={(t) => { setPlaying(false); setTime(t); }}
+                duration={duration}
+                looping={looping} setLooping={setLooping}
+                layers={layers}
+                selectedLayer={selectedLayer}
+                setSelectedLayer={setSelectedLayer}
+                collapsed={tlCollapsed}
+                setCollapsed={setTlCollapsed}
+              />
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* MODALS */}
+      {previewModalOpen && <SocialPreviewModal onClose={() => setPreviewModalOpen(false)} />}
+      {customizeModalOpen && (
+        <CustomizeSidebarModal
+          onClose={() => setCustomizeModalOpen(false)}
+          tools={TOOLS.map((t) => ({ ...t, hidden: !!hiddenTools[t.key] }))}
+          toggleVisible={(k) => setHiddenTools((h) => ({ ...h, [k]: !h[k] }))}
+        />
+      )}
+
+      {/* SCRIM for top-bar dropdowns */}
+      {(sizePickerOpen || exportOpen) && (
+        <div className="overlay-scrim" onClick={() => { setSizePickerOpen(false); setExportOpen(false); }} />
+      )}
+
+      {/* TWEAKS PANEL */}
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Canvas state">
+          <TweakToggle label="Element selected on canvas" value={tweaks.elementSelected} onChange={(v) => setTweak("elementSelected", v)} />
+          <TweakToggle label="Show watermark" value={tweaks.showWatermark} onChange={(v) => setTweak("showWatermark", v)} />
+          <TweakRadio label="Dotted grid" value={tweaks.gridDensity} options={["off", "normal", "dense"]} onChange={(v) => setTweak("gridDensity", v)} />
+        </TweakSection>
+        <TweakSection label="Chrome">
+          <TweakToggle label="Show motion timeline bar" value={tweaks.showTimeline} onChange={(v) => setTweak("showTimeline", v)} />
+          <TweakToggle label="Show PRO badges" value={tweaks.showProBadges} onChange={(v) => setTweak("showProBadges", v)} />
+        </TweakSection>
+        <TweakSection label="Quick states">
+          <TweakButton label="Open canvas size picker" onClick={() => setSizePickerOpen(true)} />
+          <TweakButton label="Open export menu" onClick={() => setExportOpen(true)} />
+          <TweakButton label="Open social preview" onClick={() => setPreviewModalOpen(true)} />
+          <TweakButton label="Open customize sidebar" onClick={() => setCustomizeModalOpen(true)} />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+// --- CANVAS (the artboard area) ---
+function Canvas({ size, zoom, elementSelected, showWatermark, time, duration, layers }) {
+  // Parse size into width/height to compute aspect ratio
+  const [w, h] = (size.match(/\d+/g) || ["2400", "1350"]).map(Number);
+  const aspect = w / h;
+  const baseW = Math.min(820, 640 * (zoom / 62));
+  const cw = baseW;
+  const ch = baseW / aspect;
+
+  // Find the title layer for animated demo
+  const titleLayer = layers.find((l) => l.id === "title") || { start: 0.4, end: 1.8 };
+  const titleProgress = Math.max(0, Math.min(1, (time - titleLayer.start) / (titleLayer.end - titleLayer.start)));
+  const screenshotLayer = layers.find((l) => l.id === "screenshot") || { start: 0, end: 1.2 };
+  const ssProgress = Math.max(0, Math.min(1, (time - screenshotLayer.start) / (screenshotLayer.end - screenshotLayer.start)));
+  const arrowLayer = layers.find((l) => l.id === "arrow") || { start: 1.4, end: 2.4 };
+  const arrowProgress = Math.max(0, Math.min(1, (time - arrowLayer.start) / (arrowLayer.end - arrowLayer.start)));
+
+  // Element toolbar position above the artboard
+  const toolbarTop = 12; // px from top of canvas-wrap
+
+  return (
+    <div className="canvas-stage">
+      <div className="canvas-artboard" style={{ width: cw, height: ch }}>
+        <div className="artboard-glow" />
+        {/* Empty state */}
+        {!elementSelected && (
+          <div className="artboard-empty">
+            <div className="empty-iconring">
+              <IconUpload size={22} />
+            </div>
+            <div className="empty-title">Drop an image to begin</div>
+            <div className="empty-sub">or paste <KeyBadge>⌘V</KeyBadge> from your clipboard</div>
+            <div className="empty-orbtn">
+              <span className="empty-or">or</span>
+            </div>
+            <button className="btn btn-primary btn-sm">
+              <IconImage size={13} /> Browse templates
+            </button>
+          </div>
+        )}
+
+        {/* Selected element demo */}
+        {elementSelected && (
+          <div className="artboard-content">
+            <div
+              className="art-screenshot"
+              style={{
+                opacity: ssProgress,
+                filter: `blur(${(1 - ssProgress) * 16}px)`,
+                transform: `scale(${0.96 + ssProgress * 0.04})`,
+              }}
+            >
+              <div className="art-screenshot-chrome">
+                <span /><span /><span />
+              </div>
+              <div className="art-screenshot-body">
+                <div className="art-ss-row art-ss-row-h" />
+                <div className="art-ss-row art-ss-row-1" />
+                <div className="art-ss-row art-ss-row-2" />
+                <div className="art-ss-row art-ss-row-3" />
+                <div className="art-ss-grid">
+                  <div /><div /><div />
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="art-title"
+              style={{
+                opacity: titleProgress,
+                transform: `translateY(${(1 - titleProgress) * 22}px)`,
+              }}
+            >
+              Ship visuals,
+              <br />not pixels.
+            </div>
+
+            <svg
+              className="art-arrow"
+              viewBox="0 0 200 120"
+              style={{ opacity: arrowProgress > 0.05 ? 1 : 0 }}
+            >
+              <path
+                d="M10 100 Q 60 20, 170 30"
+                fill="none"
+                stroke="#1D9E75"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="260"
+                strokeDashoffset={260 - 260 * arrowProgress}
+              />
+              <path
+                d="M160 22 L 172 30 L 162 42"
+                fill="none"
+                stroke="#1D9E75"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={arrowProgress > 0.85 ? 1 : 0}
+              />
+            </svg>
+
+            <div className="art-label" style={{ opacity: arrowProgress > 0.4 ? 1 : 0 }}>
+              one-click hero
+            </div>
+
+            {/* selection bounding box */}
+            <div className="art-select-box">
+              <span className="sel-handle sel-tl" /><span className="sel-handle sel-tr" />
+              <span className="sel-handle sel-bl" /><span className="sel-handle sel-br" />
+              <span className="sel-handle sel-t" /><span className="sel-handle sel-b" />
+              <span className="sel-handle sel-l" /><span className="sel-handle sel-r" />
+            </div>
+          </div>
+        )}
+
+        {showWatermark && (
+          <div className="art-watermark">Made with Laybel</div>
+        )}
+
+        <div className="art-size-tag">{w} × {h}</div>
+      </div>
+
+      {/* element toolbar above artboard */}
+      {elementSelected && (
+        <div className="elem-toolbar-wrap" style={{ top: toolbarTop }}>
+          <ElementToolbar />
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<LaybelApp />);
+
+
+  </script>
+
+
+</body></html>
