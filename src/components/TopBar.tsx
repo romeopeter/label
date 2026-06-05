@@ -26,7 +26,7 @@ export const TopBar = ({ onPreview }: Props) => {
       {/* LEFT */}
       <div className="flex items-center gap-2.5">
         <div className="flex items-center gap-2 px-1.5 py-1">
-          <img src="/logo.svg" alt="Laybel logo" className="h-5 w-5.5" />
+          <img src="/icons/logo.svg" alt="Laybel logo" className="h-5 w-5.5" />
           <span className="font-display text-base font-bold tracking-[-0.01em] text-text">
             Laybel
           </span>
@@ -56,7 +56,7 @@ export const TopBar = ({ onPreview }: Props) => {
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[12px] font-medium tabular-nums text-text transition-colors hover:bg-p-200/[0.08] data-[state=open]:bg-p-200/[0.08]"
+                className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[12px] font-medium tabular-nums text-text transition-colors hover:bg-p-200/8 data-[state=open]:bg-p-200/8"
               >
                 <span className="font-mono text-[11.5px]">
                   {canvas.width} × {canvas.height} px
