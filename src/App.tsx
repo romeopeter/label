@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Upload, Minus, Plus } from "lucide-react";
+import { Upload, Minus, Plus, Delete, Command } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { TopBar } from "@/components/TopBar";
 import { LeftRail } from "@/components/LeftRail";
@@ -10,8 +10,12 @@ import { CustomizeSidebarModal } from "@/components/CustomizeSidebarModal";
 import { KeyBadge } from "@/components/ui/key-badge";
 import { importImageFile } from "@/lib/importers";
 import {
-  exportCanvas, copyCanvasToClipboard, renderCanvasDataURL,
+  exportCanvas,
+  copyCanvasToClipboard,
+  renderCanvasDataURL,
 } from "@/lib/exporters";
+
+/* ------------------------------------------------------------------------------------------ */
 
 export const App = () => {
   const activeTool = useEditor((s) => s.activeTool);
@@ -39,7 +43,10 @@ export const App = () => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      const inField = !!target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
+
+      const inField =
+        !!target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
       if (inField) return;
 
       if ((e.metaKey || e.ctrlKey) && e.key === "e") {
@@ -59,12 +66,14 @@ export const App = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Upload image on drag
   const onDragOver = (e: React.DragEvent) => {
     if (Array.from(e.dataTransfer.types).includes("Files")) {
       e.preventDefault();
       setDragOver(true);
     }
   };
+
   const onDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
@@ -85,36 +94,44 @@ export const App = () => {
       <div className="flex min-h-0 flex-1">
         <LeftRail hiddenTools={hiddenTools} />
 
-        <aside className="z-10 w-[290px] shrink-0 overflow-y-auto border-r border-hairline bg-panel scrollbar-thin">
-          <PanelHost activeTool={activeTool} onOpenCustomizeModal={() => setCustomizeOpen(true)} />
+        <aside className="z-10 w-72.5 shrink-0 overflow-y-auto border-r border-hairline bg-panel scrollbar-thin">
+          <PanelHost
+            activeTool={activeTool}
+            onOpenCustomizeModal={() => setCustomizeOpen(true)}
+          />
         </aside>
 
         <main className="relative min-w-0 flex-1 overflow-hidden bg-canvas">
-          <div className="bg-dot-grid absolute inset-0 bottom-20 flex items-center justify-center">
+          <div className="size-full bg-dot-grid absolute inset-0 bottom-20 flex items-center justify-center">
             <CanvasStage />
 
             {elements.length === 0 && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2.5 text-text-muted">
                 <div className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-p-50 text-p-600">
-                  <Upload className="h-[22px] w-[22px]" />
+                  <Upload className="h-5.5 w-5.5" />
                 </div>
-                <div className="font-display text-[22px] font-semibold tracking-[-0.01em] text-p-800">
-                  Drop an image to begin
+
+                <div className="font-display text-[18px] font-semibold tracking-[-0.01em] text-gray-100 cursor-pointer!">
+                  <span>Drag image to drop</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[13px] text-p-600">
-                  or paste <KeyBadge className="border-p-100 bg-p-50 text-p-600">⌘V</KeyBadge> from your clipboard
+
+                <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
+                  paste{" "}
+                  <KeyBadge className="border-p-100 bg-p-50 text-p-600">
+                    ⌘V
+                  </KeyBadge>{" "}
+                  from your clipboard
                 </div>
               </div>
             )}
           </div>
 
           {dragOver && (
-            <div className="pointer-events-none absolute inset-3 z-50 flex items-center justify-center rounded-2xl border-2 border-dashed border-p-300 bg-p-600/[0.08] text-sm font-medium text-text">
-              Drop image to add to canvas
-            </div>
+            <div className="pointer-events-none absolute inset-3 z-50 flex items-center justify-center rounded-2xl border-2 border-dashed border-p-300 bg-p-600/8 text-sm font-medium text-text" />
           )}
 
-          <div className="absolute bottom-[92px] left-4 z-[6] flex items-center gap-1 rounded-lg border border-hairline bg-panel p-1">
+          {/* Zoom buttons */}
+          <div className="absolute bottom-23 left-4 z-6 flex items-center gap-1 rounded-lg border border-hairline bg-panel p-1">
             <button
               type="button"
               title="Zoom out"
@@ -124,7 +141,11 @@ export const App = () => {
             >
               <Minus className="h-3 w-3" />
             </button>
-            <span className="min-w-[32px] px-1 text-center font-mono text-[11px] text-text">{zoom}%</span>
+
+            <span className="min-w-8 px-1 text-center font-mono text-[11px] text-text">
+              {zoom}%
+            </span>
+
             <button
               type="button"
               title="Zoom in"
@@ -136,17 +157,27 @@ export const App = () => {
             </button>
           </div>
 
-          <div className="absolute bottom-[92px] right-4 z-[6] flex items-center gap-3.5 whitespace-nowrap">
-            <button
-              type="button"
-              className="cursor-pointer whitespace-nowrap text-[11.5px] text-text-muted hover:text-text"
-            >
-              Share Feedback
-            </button>
+          {/* Paste, Export and Delete */}
+          <div className="absolute bottom-23 right-4 z-6 flex items-center gap-3.5 whitespace-nowrap">
             <div className="flex items-center gap-1.5 text-[10.5px] text-text-faint">
-              <KeyBadge className="px-1.5 py-0.5 text-[9.5px]">⌘V</KeyBadge> paste
-              <KeyBadge className="px-1.5 py-0.5 text-[9.5px]">⌘E</KeyBadge> export
-              <KeyBadge className="px-1.5 py-0.5 text-[9.5px]">⌫</KeyBadge> delete
+              <KeyBadge className="size-fit px-1.5 py-0.5">
+                <div className="text-[10.5px] flex items-center justify-center">
+                  <Command size={10.5} />V
+                </div>
+              </KeyBadge>{" "}
+              paste
+              <KeyBadge className="size-fit px-1.5 py-0.5">
+                <div className="text-[10.5px] flex items-center justify-center">
+                  <Command size={10.5} />E
+                </div>
+              </KeyBadge>{" "}
+              export
+              <KeyBadge className="size-fit px-1.5 py-0.5">
+                <div className="text-[10.5px] flex item-center justify-center">
+                  <Delete size={10.5} />
+                </div>
+              </KeyBadge>{" "}
+              delete
             </div>
           </div>
         </main>
@@ -157,6 +188,7 @@ export const App = () => {
         onOpenChange={setPreviewOpen}
         previewDataUrl={previewDataUrl}
       />
+
       <CustomizeSidebarModal
         open={customizeOpen}
         onOpenChange={setCustomizeOpen}
@@ -166,4 +198,3 @@ export const App = () => {
     </div>
   );
 };
-
