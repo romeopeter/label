@@ -14,7 +14,7 @@ import {
   // Columns,
   Type,
   Stamp,
-  Award,
+  // Award,
   // Play,
   Settings,
   Plus,
