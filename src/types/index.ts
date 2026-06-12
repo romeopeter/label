@@ -46,6 +46,7 @@ export interface ImageElement extends BaseElement {
   src: string; // object URL or data URL
   deviceFrame: DeviceFrame;
   cornerRadius: number;
+  transform: string;
 }
 
 export interface TextElement extends BaseElement {
