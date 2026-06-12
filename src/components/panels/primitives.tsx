@@ -36,27 +36,50 @@ export const SectionLabel = ({
   </div>
 );
 
-export const PanelHelp = ({ children }: { children: ReactNode }) => (
-  <p className="my-1 flex flex-wrap items-center gap-1.5 text-[11.5px] leading-[1.5] text-text-faint">
+export const PanelHelp = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p
+    className={cn(
+      `my-1 flex flex-wrap items-center gap-1.5 text-[11.5px] leading-[1.5] text-text-faint`,
+      className,
+    )}
+  >
     {children}
   </p>
 );
 
-export const PanelDesc = ({ children, className }: { children: ReactNode, className?:string }) => (
-  <p className={`m-0 text-[11.5px] leading-normal text-text-muted ${className}`}>{children}</p>
+export const PanelDesc = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p
+    className={`m-0 text-[11.5px] leading-normal text-text-muted ${className}`}
+  >
+    {children}
+  </p>
 );
 
 export const PanelLink = ({
   children,
   onClick,
+  className
 }: {
   children: ReactNode;
   onClick?: () => void;
+  className?: string;
 }) => (
   <button
     type="button"
     onClick={onClick}
-    className="mb-1 mt-0.5 inline-flex items-center gap-1.5 text-[11.5px] text-t-200 hover:text-t-400"
+    className="mb-1 mt-0.5 inline-flex items-center gap-1.5 text-[11.5px] text-t-200 hover:text-t-400 cursor-pointer"
   >
     {children}
   </button>
@@ -68,10 +91,19 @@ export const MutedMini = ({ children }: { children: ReactNode }) => (
   </span>
 );
 
-export const LinkMini = ({ children }: { children: ReactNode }) => (
+export const LinkMini = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
   <button
     type="button"
-    className="cursor-pointer text-[10px] text-t-200 hover:text-t-400"
+    className={cn(
+      `cursor-pointer text-[10px] text-t-200 hover:text-t-400`,
+      className,
+    )}
   >
     {children}
   </button>
@@ -85,6 +117,7 @@ interface LabeledSliderProps {
   step?: number;
   unit?: string;
   leftIcon?: ReactNode;
+  className?: string;
   onChange?: (v: number) => void;
 }
 
@@ -96,6 +129,7 @@ export const LabeledSlider = ({
   max = 100,
   step = 1,
   leftIcon,
+  className,
   onChange,
 }: LabeledSliderProps) => (
   <div className="flex flex-col gap-1.5">
@@ -114,6 +148,7 @@ export const LabeledSlider = ({
       max={max}
       step={step}
       value={[value]}
+      className="cursor-pointer"
       onValueChange={([v]) => onChange?.(v)}
     />
   </div>
@@ -134,7 +169,7 @@ export const SwitchRow = ({
 }) => (
   <label className="flex cursor-pointer items-center justify-between gap-3 py-1.5">
     <div className="min-w-0 flex-1">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-p-200">
+      <div className="text-[10px] font-semibold uppercase tracking-widest text-p-200">
         {label}
       </div>
       {description && (
