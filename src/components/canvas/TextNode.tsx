@@ -7,7 +7,7 @@ interface Props {
   el: TextElement;
   selected: boolean;
   onSelect: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onRequestEdit: (el: TextElement) => void;
+  onRequestEdit?: (el: TextElement) => void;
 }
 
 export const TextNode = ({ el, onSelect, onRequestEdit }: Props) => {
@@ -33,15 +33,17 @@ export const TextNode = ({ el, onSelect, onRequestEdit }: Props) => {
       draggable
       onClick={onSelect}
       onTap={onSelect}
-      onDblClick={() => onRequestEdit(el)}
-      onDblTap={() => onRequestEdit(el)}
+      onDblClick={() => onRequestEdit && onRequestEdit(el)}
+      onDblTap={() => onRequestEdit && onRequestEdit(el)}
       onDragEnd={(e) => update(el.id, { x: e.target.x(), y: e.target.y() })}
       onTransformEnd={(e) => {
         const node = e.target;
         const sx = node.scaleX();
-        node.scaleX(1); node.scaleY(1);
+        node.scaleX(1);
+        node.scaleY(1);
         update(el.id, {
-          x: node.x(), y: node.y(),
+          x: node.x(),
+          y: node.y(),
           width: Math.max(20, el.width * sx),
           fontSize: Math.max(8, el.fontSize * sx),
           rotation: node.rotation(),
@@ -53,7 +55,13 @@ export const TextNode = ({ el, onSelect, onRequestEdit }: Props) => {
         width={el.width}
         fontSize={el.fontSize}
         fontFamily={el.fontFamily}
-        fontStyle={el.fontWeight >= 700 ? "bold" : el.fontWeight >= 500 ? "500" : "normal"}
+        fontStyle={
+          el.fontWeight >= 700
+            ? "bold"
+            : el.fontWeight >= 500
+              ? "500"
+              : "normal"
+        }
         fill={el.fill}
         align={el.align}
         lineHeight={el.lineHeight}
