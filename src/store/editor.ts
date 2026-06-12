@@ -117,7 +117,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       deviceFrame: null,
       cornerRadius: 8,
       shadow: { enabled: true, color: "rgba(0,0,0,0.45)", blur: 60, offsetX: 0, offsetY: 30 },
-      rotate3d: {enabled: true, axisValue:"0deg 0deg 0deg"}
+      transform: "rotate3d(0deg, 0deg, 0deg)"
     };
     set({ elements: [...elements, el], selectedIds: [el.id] });
     return el.id;
