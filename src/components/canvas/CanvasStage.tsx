@@ -140,7 +140,7 @@ export const CanvasStage = () => {
   };
 
   // Position and style the inline text editor overlay to match the Konva text element
-  const textareaStyle = useMemo<React.CSSProperties | null>(() => {
+  /*const textareaStyle = useMemo<React.CSSProperties | null>(() => {
     if (!editingText) return null;
     return {
       position: "absolute",
@@ -166,7 +166,7 @@ export const CanvasStage = () => {
       overflow: "hidden",
       zIndex: 10,
     };
-  }, [editingText, scale]);
+  }, [editingText, scale]);*/
 
   return (
     <div
@@ -208,6 +208,7 @@ export const CanvasStage = () => {
             {/* Render all canvas elements based on type */}
             {elements.map((el) => {
               const isSelected = selectedIds.includes(el.id);
+
               if (el.type === "image") {
                 return (
                   <ImageNode
@@ -218,6 +219,7 @@ export const CanvasStage = () => {
                   />
                 );
               }
+
               if (el.type === "text") {
                 return (
                   <TextNode
@@ -225,10 +227,11 @@ export const CanvasStage = () => {
                     el={el}
                     selected={isSelected}
                     onSelect={onSelect(el.id)}
-                    onRequestEdit={setEditingText}
+                    // onRequestEdit={setEditingText}
                   />
                 );
               }
+
               if (el.type === "shape") {
                 return (
                   <ShapeNode
@@ -241,6 +244,7 @@ export const CanvasStage = () => {
               }
               return null;
             })}
+
             {/* Transform handles for selected elements */}
             <Transformer
               ref={transformerRef}
@@ -270,7 +274,7 @@ export const CanvasStage = () => {
         </Stage>
 
         {/* Inline text editor overlay - positioned and styled to match the Konva text element */}
-        {editingText && textareaStyle && (
+        {/* {editingText && textareaStyle && (
           <textarea
             autoFocus
             aria-label="Edit text"
@@ -287,7 +291,7 @@ export const CanvasStage = () => {
               }
             }}
           />
-        )}
+        )} */}
       </div>
 
       <div
