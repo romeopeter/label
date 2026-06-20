@@ -1,14 +1,6 @@
-# Laybel — Phase 1
+# Laybel
 
-Desktop-first branded graphics editor (Brandbird parity). This repo currently
-ships the **Phase 1** scope from [implementation-phase1.md](implementation-phase1.md):
-static canvas, image import + device frames, text, shapes, background, watermark,
-PNG/JPG/WebP export, and `.laybel` project save/load.
-
-The Tauri shell (Rust + WebView) is **deferred** — the React app is structured
-so `src/` ports into a Tauri app without changes. To wrap it later, run
-`npm install -D @tauri-apps/cli` and `npx tauri init`; replace
-`exporters.ts` file writes with `invoke('save_file', …)` calls.
+Image, screenshot, mockup and motion editor for polish social media post.
 
 ---
 
@@ -18,10 +10,9 @@ so `src/` ports into a Tauri app without changes. To wrap it later, run
 - **Vite** — dev server + build
 - **Konva** (`react-konva`) — canvas, drag/resize/transform, export
 - **Zustand** — in-memory editor state
-- **`.laybel` project** — JSON download/upload for Phase 1; SQLite persistence in Phase 2
 
 Design tokens, layout CSS, and visual fidelity are imported verbatim from
-[`src/styles/app.css`](src/styles/app.css) (copied from the design's `app.css`).
+[`src/styles/app.css`](src/styles/app.css)
 
 ---
 
@@ -62,16 +53,6 @@ npm run preview
 | Customize sidebar (hide tools)               | [CustomizeSidebarModal](src/components/CustomizeSidebarModal.tsx)           |
 | Keyboard: ⌘E export, ⌘C copy, ⌫ delete, esc | [App.tsx](src/App.tsx)                                                      |
 
-Tools rendered as visual stubs (Phase 2): AI, Templates, Images library, 3D, Layout, Brands, Motion.
-
----
-
-## Pro gate
-
-`isPro: false` is hard-coded in [the store](src/store/editor.ts). The watermark
-is composited on the Konva stage; in Phase 2 export will move into a Rust
-command so the watermark cannot be bypassed by patching JS.
-
 ---
 
 ## Layout
@@ -103,14 +84,3 @@ src/
 ├── types/index.ts                LaybelElement / Project / Background types
 └── styles/app.css                full design CSS (copied from the design artifact)
 ```
-
----
-
-## Phase 2 hooks
-
-When wrapping in Tauri:
-
-1. `exporters.ts` → replace `downloadBlob` with `invoke('save_file', { data, path })`.
-2. Add `tauri-plugin-sql` and move `useEditor.toProject()` / `loadProject()` into SQLite-backed CRUD.
-3. Replace `<input type="file">` with `dialog.open()`.
-4. Add `tauri-plugin-shell` to bundle ffmpeg/gifski for MP4/GIF export (deferred Phase 2 work).
