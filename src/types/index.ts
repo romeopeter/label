@@ -2,11 +2,19 @@ export type ElementKind = "image" | "text" | "shape" | "icon";
 
 export type ShapeKind =
   | "rect"
-  | "rounded-rect"
   | "ellipse"
   | "arrow"
+  | "line"
   | "highlight"
-  | "callout";
+  | "callout"
+  | "qr-code"
+  | "emoji"
+  | "image"
+  | "pencil"
+  | "number"
+  | "icons"
+  | "vector"
+  | "other";
 
 export type DeviceFrame =
   | null
