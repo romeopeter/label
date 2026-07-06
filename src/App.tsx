@@ -112,7 +112,7 @@ export const App = () => {
                 </div>
 
                 <div className="font-display text-[18px] font-semibold tracking-[-0.01em] text-gray-100 cursor-pointer!">
-                  <span>Drag image to drop</span>
+                  <span>Drag and drop image to begin</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
