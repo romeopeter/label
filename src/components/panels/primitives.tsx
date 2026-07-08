@@ -70,7 +70,7 @@ export const PanelDesc = ({
 export const PanelLink = ({
   children,
   onClick,
-  className
+  className,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -79,7 +79,10 @@ export const PanelLink = ({
   <button
     type="button"
     onClick={onClick}
-    className="mb-1 mt-0.5 inline-flex items-center gap-1.5 text-[11.5px] text-t-200 hover:text-t-400 cursor-pointer"
+    className={cn(
+      "mb-1 mt-0.5 inline-flex cursor-pointer items-center gap-1.5 text-[11.5px] text-t-200 hover:text-t-400",
+      className,
+    )}
   >
     {children}
   </button>
@@ -132,7 +135,7 @@ export const LabeledSlider = ({
   className,
   onChange,
 }: LabeledSliderProps) => (
-  <div className="flex flex-col gap-1.5">
+  <div className={cn("flex flex-col gap-1.5", className)}>
     <div className="flex items-center justify-between">
       <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-p-200">
         {leftIcon}

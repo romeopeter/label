@@ -2,6 +2,7 @@ export type ElementKind = "image" | "text" | "shape" | "icon";
 
 export type ShapeKind =
   | "rect"
+  | "rounded-rect"
   | "ellipse"
   | "arrow"
   | "line"

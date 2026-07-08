@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Upload, Command, X } from "lucide-react";
 import { useEditor } from "@/store/editor";
+import type { ImageElement, LaybelElement } from "@/types";
 import { importImageFile } from "@/lib/importers";
 import { Button } from "@/components/ui/button";
 import { KeyBadge } from "@/components/ui/key-badge";
@@ -12,6 +13,9 @@ import {
   // LinkMini,
   Linebreak,
 } from "./primitives";
+
+const isImageElement = (el: LaybelElement): el is ImageElement =>
+  el.type === "image";
 
 export const UploadsPanel = () => {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -27,7 +31,7 @@ export const UploadsPanel = () => {
   };
 
   const recents = elements
-    .filter((el) => el.type === "image")
+    .filter(isImageElement)
     .slice(-9)
     .reverse();
 
@@ -81,7 +85,7 @@ export const UploadsPanel = () => {
               <div
                 key={el.id}
                 className="aspect-square rounded-md border border-hairline bg-canvas bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${(el as any).src})` }}
+                style={{ backgroundImage: `url(${el.src})` }}
               >
                 <div
                   className="size-fit absolute bg-primary/80 hover:bg-primary rounded-xl top-1 right-1 cursor-pointer"

@@ -262,7 +262,7 @@ const getProjectedPoint = (
 };
 
 const drawPerspectiveImage = (
-  ctx: any,
+  ctx: Konva.Context,
   img: HTMLCanvasElement,
   w: number,
   h: number,
@@ -391,7 +391,7 @@ export const ImageNode = ({ el, onSelect }: Props) => {
         <Shape
           width={el.width}
           height={el.height}
-          sceneFunc={(context, shape) => {
+          sceneFunc={(context) => {
             const ctx = context.canvas.context;
             if (!offscreenCanvasRef.current) {
               offscreenCanvasRef.current = document.createElement("canvas");
@@ -556,4 +556,3 @@ export const ImageNode = ({ el, onSelect }: Props) => {
     </Group>
   );
 };
-

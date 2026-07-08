@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Transformer, Text as KText } from "react-konva";
 import Konva from "konva";
 import { useEditor } from "../../store/editor";
@@ -7,7 +7,6 @@ import { ImageNode } from "./ImageNode";
 import { TextNode } from "./TextNode";
 import { ShapeNode } from "./ShapeNode";
 import { setStage } from "./stageRef";
-import type { TextElement } from "../../types";
 import { importImageFile } from "../../lib/importers";
 
 /* ------------------------------------------------------------------------ */
@@ -19,7 +18,6 @@ export const CanvasStage = () => {
   const elements = useEditor((s) => s.elements);
   const selectedIds = useEditor((s) => s.selectedIds);
   const selectElement = useEditor((s) => s.selectElement);
-  const updateElement = useEditor((s) => s.updateElement);
   const deleteElement = useEditor((s) => s.deleteElement);
   const addImage = useEditor((s) => s.addImage);
   const zoom = useEditor((s) => s.zoom);
@@ -29,9 +27,6 @@ export const CanvasStage = () => {
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-
-  // Track which text element is being edited (shows textarea overlay)
-  const [editingText, setEditingText] = useState<TextElement | null>(null);
 
   // Inform exporter where the stage is
   useEffect(() => {
@@ -51,7 +46,6 @@ export const CanvasStage = () => {
       const wrap = wrapRef.current;
       if (!wrap) return;
 
-      const padding = 80;
       // const availW = wrap.clientWidth - padding;
       // const availH = wrap.clientHeight - padding - 80; // leave room for hints/timeline
 
@@ -126,7 +120,9 @@ export const CanvasStage = () => {
   }, [addImage]);
 
   // Deselect when clicking stage background or empty areas
-  const onStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const onStagePointerDown = (
+    e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+  ) => {
     if (e.target === e.target.getStage()) selectElement(null);
     // also deselect when clicking background rect
     const id = (e.target as Konva.Node).id?.();
@@ -191,8 +187,8 @@ export const CanvasStage = () => {
           height={displayH}
           scaleX={scale}
           scaleY={scale}
-          onMouseDown={onStageMouseDown}
-          onTouchStart={onStageMouseDown as any}
+          onMouseDown={onStagePointerDown}
+          onTouchStart={onStagePointerDown}
         >
           {/* Background layer - non-interactive */}
           <Layer listening={false}>

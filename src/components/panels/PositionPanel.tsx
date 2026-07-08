@@ -7,7 +7,6 @@ import {
   LabeledSlider,
   PanelDesc,
   SwitchRow,
-  Linebreak
 } from "./primitives";
 
 /* ---------------------------------------------------------------------------------------------- */

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Undo, Redo, Eye, ChevronDown, Download, Bell } from "lucide-react";
+import { Undo, Redo, Eye, ChevronDown, Download } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { Button } from "@/components/ui/button";
 import {

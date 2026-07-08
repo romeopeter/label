@@ -71,6 +71,8 @@ const serializeTransform = (data: TransformData): string => {
   return `rotateX(${data.tiltX}deg) rotateY(${data.tiltY}deg) rotateZ(${data.tiltZ}deg) perspective(${data.perspective}px) innerShadow(${data.innerShadow})`;
 };
 
+type TransformValue = TransformData[keyof TransformData];
+
 export const ThreeDPanel = () => {
   const selectedIds = useEditor((s) => s.selectedIds);
   const elements = useEditor((s) => s.elements);
@@ -84,7 +86,7 @@ export const ThreeDPanel = () => {
     ? parseTransform(imageEl.transform || "")
     : { tiltX: 0, tiltY: 0, tiltZ: 0, perspective: 60, innerShadow: true };
 
-  const updateTransform = (key: keyof TransformData, val: any) => {
+  const updateTransform = (key: keyof TransformData, val: TransformValue) => {
     if (imageEl) {
       const next = { ...currentTransform, [key]: val };
       update(imageEl.id, { transform: serializeTransform(next) });
@@ -197,4 +199,3 @@ export const ThreeDPanel = () => {
     </div>
   );
 };
-
