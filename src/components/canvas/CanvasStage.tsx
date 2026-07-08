@@ -11,6 +11,17 @@ import { importImageFile } from "../../lib/importers";
 
 /* ------------------------------------------------------------------------ */
 
+const isTransformerTarget = (node: Konva.Node) => {
+  let current: Konva.Node | null = node;
+
+  while (current) {
+    if (current.getClassName() === "Transformer") return true;
+    current = current.getParent();
+  }
+
+  return false;
+};
+
 export const CanvasStage = () => {
   // Store selectors
   const canvas = useEditor((s) => s.canvas);
@@ -49,7 +60,7 @@ export const CanvasStage = () => {
       // const availW = wrap.clientWidth - padding;
       // const availH = wrap.clientHeight - padding - 80; // leave room for hints/timeline
 
-       const availW = 1400;
+      const availW = 1400;
       const availH = 950;
 
       // Guard against invalid dimensions - don't update if wrapper isn't sized yet
@@ -123,9 +134,17 @@ export const CanvasStage = () => {
   const onStagePointerDown = (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
-    if (e.target === e.target.getStage()) selectElement(null);
+    const target = e.target as Konva.Node;
+
+    if (isTransformerTarget(target)) return;
+
+    if (target === target.getStage()) {
+      selectElement(null);
+      return;
+    }
+
     // also deselect when clicking background rect
-    const id = (e.target as Konva.Node).id?.();
+    const id = target.id?.();
     if (!id) selectElement(null);
   };
 
@@ -134,35 +153,6 @@ export const CanvasStage = () => {
     e.cancelBubble = true;
     selectElement(id, e.evt?.shiftKey ?? false);
   };
-
-  // Position and style the inline text editor overlay to match the Konva text element
-  /*const textareaStyle = useMemo<React.CSSProperties | null>(() => {
-    if (!editingText) return null;
-    return {
-      position: "absolute",
-      left: editingText.x * scale,
-      top: editingText.y * scale,
-      width: editingText.width * scale,
-      transform: `rotate(${editingText.rotation}deg)`,
-      transformOrigin: "0 0",
-      fontFamily: editingText.fontFamily,
-      fontSize: editingText.fontSize * scale,
-      fontWeight: editingText.fontWeight,
-      color: editingText.fill,
-      lineHeight: editingText.lineHeight,
-      letterSpacing: editingText.letterSpacing,
-      textAlign: editingText.align,
-      background: "rgba(0,0,0,0.35)",
-      border: "1px solid rgba(175,169,236,0.6)",
-      borderRadius: 4,
-      outline: "none",
-      padding: 0,
-      margin: 0,
-      resize: "none",
-      overflow: "hidden",
-      zIndex: 10,
-    };
-  }, [editingText, scale]);*/
 
   return (
     <div
@@ -268,26 +258,6 @@ export const CanvasStage = () => {
             )}
           </Layer>
         </Stage>
-
-        {/* Inline text editor overlay - positioned and styled to match the Konva text element */}
-        {/* {editingText && textareaStyle && (
-          <textarea
-            autoFocus
-            aria-label="Edit text"
-            title="Edit text"
-            defaultValue={editingText.text}
-            style={textareaStyle}
-            onBlur={(e) => {
-              updateElement(editingText.id, { text: e.currentTarget.value });
-              setEditingText(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                e.currentTarget.blur();
-              }
-            }}
-          />
-        )} */}
       </div>
 
       <div
