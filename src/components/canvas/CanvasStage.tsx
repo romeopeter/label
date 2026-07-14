@@ -6,8 +6,11 @@ import { Background } from "./Background";
 import { ImageNode } from "./ImageNode";
 import { TextNode } from "./TextNode";
 import { ShapeNode } from "./ShapeNode";
+import { TiltedImageOverlay } from "./TiltedImageOverlay";
 import { setStage } from "./stageRef";
 import { importImageFile } from "../../lib/importers";
+import type { ImageElement } from "@/types";
+import { isImageTiltActive } from "@/lib/tilt";
 
 /* ------------------------------------------------------------------------ */
 
@@ -38,6 +41,7 @@ export const CanvasStage = () => {
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const tiltOverlayRef = useRef<HTMLDivElement>(null);
 
   // Inform exporter where the stage is
   useEffect(() => {
@@ -154,6 +158,17 @@ export const CanvasStage = () => {
     selectElement(id, e.evt?.shiftKey ?? false);
   };
 
+  const selectedElement =
+    selectedIds.length === 1
+      ? elements.find((el) => el.id === selectedIds[0])
+      : null;
+  const selectedTiltedImage =
+    selectedElement?.type === "image" &&
+    !selectedElement.deviceFrame &&
+    isImageTiltActive(selectedElement.transform)
+      ? (selectedElement as ImageElement)
+      : null;
+
   return (
     <div
       ref={wrapRef}
@@ -258,6 +273,14 @@ export const CanvasStage = () => {
             )}
           </Layer>
         </Stage>
+
+        {selectedTiltedImage && (
+          <TiltedImageOverlay
+            ref={tiltOverlayRef}
+            image={selectedTiltedImage}
+            scale={scale}
+          />
+        )}
       </div>
 
       <div

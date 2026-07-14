@@ -1,6 +1,8 @@
+import Konva from "konva";
 import { getStage } from "../components/canvas/stageRef";
 import { useEditor } from "../store/editor";
 import { openLaybelFile } from "./importers";
+import { isImageTiltActive } from "./tilt";
 
 const dataURLtoBlob = (dataUrl: string): Blob => {
   const [meta, b64] = dataUrl.split(",");
@@ -22,25 +24,118 @@ const downloadBlob = (blob: Blob, filename: string) => {
   setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
+const loadHtmlImage = (src: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+const withTransformersHidden = async <T,>(
+  stage: Konva.Stage,
+  fn: () => Promise<T>,
+) => {
+  const transformers = stage.find("Transformer");
+  const visible = transformers.map((node) => node.visible());
+  transformers.forEach((node) => node.visible(false));
+
+  try {
+    return await fn();
+  } finally {
+    transformers.forEach((node, index) => node.visible(visible[index]));
+    stage.batchDraw();
+  }
+};
+
+const renderTiltedImageIntoStage = async (stage: Konva.Stage) => {
+  const { elements, selectedIds } = useEditor.getState();
+  const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
+  const image = elements.find((el) => el.id === selectedId);
+
+  if (
+    !image ||
+    image.type !== "image" ||
+    image.deviceFrame ||
+    !isImageTiltActive(image.transform)
+  ) {
+    return null;
+  }
+
+  const overlay = document.querySelector<HTMLElement>(
+    `[data-tilted-image-id="${image.id}"]`,
+  );
+  const originalNode = stage.findOne(`#${image.id}`);
+  const layer = originalNode?.getLayer();
+
+  if (!overlay || !originalNode || !layer) return null;
+
+  try {
+    const domtoimage = await import("dom-to-image-more");
+    const dataUrl = await domtoimage.toPng(overlay, {
+      width: overlay.offsetWidth,
+      height: overlay.offsetHeight,
+      bgcolor: "transparent",
+      cacheBust: true,
+    });
+    const flatImage = await loadHtmlImage(dataUrl);
+    const temporaryNode = new Konva.Image({
+      image: flatImage,
+      x: image.x,
+      y: image.y,
+      width: image.width,
+      height: image.height,
+      rotation: image.rotation,
+      listening: false,
+    });
+
+    layer.add(temporaryNode);
+    temporaryNode.zIndex(originalNode.getZIndex());
+    layer.batchDraw();
+
+    return () => {
+      temporaryNode.destroy();
+      layer.batchDraw();
+    };
+  } catch (error) {
+    throw new Error(
+      `Failed to rasterize CSS 3D image ${image.id}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
+    );
+  }
+};
+
 export const renderCanvasDataURL = (
   format: "png" | "jpg" | "webp" = "png",
   pixelRatio = 2
-): string | null => {
+): Promise<string | null> => {
   const stage = getStage();
-  if (!stage) return null;
-  // Stage is currently scaled to fit; export uses the canvas's intrinsic resolution
-  const { canvas } = useEditor.getState();
-  const scaleX = stage.scaleX();
-  const scaleY = stage.scaleY();
-  // Compensate: scale up the export so the result is at intrinsic resolution × pixelRatio
-  return stage.toDataURL({
-    pixelRatio: pixelRatio / scaleX,
-    mimeType: format === "jpg" ? "image/jpeg" : `image/${format}`,
-    quality: 0.95,
-    x: 0,
-    y: 0,
-    width: canvas.width * scaleX,
-    height: canvas.height * scaleY,
+  if (!stage) return Promise.resolve(null);
+
+  return withTransformersHidden(stage, async () => {
+    const cleanupTiltedImage = await renderTiltedImageIntoStage(stage);
+
+    try {
+      // Stage is currently scaled to fit; export uses the canvas's intrinsic resolution
+      const { canvas } = useEditor.getState();
+      const scaleX = stage.scaleX();
+      const scaleY = stage.scaleY();
+
+      // Compensate: scale up the export so the result is at intrinsic resolution × pixelRatio
+      return stage.toDataURL({
+        pixelRatio: pixelRatio / scaleX,
+        mimeType: format === "jpg" ? "image/jpeg" : `image/${format}`,
+        quality: 0.95,
+        x: 0,
+        y: 0,
+        width: canvas.width * scaleX,
+        height: canvas.height * scaleY,
+      });
+    } finally {
+      cleanupTiltedImage?.();
+    }
   });
 };
 
@@ -48,7 +143,7 @@ export const exportCanvas = async (
   format: "png" | "jpg" | "webp" = "png",
   pixelRatio = 2
 ) => {
-  const dataUrl = renderCanvasDataURL(format, pixelRatio);
+  const dataUrl = await renderCanvasDataURL(format, pixelRatio);
   if (!dataUrl) return;
   const ext = format === "jpg" ? "jpg" : format;
   const blob = dataURLtoBlob(dataUrl);
@@ -56,7 +151,7 @@ export const exportCanvas = async (
 };
 
 export const copyCanvasToClipboard = async () => {
-  const dataUrl = renderCanvasDataURL("png", 2);
+  const dataUrl = await renderCanvasDataURL("png", 2);
   if (!dataUrl) return;
   const blob = dataURLtoBlob(dataUrl);
   try {

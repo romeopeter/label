@@ -3,6 +3,7 @@ import { Image as KImage, Group, Rect } from "react-konva";
 import useImage from "use-image";
 import type { ImageElement, DeviceFrame } from "../../types";
 import { useEditor } from "../../store/editor";
+import { isImageTiltActive } from "@/lib/tilt";
 
 /* ----------------------------------------------------------------- */
 
@@ -89,6 +90,9 @@ export const ImageNode = ({ el, onSelect }: Props) => {
   const [img] = useImage(el.src, "anonymous");
   const update = useEditor((s) => s.updateElement);
   const sp = shadowProps(el);
+  const selectedIds = useEditor((s) => s.selectedIds);
+  const showTiltPlaceholder =
+    selectedIds.includes(el.id) && !el.deviceFrame && isImageTiltActive(el.transform);
 
   if (!img) return null;
 
@@ -117,14 +121,18 @@ export const ImageNode = ({ el, onSelect }: Props) => {
           });
         }}
       >
-        <KImage
-          image={img}
-          width={el.width}
-          height={el.height}
-          cornerRadius={el.cornerRadius}
-          stroke={el.border?.enabled ? el.border.color : undefined}
-          strokeWidth={el.border?.enabled ? el.border.width : 0}
-        />
+        {showTiltPlaceholder ? (
+          <Rect width={el.width} height={el.height} opacity={0} />
+        ) : (
+          <KImage
+            image={img}
+            width={el.width}
+            height={el.height}
+            cornerRadius={el.cornerRadius}
+            stroke={el.border?.enabled ? el.border.color : undefined}
+            strokeWidth={el.border?.enabled ? el.border.width : 0}
+          />
+        )}
       </Group>
     );
   }

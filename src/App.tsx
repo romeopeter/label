@@ -34,8 +34,8 @@ export const App = () => {
     setHiddenTools((h) => ({ ...h, [k]: !h[k] }));
   }, []);
 
-  const openPreview = useCallback(() => {
-    setPreviewDataUrl(renderCanvasDataURL("png", 1));
+  const openPreview = useCallback(async () => {
+    setPreviewDataUrl(await renderCanvasDataURL("png", 1));
     setPreviewOpen(true);
   }, []);
 

@@ -1,6 +1,12 @@
 import { useEditor } from "@/store/editor";
 import type { ImageElement } from "@/types";
 import {
+  DEFAULT_IMAGE_TILT,
+  parseImageTilt,
+  serializeImageTilt,
+  type ImageTilt,
+} from "@/lib/tilt";
+import {
   PanelTitle,
   PanelDesc,
   LabeledSlider,
@@ -25,53 +31,7 @@ const presets = [
   { name: "Hard Right", x: 45, y: 20, z: 15 },
 ];
 
-interface TransformData {
-  tiltX: number;
-  tiltY: number;
-  tiltZ: number;
-  perspective: number;
-  innerShadow: boolean;
-}
-
-const parseTransform = (transformStr: string): TransformData => {
-  let tiltX = 0;
-  let tiltY = 0;
-  let tiltZ = 0;
-  let perspective = 60;
-  let innerShadow = true;
-
-  if (!transformStr) {
-    return { tiltX, tiltY, tiltZ, perspective, innerShadow };
-  }
-
-  // Handle rotate3d(0deg, 0deg, 0deg)
-  const r3d = transformStr.match(/rotate3d\((-?\d+)deg,\s*(-?\d+)deg,\s*(-?\d+)deg\)/);
-  if (r3d) {
-    tiltX = parseInt(r3d[1], 10) || 0;
-    tiltY = parseInt(r3d[2], 10) || 0;
-    tiltZ = parseInt(r3d[3], 10) || 0;
-  }
-
-  const rx = transformStr.match(/rotateX\((-?\d+)deg\)/);
-  const ry = transformStr.match(/rotateY\((-?\d+)deg\)/);
-  const rz = transformStr.match(/rotateZ\((-?\d+)deg\)/);
-  const pers = transformStr.match(/perspective\((-?\d+)(?:px|%)\)/);
-  const shadow = transformStr.match(/innerShadow\((true|false)\)/);
-
-  if (rx) tiltX = parseInt(rx[1], 10) || 0;
-  if (ry) tiltY = parseInt(ry[1], 10) || 0;
-  if (rz) tiltZ = parseInt(rz[1], 10) || 0;
-  if (pers) perspective = parseInt(pers[1], 10) || 60;
-  if (shadow) innerShadow = shadow[1] === "true";
-
-  return { tiltX, tiltY, tiltZ, perspective, innerShadow };
-};
-
-const serializeTransform = (data: TransformData): string => {
-  return `rotateX(${data.tiltX}deg) rotateY(${data.tiltY}deg) rotateZ(${data.tiltZ}deg) perspective(${data.perspective}px) innerShadow(${data.innerShadow})`;
-};
-
-type TransformValue = TransformData[keyof TransformData];
+type TransformValue = ImageTilt[keyof ImageTilt];
 
 export const ThreeDPanel = () => {
   const selectedIds = useEditor((s) => s.selectedIds);
@@ -83,20 +43,20 @@ export const ThreeDPanel = () => {
   const imageEl = isImage ? (selectedEl as ImageElement) : null;
 
   const currentTransform = imageEl
-    ? parseTransform(imageEl.transform || "")
-    : { tiltX: 0, tiltY: 0, tiltZ: 0, perspective: 60, innerShadow: true };
+    ? parseImageTilt(imageEl.transform || "")
+    : DEFAULT_IMAGE_TILT;
 
-  const updateTransform = (key: keyof TransformData, val: TransformValue) => {
+  const updateTransform = (key: keyof ImageTilt, val: TransformValue) => {
     if (imageEl) {
       const next = { ...currentTransform, [key]: val };
-      update(imageEl.id, { transform: serializeTransform(next) });
+      update(imageEl.id, { transform: serializeImageTilt(next) });
     }
   };
 
   const set3Drotation = (x: number, y: number, z: number) => {
     if (imageEl) {
       const next = { ...currentTransform, tiltX: x, tiltY: y, tiltZ: z };
-      update(imageEl.id, { transform: serializeTransform(next) });
+      update(imageEl.id, { transform: serializeImageTilt(next) });
     }
   };
 
@@ -140,7 +100,7 @@ export const ThreeDPanel = () => {
         <PanelDesc className="mb-2">Tilt and depth presets.</PanelDesc>
 
         <LabeledSlider
-          label="TILT-X"
+          label="VERTICAL TILT"
           value={currentTransform.tiltX}
           unit="°"
           min={-45}
@@ -148,7 +108,7 @@ export const ThreeDPanel = () => {
           onChange={(v) => updateTransform("tiltX", v)}
         />
         <LabeledSlider
-          label="TILT-Y"
+          label="HORIZONTAL TILT"
           value={currentTransform.tiltY}
           unit="°"
           min={-45}
@@ -158,7 +118,10 @@ export const ThreeDPanel = () => {
         <LabeledSlider
           label="PERSPECTIVE"
           value={currentTransform.perspective}
-          unit="%"
+          unit="px"
+          min={400}
+          max={1200}
+          step={10}
           onChange={(v) => updateTransform("perspective", v)}
         />
 
