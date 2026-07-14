@@ -3,7 +3,7 @@ import {
   // Sparkles,
   Upload,
   // LayoutGrid,
-  // Image,
+  Image,
   PenLine,
   LayoutDashboard,
   Smartphone,
@@ -44,11 +44,11 @@ export const TOOLS: ToolDef[] = [
   //   label: "Templates",
   //   icon: <LayoutGrid className="h-4.5 w-4.5" />,
   // },
-  // {
-  //   key: "images",
-  //   label: "Images",
-  //   icon: <Image className="h-4.5 w-4.5" />,
-  // },
+  {
+    key: "images",
+    label: "Images",
+    icon: <Image className="h-4.5 w-4.5" />,
+  },
   {
     key: "annotation",
     label: "Annotation",
