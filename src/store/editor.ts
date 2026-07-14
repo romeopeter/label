@@ -8,7 +8,10 @@ import type {
   ShapeElement,
   ShapeKind,
   TextElement,
+  UploadedImage,
 } from "../types";
+
+/* ------------------------------------------------------- */
 
 const uid = () => "el_" + Math.random().toString(36).slice(2, 9);
 
@@ -50,6 +53,7 @@ interface EditorState {
   canvas: CanvasSize;
   background: BackgroundState;
   elements: LaybelElement[];
+  uploadedImages: UploadedImage[];
   selectedIds: string[];
 
   activeTool: Tool;
@@ -66,6 +70,8 @@ interface EditorState {
 
   // elements
   addImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
+  addUploadedImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
+  deleteUploadedImage: (id: string) => void;
   addText: (variant: "heading" | "body") => string;
   addShape: (shape: ShapeKind) => string;
   updateElement: (id: string, patch: Partial<LaybelElement>) => void;
@@ -83,6 +89,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   canvas: DEFAULT_CANVAS,
   background: DEFAULT_BACKGROUND,
   elements: [],
+  uploadedImages: [],
   selectedIds: [],
 
   activeTool: "uploads",
@@ -122,6 +129,23 @@ export const useEditor = create<EditorState>((set, get) => ({
     set({ elements: [...elements, el], selectedIds: [el.id] });
     return el.id;
   },
+
+  addUploadedImage: (src, naturalWidth, naturalHeight) => {
+    const image: UploadedImage = {
+      id: uid(),
+      src,
+      naturalWidth,
+      naturalHeight,
+      createdAt: Date.now(),
+    };
+    set({ uploadedImages: [...get().uploadedImages, image] });
+    return image.id;
+  },
+
+  deleteUploadedImage: (id) =>
+    set({
+      uploadedImages: get().uploadedImages.filter((image) => image.id !== id),
+    }),
 
   addText: (variant) => {
     const { canvas, elements } = get();
