@@ -58,6 +58,14 @@ export interface ImageElement extends BaseElement {
   transform: string;
 }
 
+export interface UploadedImage {
+  id: string;
+  src: string;
+  naturalWidth: number;
+  naturalHeight: number;
+  createdAt: number;
+}
+
 export interface TextElement extends BaseElement {
   type: "text";
   text: string;
