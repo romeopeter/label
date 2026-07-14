@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { Upload, Command, X } from "lucide-react";
 import { useEditor } from "@/store/editor";
-import type { ImageElement, LaybelElement } from "@/types";
 import { importImageFile } from "@/lib/importers";
 import { Button } from "@/components/ui/button";
 import { KeyBadge } from "@/components/ui/key-badge";
@@ -14,24 +13,20 @@ import {
   Linebreak,
 } from "./primitives";
 
-const isImageElement = (el: LaybelElement): el is ImageElement =>
-  el.type === "image";
-
 export const UploadsPanel = () => {
   const fileRef = useRef<HTMLInputElement>(null);
-  const addImage = useEditor((s) => s.addImage);
-  const deleteImage = useEditor((s) => s.deleteElement);
-  const elements = useEditor((s) => s.elements);
+  const addUploadedImage = useEditor((s) => s.addUploadedImage);
+  const deleteUploadedImage = useEditor((s) => s.deleteUploadedImage);
+  const uploadedImages = useEditor((s) => s.uploadedImages);
 
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    await importImageFile(file, addImage);
+    await importImageFile(file, addUploadedImage);
     e.target.value = "";
   };
 
-  const recents = elements
-    .filter(isImageElement)
+  const recents = uploadedImages
     .slice(-9)
     .reverse();
 
@@ -87,12 +82,14 @@ export const UploadsPanel = () => {
                 className="aspect-square rounded-md border border-hairline bg-canvas bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${el.src})` }}
               >
-                <div
+                <button
+                  type="button"
+                  aria-label="Remove uploaded image"
                   className="size-fit absolute bg-primary/80 hover:bg-primary rounded-xl top-1 right-1 cursor-pointer"
-                  onClick={() => deleteImage(el.id)}
+                  onClick={() => deleteUploadedImage(el.id)}
                 >
                   <X size={15} />
-                </div>
+                </button>
               </div>
             ))}
         </div>
