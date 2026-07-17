@@ -2,7 +2,7 @@
 
 ## Product implementation context
 
-Laybel is a desktop-first branded graphics editor for founders, content creators, and marketing teams. It does what Brandbird does — turning screenshots/images and assets into polished branded visuals — and exported as static image.
+Laybel Easy-to-use desktop-first editor for creating polished and branded marketing banners, product screens and visuals. Phase 1 does what Brandbird does — turning screenshots/images and assets into polished branded visuals — and exported as static image.
 
 **Platform:** Desktop app (Tauri), with web as a planned future target. The UI is built in HTML/React,Typescript,Tailwind so the migration path is minimal.
 
@@ -204,7 +204,7 @@ await invoke('save_file', { data: dataURL, path: outputPath, format: 'png' })
 
 ### File format — `.laybel` project file
 
-Projects saved as JSON with `.laybel` extension, written to user's Documents folder via Tauri.
+Projects saved as JSON with `.laybel` extension, written to user's Documents folder via Tauri (when project switches to using Tauri as app shell).
 
 ```json
 {
@@ -236,7 +236,7 @@ Asset files (images) are copied into a `project-name.laybel-assets/` folder alon
 
 In Phase 1, Everything else is fully available on free.
 
-However, the gate shoulf be enforced in the Rust export command — the React UI passes `isPro: boolean` from the user's licence state. On free tier, the watermark composite is applied server-side (Rust), not in the browser, so it cannot be bypassed by a user patching JS.
+However, the gate should be enforced in the Rust export command — the React UI passes `isPro: boolean` from the user's licence state. On free tier, the watermark composite is applied server-side (Rust), not in the browser, so it cannot be bypassed by a user patching JS.
 
 Licence state is stored in SQLite as a simple flag. Phase 2 will introduce Paddle/Lemon Squeezy licence key validation.
 
