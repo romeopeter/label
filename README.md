@@ -1,6 +1,6 @@
 # Laybel
 
-Image, screenshot, mockup and motion editor for polish social media post.
+Easy-to-us editor for creating marketing banner, product launch screen and polished visual for social media posts.
 
 ---
 
