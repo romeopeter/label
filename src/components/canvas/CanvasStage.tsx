@@ -7,9 +7,10 @@ import { ImageNode } from "./ImageNode";
 import { TextNode } from "./TextNode";
 import { ShapeNode } from "./ShapeNode";
 import { TiltedImageOverlay } from "./TiltedImageOverlay";
+import { SelectionToolbar } from "./SelectionToolbar";
 import { setStage } from "./stageRef";
 import { importImageFile } from "../../lib/importers";
-import type { ImageElement } from "@/types";
+import type { ImageElement, LaybelElement, TextElement } from "@/types";
 import { isImageTiltActive } from "@/lib/tilt";
 
 /* ------------------------------------------------------------------------ */
@@ -25,6 +26,9 @@ const isTransformerTarget = (node: Konva.Node) => {
   return false;
 };
 
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
 export const CanvasStage = () => {
   // Store selectors
   const canvas = useEditor((s) => s.canvas);
@@ -33,6 +37,13 @@ export const CanvasStage = () => {
   const selectedIds = useEditor((s) => s.selectedIds);
   const selectElement = useEditor((s) => s.selectElement);
   const deleteElement = useEditor((s) => s.deleteElement);
+
+  // Toolbar global state
+  const duplicateElement = useEditor((s) => s.duplicateElement);
+  const updateElement = useEditor((s) => s.updateElement);
+  const moveElement = useEditor((s) => s.moveElement);
+  const setActiveTool = useEditor((s) => s.setActiveTool);
+
   const addImage = useEditor((s) => s.addImage);
   const zoom = useEditor((s) => s.zoom);
   const watermark = useEditor((s) => s.watermark);
@@ -42,6 +53,9 @@ export const CanvasStage = () => {
   const transformerRef = useRef<Konva.Transformer>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tiltOverlayRef = useRef<HTMLDivElement>(null);
+  const [toolbarMoreOpenFor, setToolbarMoreOpenFor] = useState<string | null>(
+    null,
+  );
 
   // Inform exporter where the stage is
   useEffect(() => {
@@ -71,11 +85,12 @@ export const CanvasStage = () => {
       if (availW <= 0 || availH <= 0) return;
 
       const fit = Math.min(availW / canvas.width, availH / canvas.height, 1);
-      const s = fit * (zoom / 100);
+      const scale = fit * (zoom / 100);
+
       setFit({
-        scale: s,
-        displayW: canvas.width * s,
-        displayH: canvas.height * s,
+        scale,
+        displayW: canvas.width * scale,
+        displayH: canvas.height * scale,
       });
     };
 
@@ -162,12 +177,57 @@ export const CanvasStage = () => {
     selectedIds.length === 1
       ? elements.find((el) => el.id === selectedIds[0])
       : null;
+
+  const selectedToolbarElement =
+    selectedElement?.type === "image" || selectedElement?.type === "text"
+      ? selectedElement
+      : null;
+
+  const toolbarPosition = selectedToolbarElement
+    ? {
+        x: clamp(
+          (selectedToolbarElement.x + selectedToolbarElement.width / 2) * scale,
+          120,
+          Math.max(120, displayW - 120),
+        ),
+        y: clamp(
+          selectedToolbarElement.y * scale - 10,
+          42,
+          Math.max(42, displayH - 12),
+        ),
+      }
+    : null;
+
   const selectedTiltedImage =
     selectedElement?.type === "image" &&
     !selectedElement.deviceFrame &&
     isImageTiltActive(selectedElement.transform)
       ? (selectedElement as ImageElement)
       : null;
+
+  const updateSelectedText = (patch: Partial<TextElement>) => {
+    if (!selectedToolbarElement || selectedToolbarElement.type !== "text")
+      return;
+    updateElement(selectedToolbarElement.id, patch as Partial<LaybelElement>);
+  };
+
+  const deleteSelectedElement = () => {
+    if (!selectedToolbarElement) return;
+    deleteElement(selectedToolbarElement.id);
+    setToolbarMoreOpenFor(null);
+  };
+
+  const duplicateSelectedElement = () => {
+    if (!selectedToolbarElement) return;
+    duplicateElement(selectedToolbarElement.id);
+    setToolbarMoreOpenFor(null);
+  };
+
+  const moveSelectedElement = (dz: 1 | -1) => {
+    if (!selectedToolbarElement) return;
+    moveElement(selectedToolbarElement.id, dz);
+    setToolbarMoreOpenFor(null);
+  };
 
   return (
     <div
@@ -279,6 +339,23 @@ export const CanvasStage = () => {
             ref={tiltOverlayRef}
             image={selectedTiltedImage}
             scale={scale}
+          />
+        )}
+
+        {selectedToolbarElement && toolbarPosition && (
+          <SelectionToolbar
+            element={selectedToolbarElement}
+            position={toolbarPosition}
+            moreOpen={toolbarMoreOpenFor === selectedToolbarElement.id}
+            onMoreOpenChange={(open) =>
+              setToolbarMoreOpenFor(open ? selectedToolbarElement.id : null)
+            }
+            onDelete={deleteSelectedElement}
+            onDuplicate={duplicateSelectedElement}
+            onLayerForward={() => moveSelectedElement(1)}
+            onLayerBackward={() => moveSelectedElement(-1)}
+            onTextChange={updateSelectedText}
+            onOpenTextPanel={() => setActiveTool("header")}
           />
         )}
       </div>
