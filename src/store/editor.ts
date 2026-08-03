@@ -75,6 +75,7 @@ interface EditorState {
   addText: (variant: "heading" | "body") => string;
   addShape: (shape: ShapeKind) => string;
   updateElement: (id: string, patch: Partial<LaybelElement>) => void;
+  duplicateElement: (id: string) => void;
   deleteElement: (id: string) => void;
   selectElement: (id: string | null, additive?: boolean) => void;
   moveElement: (id: string, dz: 1 | -1) => void;
@@ -205,6 +206,18 @@ export const useEditor = create<EditorState>((set, get) => ({
         e.id === id ? ({ ...e, ...patch } as LaybelElement) : e
       ),
     }),
+
+  duplicateElement: (id) => {
+    const source = get().elements.find((e) => e.id === id);
+    if (!source) return;
+    const copy = {
+      ...source,
+      id: uid(),
+      x: source.x + 32,
+      y: source.y + 32,
+    } as LaybelElement;
+    set({ elements: [...get().elements, copy], selectedIds: [copy.id] });
+  },
 
   deleteElement: (id) =>
     set({
