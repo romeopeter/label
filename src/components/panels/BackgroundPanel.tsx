@@ -12,6 +12,7 @@ import {
   ColorRow,
   Linebreak,
 } from "./primitives";
+import { PatternPanel } from "./background/PatternPanel";
 
 const SWATCHES = [
   "#6E5BFF",
@@ -70,6 +71,7 @@ export const BackgroundPanel = () => {
           <ToggleGroupItem value="solid" className="cursor-pointer">Solid</ToggleGroupItem>
           <ToggleGroupItem value="gradient" className="cursor-pointer">Gradient</ToggleGroupItem>
           <ToggleGroupItem value="image" className="cursor-pointer">Image</ToggleGroupItem>
+          <ToggleGroupItem value="pattern" className="cursor-pointer">Pattern</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -191,6 +193,8 @@ export const BackgroundPanel = () => {
             )}
           </>
         )}
+
+        {bg.mode === "pattern" && <PatternPanel />}
       </div>
 
       <Linebreak />

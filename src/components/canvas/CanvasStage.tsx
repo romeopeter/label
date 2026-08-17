@@ -8,6 +8,7 @@ import { TextNode } from "./TextNode";
 import { ShapeNode } from "./ShapeNode";
 import { TiltedImageOverlay } from "./TiltedImageOverlay";
 import { SelectionToolbar } from "./SelectionToolbar";
+import { GRID_LAYER_NAME, GridOverlay } from "./GridOverlay";
 import { setStage } from "./stageRef";
 import { importImageFile } from "../../lib/importers";
 import type { ImageElement, LaybelElement, TextElement } from "@/types";
@@ -46,6 +47,7 @@ export const CanvasStage = () => {
 
   const addImage = useEditor((s) => s.addImage);
   const zoom = useEditor((s) => s.zoom);
+  const grid = useEditor((s) => s.grid);
   const watermark = useEditor((s) => s.watermark);
 
   // Refs for Konva stage, transformer, and container div
@@ -332,6 +334,17 @@ export const CanvasStage = () => {
               />
             )}
           </Layer>
+
+          {/*
+            Drawn above content so you can align against it, and only mounted
+            when enabled — an always-present Layer costs a backing canvas even
+            with nothing in it. Named so export can hide it before capture.
+          */}
+          {grid.enabled && (
+            <Layer name={GRID_LAYER_NAME} listening={false}>
+              <GridOverlay grid={grid} width={canvas.width} height={canvas.height} />
+            </Layer>
+          )}
         </Stage>
 
         {selectedTiltedImage && (

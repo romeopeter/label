@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { Upload, Minus, Plus, Delete, Command } from "lucide-react";
-import { useEditor } from "@/store/editor";
+import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/store/editor";
 import { TopBar } from "@/components/TopBar";
 import { LeftRail } from "@/components/LeftRail";
 import { PanelHost } from "@/components/panels";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
+import { GridControl } from "@/components/canvas/GridControl";
 import { SocialPreviewModal } from "@/components/SocialPreviewModal";
 import { CustomizeSidebarModal } from "@/components/CustomizeSidebarModal";
 import { KeyBadge } from "@/components/ui/key-badge";
@@ -57,6 +58,9 @@ export const App = () => {
           e.preventDefault();
           copyCanvasToClipboard();
         }
+      } else if (e.shiftKey && !e.metaKey && !e.ctrlKey && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        useEditor.getState().toggleGrid();
       } else if (e.key === "Escape") {
         setPreviewOpen(false);
         setCustomizeOpen(false);
@@ -136,8 +140,9 @@ export const App = () => {
               type="button"
               title="Zoom out"
               aria-label="Zoom out"
+              disabled={zoom <= ZOOM_MIN}
               onClick={() => setZoom(zoom - 10)}
-              className="flex h-6 w-6 items-center justify-center rounded text-sm text-text-muted hover:bg-p-200/10 hover:text-text"
+              className="flex h-6 w-6 items-center justify-center rounded text-sm text-text-muted hover:bg-p-200/10 hover:text-text disabled:pointer-events-none disabled:opacity-30"
             >
               <Minus className="h-3 w-3" />
             </button>
@@ -150,11 +155,17 @@ export const App = () => {
               type="button"
               title="Zoom in"
               aria-label="Zoom in"
+              disabled={zoom >= ZOOM_MAX}
               onClick={() => setZoom(zoom + 10)}
-              className="flex h-6 w-6 items-center justify-center rounded text-sm text-text-muted hover:bg-p-200/10 hover:text-text"
+              className="flex h-6 w-6 items-center justify-center rounded text-sm text-text-muted hover:bg-p-200/10 hover:text-text disabled:pointer-events-none disabled:opacity-30"
             >
               <Plus className="h-3 w-3" />
             </button>
+
+            {/* View aids live with zoom: both describe how you're looking at
+                the canvas, and neither appears in an export. */}
+            <div className="mx-0.5 h-4.5 w-px bg-hairline" />
+            <GridControl />
           </div>
 
           {/* Paste, Export and Delete */}

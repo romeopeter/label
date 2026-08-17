@@ -121,7 +121,10 @@ interface LabeledSliderProps {
   unit?: string;
   leftIcon?: ReactNode;
   className?: string;
+  disabled?: boolean;
   onChange?: (v: number) => void;
+  /** Fires once when the drag is released — for "cheap while dragging" work. */
+  onCommit?: (v: number) => void;
 }
 
 export const LabeledSlider = ({
@@ -133,9 +136,11 @@ export const LabeledSlider = ({
   step = 1,
   leftIcon,
   className,
+  disabled = false,
   onChange,
+  onCommit,
 }: LabeledSliderProps) => (
-  <div className={cn("flex flex-col gap-1.5", className)}>
+  <div className={cn("flex flex-col gap-1.5", disabled && "opacity-40", className)}>
     <div className="flex items-center justify-between">
       <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-p-200">
         {leftIcon}
@@ -151,8 +156,10 @@ export const LabeledSlider = ({
       max={max}
       step={step}
       value={[value]}
-      className="cursor-pointer"
+      disabled={disabled}
+      className={disabled ? "cursor-not-allowed" : "cursor-pointer"}
       onValueChange={([v]) => onChange?.(v)}
+      onValueCommit={([v]) => onCommit?.(v)}
     />
   </div>
 );

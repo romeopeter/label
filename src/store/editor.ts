@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   BackgroundState,
   CanvasSize,
+  GridState,
   ImageElement,
   LaybelElement,
   LaybelProject,
@@ -10,6 +11,8 @@ import type {
   TextElement,
   UploadedImage,
 } from "../types";
+import type { PatternColorPair, PatternConfig } from "../types/pattern";
+import { DEFAULT_PATTERN_CONFIG } from "../types/pattern";
 
 /* ------------------------------------------------------- */
 
@@ -28,6 +31,24 @@ const DEFAULT_BACKGROUND: BackgroundState = {
   imageSrc: null,
   imageBlur: 0,
   imageOpacity: 1,
+  pattern: DEFAULT_PATTERN_CONFIG,
+};
+
+export const ZOOM_MIN = 20;
+/**
+ * 100% is fit-to-viewport, not 1:1 pixels — `CanvasStage` multiplies zoom by a
+ * fit factor that is itself capped at 1. Capping here means the artboard is
+ * never magnified past the size it lays out at.
+ */
+export const ZOOM_MAX = 100;
+
+export const GRID_MIN_SIZE = 8;
+export const GRID_MAX_SIZE = 400;
+
+const DEFAULT_GRID: GridState = {
+  enabled: false,
+  size: 100,
+  opacity: 0.45,
 };
 
 type Tool =
@@ -54,19 +75,31 @@ interface EditorState {
   background: BackgroundState;
   elements: LaybelElement[];
   uploadedImages: UploadedImage[];
+  customPatternPairs: PatternColorPair[];
   selectedIds: string[];
 
   activeTool: Tool;
   zoom: number;
+  grid: GridState;
   watermark: boolean;
   isPro: boolean;
+  /** Transient: true while a pattern slider is held. Not part of the project. */
+  patternDragging: boolean;
 
   // tool / UI
   setActiveTool: (t: Tool) => void;
   setZoom: (z: number) => void;
+  setGrid: (g: Partial<GridState>) => void;
+  toggleGrid: () => void;
   setCanvas: (c: CanvasSize) => void;
   setBackground: (b: Partial<BackgroundState>) => void;
+  setPattern: (p: Partial<PatternConfig>) => void;
+  setPatternDragging: (v: boolean) => void;
   setWatermark: (v: boolean) => void;
+
+  // pattern colour pairs (in-memory; see "Deferred Rust Implementations" in CLAUDE.md)
+  addCustomPatternPair: (base: string, accent: string, label?: string) => string;
+  deleteCustomPatternPair: (id: string) => void;
 
   // elements
   addImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
@@ -91,18 +124,55 @@ export const useEditor = create<EditorState>((set, get) => ({
   background: DEFAULT_BACKGROUND,
   elements: [],
   uploadedImages: [],
+  customPatternPairs: [],
   selectedIds: [],
 
   activeTool: "uploads",
   zoom: 62,
+  grid: DEFAULT_GRID,
   watermark: true,
   isPro: false,
+  patternDragging: false,
 
   setActiveTool: (t) => set({ activeTool: t }),
-  setZoom: (z) => set({ zoom: Math.max(20, Math.min(200, Math.round(z))) }),
+  setZoom: (z) => set({ zoom: Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.round(z))) }),
+
+  setGrid: (g) => {
+    const next = { ...get().grid, ...g };
+    // Clamped here rather than at the slider so any caller — hotkey, future
+    // panel, restored preference — lands in a renderable range.
+    next.size = Math.max(GRID_MIN_SIZE, Math.min(GRID_MAX_SIZE, Math.round(next.size)));
+    next.opacity = Math.max(0, Math.min(1, next.opacity));
+    set({ grid: next });
+  },
+
+  toggleGrid: () => set({ grid: { ...get().grid, enabled: !get().grid.enabled } }),
   setCanvas: (c) => set({ canvas: c }),
   setBackground: (b) => set({ background: { ...get().background, ...b } }),
+
+  setPattern: (p) => {
+    const background = get().background;
+    set({ background: { ...background, pattern: { ...background.pattern, ...p } } });
+  },
+
+  setPatternDragging: (v) => set({ patternDragging: v }),
+
   setWatermark: (v) => set({ watermark: v }),
+
+  addCustomPatternPair: (base, accent, label) => {
+    const pair: PatternColorPair = {
+      id: "pair_" + Math.random().toString(36).slice(2, 9),
+      base,
+      accent,
+      source: "custom",
+      label,
+    };
+    set({ customPatternPairs: [...get().customPatternPairs, pair] });
+    return pair.id;
+  },
+
+  deleteCustomPatternPair: (id) =>
+    set({ customPatternPairs: get().customPatternPairs.filter((p) => p.id !== id) }),
 
   addImage: (src, naturalWidth, naturalHeight) => {
     const { canvas, elements } = get();
@@ -253,7 +323,10 @@ export const useEditor = create<EditorState>((set, get) => ({
         width: project.canvas.width,
         height: project.canvas.height,
       },
-      background: project.background,
+      // Spread over the defaults: `.laybel` files written before the pattern
+      // background existed have no `pattern` key, and the panel/canvas both
+      // assume one is always present.
+      background: { ...DEFAULT_BACKGROUND, ...project.background },
       elements: project.elements,
       watermark: project.watermark,
       selectedIds: [],

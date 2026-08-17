@@ -3,6 +3,8 @@ import { getStage } from "../components/canvas/stageRef";
 import { useEditor } from "../store/editor";
 import { openLaybelFile } from "./importers";
 import { isImageTiltActive } from "./tilt";
+import { prepareExportTiles } from "./export/prepareExportTiles";
+import { GRID_LAYER_NAME } from "../components/canvas/GridOverlay";
 
 const dataURLtoBlob = (dataUrl: string): Blob => {
   const [meta, b64] = dataUrl.split(",");
@@ -32,18 +34,27 @@ const loadHtmlImage = (src: string): Promise<HTMLImageElement> =>
     img.src = src;
   });
 
-const withTransformersHidden = async <T,>(
+/**
+ * Hide everything that is editor chrome rather than artwork, run the capture,
+ * then restore. Selection handles and the layout grid both live in the stage
+ * but must never reach the output — any future viewport aid (rulers, safe-area
+ * guides) belongs in this list too.
+ */
+const withOverlaysHidden = async <T,>(
   stage: Konva.Stage,
   fn: () => Promise<T>,
 ) => {
-  const transformers = stage.find("Transformer");
-  const visible = transformers.map((node) => node.visible());
-  transformers.forEach((node) => node.visible(false));
+  const overlays = [
+    ...stage.find("Transformer"),
+    ...stage.find(`.${GRID_LAYER_NAME}`),
+  ];
+  const visible = overlays.map((node) => node.visible());
+  overlays.forEach((node) => node.visible(false));
 
   try {
     return await fn();
   } finally {
-    transformers.forEach((node, index) => node.visible(visible[index]));
+    overlays.forEach((node, index) => node.visible(visible[index]));
     stage.batchDraw();
   }
 };
@@ -114,8 +125,12 @@ export const renderCanvasDataURL = (
   const stage = getStage();
   if (!stage) return Promise.resolve(null);
 
-  return withTransformersHidden(stage, async () => {
+  return withOverlaysHidden(stage, async () => {
     const cleanupTiltedImage = await renderTiltedImageIntoStage(stage);
+    // The stage is scaled to fit, and the pixelRatio below compensates for that,
+    // so the background pattern is rasterized at `pixelRatio` device pixels per
+    // canvas unit regardless of the current zoom.
+    const cleanupPatternTiles = await prepareExportTiles(stage, pixelRatio);
 
     try {
       // Stage is currently scaled to fit; export uses the canvas's intrinsic resolution
@@ -135,6 +150,7 @@ export const renderCanvasDataURL = (
       });
     } finally {
       cleanupTiltedImage?.();
+      cleanupPatternTiles?.();
     }
   });
 };
