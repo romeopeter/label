@@ -2,7 +2,7 @@ import { ChevronUp, Grid3x3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GRID_MAX_SIZE, GRID_MIN_SIZE, useEditor } from "@/store/editor";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { LabeledSlider, PanelHelp } from "@/components/panels/primitives";
+import { LabeledSlider, PanelHelp, SwitchRow } from "@/components/panels/primitives";
 
 /**
  * Grid toggle for the canvas view chrome, next to zoom.
@@ -15,6 +15,8 @@ export const GridControl = () => {
   const grid = useEditor((s) => s.grid);
   const setGrid = useEditor((s) => s.setGrid);
   const toggleGrid = useEditor((s) => s.toggleGrid);
+  const snapEnabled = useEditor((s) => s.snapEnabled);
+  const toggleSnap = useEditor((s) => s.toggleSnap);
 
   return (
     <div className="flex items-center">
@@ -38,8 +40,8 @@ export const GridControl = () => {
         <PopoverTrigger asChild>
           <button
             type="button"
-            title="Grid settings"
-            aria-label="Grid settings"
+            title="View settings"
+            aria-label="View settings"
             className="flex h-6 w-3.5 items-center justify-center rounded text-text-faint hover:bg-p-200/10 hover:text-text"
           >
             <ChevronUp className="h-2.5 w-2.5" />
@@ -63,8 +65,15 @@ export const GridControl = () => {
               value={Math.round(grid.opacity * 100)}
               onChange={(v) => setGrid({ opacity: v / 100 })}
             />
+            <SwitchRow
+              label="SNAP TO OBJECTS"
+              description="Show alignment guides and snap while dragging."
+              checked={snapEnabled}
+              onCheckedChange={toggleSnap}
+            />
             <PanelHelp className="mb-0">
-              Guides only — the grid never appears in an export.
+              Guides only — neither the grid nor the alignment guides appear in
+              an export.
             </PanelHelp>
           </div>
         </PopoverContent>

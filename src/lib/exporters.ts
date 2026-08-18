@@ -5,6 +5,7 @@ import { openLaybelFile } from "./importers";
 import { isImageTiltActive } from "./tilt";
 import { prepareExportTiles } from "./export/prepareExportTiles";
 import { GRID_LAYER_NAME } from "../components/canvas/GridOverlay";
+import { SNAP_GUIDES_LAYER_NAME } from "../components/canvas/SnapGuides";
 
 const dataURLtoBlob = (dataUrl: string): Blob => {
   const [meta, b64] = dataUrl.split(",");
@@ -47,6 +48,7 @@ const withOverlaysHidden = async <T,>(
   const overlays = [
     ...stage.find("Transformer"),
     ...stage.find(`.${GRID_LAYER_NAME}`),
+    ...stage.find(`.${SNAP_GUIDES_LAYER_NAME}`),
   ];
   const visible = overlays.map((node) => node.visible());
   overlays.forEach((node) => node.visible(false));

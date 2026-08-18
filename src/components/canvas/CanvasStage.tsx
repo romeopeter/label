@@ -9,7 +9,15 @@ import { ShapeNode } from "./ShapeNode";
 import { TiltedImageOverlay } from "./TiltedImageOverlay";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { GRID_LAYER_NAME, GridOverlay } from "./GridOverlay";
+import { SnapGuides, type SnapGuidesHandle } from "./SnapGuides";
 import { setStage } from "./stageRef";
+import {
+  buildCandidates,
+  computeSnap,
+  SNAP_THRESHOLD_PX,
+  type Bounds,
+  type SnapCandidates,
+} from "@/lib/snapping";
 import { importImageFile } from "../../lib/importers";
 import type { ImageElement, LaybelElement, TextElement } from "@/types";
 import { isImageTiltActive } from "@/lib/tilt";
@@ -30,6 +38,27 @@ const isTransformerTarget = (node: Konva.Node) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
+/**
+ * Axis-aligned bounds in canvas coordinates.
+ *
+ * `getClientRect` is used rather than the element's stored x/y/width/height so
+ * rotated elements align by the box you actually see. Shadow and stroke are
+ * skipped so guides track the shape's geometry instead of its glow.
+ */
+const boundsOf = (node: Konva.Node): Bounds => {
+  const rect = node.getClientRect({
+    relativeTo: node.getLayer() ?? undefined,
+    skipShadow: true,
+    skipStroke: true,
+  });
+  return {
+    minX: rect.x,
+    minY: rect.y,
+    maxX: rect.x + rect.width,
+    maxY: rect.y + rect.height,
+  };
+};
+
 export const CanvasStage = () => {
   // Store selectors
   const canvas = useEditor((s) => s.canvas);
@@ -48,6 +77,7 @@ export const CanvasStage = () => {
   const addImage = useEditor((s) => s.addImage);
   const zoom = useEditor((s) => s.zoom);
   const grid = useEditor((s) => s.grid);
+  const snapEnabled = useEditor((s) => s.snapEnabled);
   const watermark = useEditor((s) => s.watermark);
 
   // Refs for Konva stage, transformer, and container div
@@ -55,6 +85,8 @@ export const CanvasStage = () => {
   const transformerRef = useRef<Konva.Transformer>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tiltOverlayRef = useRef<HTMLDivElement>(null);
+  const guidesRef = useRef<SnapGuidesHandle>(null);
+  const snapCandidates = useRef<SnapCandidates | null>(null);
   const [toolbarMoreOpenFor, setToolbarMoreOpenFor] = useState<string | null>(
     null,
   );
@@ -169,6 +201,56 @@ export const CanvasStage = () => {
     if (!id) selectElement(null);
   };
 
+  /*
+    Snapping. The candidate set is built once per drag: nothing else moves
+    while one element is being dragged, so rebuilding it on every pointer move
+    would be pure waste.
+  */
+  const onElementDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+    if (!snapEnabled) return;
+
+    const node = e.target;
+    const layer = node.getLayer();
+    if (!layer) return;
+
+    // Only real elements are snap targets — this filters out the Transformer
+    // and the watermark, which live in the same layer but carry no element id.
+    const elementIds = new Set(elements.map((el) => el.id));
+    const others = layer
+      .getChildren()
+      .filter((child) => {
+        const id = child.id();
+        return !!id && id !== node.id() && elementIds.has(id);
+      })
+      .map(boundsOf);
+
+    snapCandidates.current = buildCandidates(others, canvas);
+  };
+
+  const onElementDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
+    const candidates = snapCandidates.current;
+    if (!candidates) return;
+
+    const node = e.target;
+    // The threshold is in screen px, so it divides through the stage scale —
+    // otherwise the pull feels sticky zoomed out and dead zoomed in.
+    const { dx, dy, guides } = computeSnap(
+      boundsOf(node),
+      candidates,
+      SNAP_THRESHOLD_PX / scale,
+    );
+
+    if (dx !== 0 || dy !== 0) {
+      node.position({ x: node.x() + dx, y: node.y() + dy });
+    }
+    guidesRef.current?.show(guides);
+  };
+
+  const onElementDragEnd = () => {
+    snapCandidates.current = null;
+    guidesRef.current?.clear();
+  };
+
   // Handle element selection with shift-key multi-select support
   const onSelect = (id: string) => (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
@@ -266,8 +348,15 @@ export const CanvasStage = () => {
             />
           </Layer>
 
-          {/* Main content layer - elements, transformer, and watermark */}
-          <Layer>
+          {/* Main content layer - elements, transformer, and watermark.
+              Drag is handled here rather than per node: Konva bubbles drag
+              events, so one handler covers every element type instead of
+              repeating the snap logic in each of them. */}
+          <Layer
+            onDragStart={onElementDragStart}
+            onDragMove={onElementDragMove}
+            onDragEnd={onElementDragEnd}
+          >
             {/* Render all canvas elements based on type */}
             {elements.map((el) => {
               const isSelected = selectedIds.includes(el.id);
@@ -345,6 +434,9 @@ export const CanvasStage = () => {
               <GridOverlay grid={grid} width={canvas.width} height={canvas.height} />
             </Layer>
           )}
+
+          {/* Topmost: guides must read over both content and the grid. */}
+          <SnapGuides ref={guidesRef} />
         </Stage>
 
         {selectedTiltedImage && (

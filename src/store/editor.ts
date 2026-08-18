@@ -81,6 +81,8 @@ interface EditorState {
   activeTool: Tool;
   zoom: number;
   grid: GridState;
+  /** Smart guides + snapping while dragging. A view aid, like `grid`. */
+  snapEnabled: boolean;
   watermark: boolean;
   isPro: boolean;
   /** Transient: true while a pattern slider is held. Not part of the project. */
@@ -91,6 +93,7 @@ interface EditorState {
   setZoom: (z: number) => void;
   setGrid: (g: Partial<GridState>) => void;
   toggleGrid: () => void;
+  toggleSnap: () => void;
   setCanvas: (c: CanvasSize) => void;
   setBackground: (b: Partial<BackgroundState>) => void;
   setPattern: (p: Partial<PatternConfig>) => void;
@@ -130,6 +133,9 @@ export const useEditor = create<EditorState>((set, get) => ({
   activeTool: "uploads",
   zoom: 62,
   grid: DEFAULT_GRID,
+  // On by default: this is the behaviour people expect from an editor, and it
+  // is unobtrusive because guides only appear when something actually lines up.
+  snapEnabled: true,
   watermark: true,
   isPro: false,
   patternDragging: false,
@@ -147,6 +153,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
 
   toggleGrid: () => set({ grid: { ...get().grid, enabled: !get().grid.enabled } }),
+
+  toggleSnap: () => set({ snapEnabled: !get().snapEnabled }),
   setCanvas: (c) => set({ canvas: c }),
   setBackground: (b) => set({ background: { ...get().background, ...b } }),
 
