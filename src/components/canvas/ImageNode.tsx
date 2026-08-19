@@ -3,6 +3,9 @@ import { Image as KImage, Group, Rect } from "react-konva";
 import useImage from "use-image";
 import type { ImageElement, DeviceFrame } from "../../types";
 import { useEditor } from "../../store/editor";
+import { isImageTiltActive } from "@/lib/tilt";
+
+/* ----------------------------------------------------------------- */
 
 interface Props {
   el: ImageElement;
@@ -22,19 +25,74 @@ const shadowProps = (el: ImageElement) =>
     : {};
 
 // Inset for clipped screenshot area within each device frame
-const FRAME_INSET: Record<NonNullable<DeviceFrame>, { top: number; right: number; bottom: number; left: number; outerPad: number; chromeColor: string }> = {
-  "macbook-light":  { top: 24, right: 28, bottom: 60, left: 28, outerPad: 0,  chromeColor: "#E7E5F5" },
-  "macbook-dark":   { top: 24, right: 28, bottom: 60, left: 28, outerPad: 0,  chromeColor: "#1A1826" },
-  "iphone-light":   { top: 60, right: 16, bottom: 60, left: 16, outerPad: 0,  chromeColor: "#E7E5F5" },
-  "iphone-dark":    { top: 60, right: 16, bottom: 60, left: 16, outerPad: 0,  chromeColor: "#0F0E1A" },
-  "browser-light":  { top: 36, right: 0,  bottom: 0,  left: 0,  outerPad: 0,  chromeColor: "#EEEDFE" },
-  "browser-dark":   { top: 36, right: 0,  bottom: 0,  left: 0,  outerPad: 0,  chromeColor: "#1A1826" },
+const FRAME_INSET: Record<
+  NonNullable<DeviceFrame>,
+  {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+    outerPad: number;
+    chromeColor: string;
+  }
+> = {
+  "macbook-light": {
+    top: 24,
+    right: 28,
+    bottom: 60,
+    left: 28,
+    outerPad: 0,
+    chromeColor: "#E7E5F5",
+  },
+  "macbook-dark": {
+    top: 24,
+    right: 28,
+    bottom: 60,
+    left: 28,
+    outerPad: 0,
+    chromeColor: "#1A1826",
+  },
+  "iphone-light": {
+    top: 60,
+    right: 16,
+    bottom: 60,
+    left: 16,
+    outerPad: 0,
+    chromeColor: "#E7E5F5",
+  },
+  "iphone-dark": {
+    top: 60,
+    right: 16,
+    bottom: 60,
+    left: 16,
+    outerPad: 0,
+    chromeColor: "#0F0E1A",
+  },
+  "browser-light": {
+    top: 36,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    outerPad: 0,
+    chromeColor: "#EEEDFE",
+  },
+  "browser-dark": {
+    top: 36,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    outerPad: 0,
+    chromeColor: "#1A1826",
+  },
 };
 
 export const ImageNode = ({ el, onSelect }: Props) => {
   const [img] = useImage(el.src, "anonymous");
   const update = useEditor((s) => s.updateElement);
   const sp = shadowProps(el);
+  const selectedIds = useEditor((s) => s.selectedIds);
+  const showTiltPlaceholder =
+    selectedIds.includes(el.id) && !el.deviceFrame && isImageTiltActive(el.transform);
 
   if (!img) return null;
 
@@ -63,14 +121,18 @@ export const ImageNode = ({ el, onSelect }: Props) => {
           });
         }}
       >
-        <KImage
-          image={img}
-          width={el.width}
-          height={el.height}
-          cornerRadius={el.cornerRadius}
-          stroke={el.border?.enabled ? el.border.color : undefined}
-          strokeWidth={el.border?.enabled ? el.border.width : 0}
-        />
+        {showTiltPlaceholder ? (
+          <Rect width={el.width} height={el.height} opacity={0} />
+        ) : (
+          <KImage
+            image={img}
+            width={el.width}
+            height={el.height}
+            cornerRadius={el.cornerRadius}
+            stroke={el.border?.enabled ? el.border.color : undefined}
+            strokeWidth={el.border?.enabled ? el.border.width : 0}
+          />
+        )}
       </Group>
     );
   }

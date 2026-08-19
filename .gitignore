@@ -7,5 +7,13 @@ dist-ssr
 .idea
 .vscode
 .claude*
+
 learn/
 CLAUDE.md
+AGENTS.md
+p-readme.md
+SKILLS
+.env
+todo.md
+implementation-phase-1.md
+/src/styles/design.html

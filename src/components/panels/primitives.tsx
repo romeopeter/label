@@ -15,7 +15,7 @@ export const PanelTitle = ({
   <div
     className={cn(
       "mb-0.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-p-200",
-      className
+      className,
     )}
   >
     <span>{children}</span>
@@ -36,21 +36,53 @@ export const SectionLabel = ({
   </div>
 );
 
-export const PanelHelp = ({ children }: { children: ReactNode }) => (
-  <p className="my-1 flex flex-wrap items-center gap-1.5 text-[11.5px] leading-[1.5] text-text-faint">
+export const PanelHelp = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p
+    className={cn(
+      `my-1 flex flex-wrap items-center gap-1.5 text-[11.5px] leading-[1.5] text-text-faint`,
+      className,
+    )}
+  >
     {children}
   </p>
 );
 
-export const PanelDesc = ({ children }: { children: ReactNode }) => (
-  <p className="m-0 text-[11.5px] leading-[1.5] text-text-muted">{children}</p>
+export const PanelDesc = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p
+    className={`m-0 text-[11.5px] leading-normal text-text-muted ${className}`}
+  >
+    {children}
+  </p>
 );
 
-export const PanelLink = ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (
+export const PanelLink = ({
+  children,
+  onClick,
+  className,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  className?: string;
+}) => (
   <button
     type="button"
     onClick={onClick}
-    className="mb-1 mt-0.5 inline-flex items-center gap-1.5 text-[11.5px] text-t-200 hover:text-t-400"
+    className={cn(
+      "mb-1 mt-0.5 inline-flex cursor-pointer items-center gap-1.5 text-[11.5px] text-t-200 hover:text-t-400",
+      className,
+    )}
   >
     {children}
   </button>
@@ -62,8 +94,22 @@ export const MutedMini = ({ children }: { children: ReactNode }) => (
   </span>
 );
 
-export const LinkMini = ({ children }: { children: ReactNode }) => (
-  <button type="button" className="cursor-pointer text-[10px] text-t-200 hover:text-t-400">{children}</button>
+export const LinkMini = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <button
+    type="button"
+    className={cn(
+      `cursor-pointer text-[10px] text-t-200 hover:text-t-400`,
+      className,
+    )}
+  >
+    {children}
+  </button>
 );
 
 interface LabeledSliderProps {
@@ -74,7 +120,11 @@ interface LabeledSliderProps {
   step?: number;
   unit?: string;
   leftIcon?: ReactNode;
+  className?: string;
+  disabled?: boolean;
   onChange?: (v: number) => void;
+  /** Fires once when the drag is released — for "cheap while dragging" work. */
+  onCommit?: (v: number) => void;
 }
 
 export const LabeledSlider = ({
@@ -85,9 +135,12 @@ export const LabeledSlider = ({
   max = 100,
   step = 1,
   leftIcon,
+  className,
+  disabled = false,
   onChange,
+  onCommit,
 }: LabeledSliderProps) => (
-  <div className="flex flex-col gap-1.5">
+  <div className={cn("flex flex-col gap-1.5", disabled && "opacity-40", className)}>
     <div className="flex items-center justify-between">
       <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-p-200">
         {leftIcon}
@@ -103,7 +156,10 @@ export const LabeledSlider = ({
       max={max}
       step={step}
       value={[value]}
+      disabled={disabled}
+      className={disabled ? "cursor-not-allowed" : "cursor-pointer"}
       onValueChange={([v]) => onChange?.(v)}
+      onValueCommit={([v]) => onCommit?.(v)}
     />
   </div>
 );
@@ -123,7 +179,9 @@ export const SwitchRow = ({
 }) => (
   <label className="flex cursor-pointer items-center justify-between gap-3 py-1.5">
     <div className="min-w-0 flex-1">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-p-200">{label}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-widest text-p-200">
+        {label}
+      </div>
       {description && (
         <div className="mt-1 text-[11px] tracking-normal text-text-faint normal-case">
           {description}
@@ -152,9 +210,19 @@ export const ColorRow = ({
       aria-label={typeof label === "string" ? label : "Color"}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
-      className="h-[22px] w-[22px] cursor-pointer rounded border border-hairline bg-transparent p-0"
+      className="h-5.5 w-5.5 cursor-pointer rounded border border-hairline bg-transparent p-0"
     />
-    <div className="flex-1 font-mono text-[11px] text-text">{value.toUpperCase()}</div>
-    {label && <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-text-faint">{label}</span>}
+    <div className="flex-1 font-mono text-[11px] text-text">
+      {value.toUpperCase()}
+    </div>
+    {label && (
+      <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-text-faint">
+        {label}
+      </span>
+    )}
   </div>
+);
+
+export const Linebreak = ({ className }: { className?: string }) => (
+  <hr className={`border-border ${className}`} />
 );

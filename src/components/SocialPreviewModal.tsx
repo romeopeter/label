@@ -19,7 +19,7 @@ export const SocialPreviewModal = ({ open, onOpenChange, previewDataUrl }: Props
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[560px] max-w-[calc(100vw-32px)] p-0">
+      <DialogContent className="w-140 max-w-[calc(100vw-32px)] p-0">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
             <span className="text-xs text-text-muted">Preview on</span>
@@ -47,7 +47,7 @@ export const SocialPreviewModal = ({ open, onOpenChange, previewDataUrl }: Props
         <div className="bg-chrome p-6">
           <div
             className={cn(
-              "rounded-[10px] p-4 font-[var(--font-ui)]",
+              "rounded-lg p-4 font-[var(--font-ui)]",
               dark ? "bg-[#1B1F23] text-[#E8E8E8]" : "bg-white text-[#1A1826]"
             )}
           >

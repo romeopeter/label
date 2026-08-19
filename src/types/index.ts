@@ -1,3 +1,5 @@
+import type { PatternConfig } from "./pattern";
+
 export type ElementKind = "image" | "text" | "shape" | "icon";
 
 export type ShapeKind =
@@ -5,8 +7,17 @@ export type ShapeKind =
   | "rounded-rect"
   | "ellipse"
   | "arrow"
+  | "line"
   | "highlight"
-  | "callout";
+  | "callout"
+  | "qr-code"
+  | "emoji"
+  | "image"
+  | "pencil"
+  | "number"
+  | "icons"
+  | "vector"
+  | "other";
 
 export type DeviceFrame =
   | null
@@ -46,6 +57,15 @@ export interface ImageElement extends BaseElement {
   src: string; // object URL or data URL
   deviceFrame: DeviceFrame;
   cornerRadius: number;
+  transform: string;
+}
+
+export interface UploadedImage {
+  id: string;
+  src: string;
+  naturalWidth: number;
+  naturalHeight: number;
+  createdAt: number;
 }
 
 export interface TextElement extends BaseElement {
@@ -77,7 +97,7 @@ export interface ShapeElement extends BaseElement {
 
 export type LaybelElement = ImageElement | TextElement | ShapeElement;
 
-export type BackgroundMode = "solid" | "gradient" | "image";
+export type BackgroundMode = "solid" | "gradient" | "image" | "pattern";
 
 export interface BackgroundState {
   mode: BackgroundMode;
@@ -86,6 +106,19 @@ export interface BackgroundState {
   imageSrc: string | null;
   imageBlur: number;
   imageOpacity: number;
+  pattern: PatternConfig;
+}
+
+/**
+ * Layout grid. A viewport aid, not artwork — it never renders into an export,
+ * and like `zoom` it is deliberately absent from `LaybelProject` because it
+ * describes how you're looking at the canvas, not what's on it.
+ */
+export interface GridState {
+  enabled: boolean;
+  /** Spacing between lines, in canvas px. */
+  size: number;
+  opacity: number;
 }
 
 export interface CanvasSize {
@@ -93,6 +126,8 @@ export interface CanvasSize {
   height: number;
   label: string;
 }
+
+export * from "./pattern";
 
 export interface LaybelProject {
   version: 1;
