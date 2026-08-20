@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { KeyBadge } from "@/components/ui/key-badge";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { PanelTitle, SectionLabel, LabeledSlider, SwitchRow, PanelDesc, PanelHelp } from "./primitives";
+import { PanelTitle, SectionLabel, SwitchRow, PanelDesc, PanelHelp } from "./primitives";
 
 const Phase2Tag = () => <Badge variant="phase2" size="sm">PHASE 2</Badge>;
 
@@ -110,19 +109,6 @@ export const ImagesPanel = () => (
         </button>
       ))}
     </div>
-  </div>
-);
-
-export const ThreeDPanel = () => (
-  <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
-    <PanelTitle badge={<Phase2Tag />}>3D EFFECT</PanelTitle>
-    <PanelDesc>Tilt and depth presets ship in Phase 2.</PanelDesc>
-    <LabeledSlider label="TILT X" value={-12} unit="°" min={-45} max={45} />
-    <LabeledSlider label="TILT Y" value={8} unit="°" min={-45} max={45} />
-    <LabeledSlider label="INTENSITY" value={60} unit="%" />
-    <SwitchRow label="INNER 3D SHADOW">
-      <Switch checked />
-    </SwitchRow>
   </div>
 );
 

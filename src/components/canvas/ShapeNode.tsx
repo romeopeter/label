@@ -1,5 +1,5 @@
 import type Konva from "konva";
-import { Group, Rect, Ellipse, Arrow, Text as KText, Tag, Label } from "react-konva";
+import { Group, Rect, Ellipse, Arrow, Text as KText, Tag, Label, Line } from "react-konva";
 import type { ShapeElement } from "../../types";
 import { useEditor } from "../../store/editor";
 
@@ -94,6 +94,20 @@ export const ShapeNode = ({ el, onSelect }: Props) => {
           pointerLength={el.arrowHeadSize ?? 18}
           pointerWidth={(el.arrowHeadSize ?? 18) * 0.9}
           dash={dash}
+        />
+      </Group>
+    );
+  }
+
+  if (el.shape === "line") {
+    return (
+      <Group {...common}>
+        <Line
+          points={[0, el.height / 2, el.width, el.height / 2]}
+          stroke={el.stroke}
+          strokeWidth={el.strokeWidth}
+          dash={dash}
+          lineCap="round"
         />
       </Group>
     );

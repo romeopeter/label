@@ -1,0 +1,10 @@
+<svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Back tag (purple) -->
+  <path d="M 0 3 C 0 1.34315 1.34315 0 3 0 L 12.48 0 L 16 6 L 12.48 12 L 0 12 L 0 3 Z" fill="#534AB7"/>
+
+  <!-- Mid tag (light purple, slightly transparent) -->
+  <path d="M 3 7 C 3 5.34315 4.34315 4 6 4 L 15.48 4 L 19 10 L 15.48 16 L 3 16 L 3 7 Z" fill="#8B82DE" opacity="0.85"/>
+
+  <!-- Front tag (teal) -->
+  <path d="M 6 11 C 6 9.34315 7.34315 8 9 8 L 18.48 8 L 22 14 L 18.48 20 L 6 20 L 6 11 Z" fill="#1D9E75"/>
+</svg>

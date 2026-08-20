@@ -3,6 +3,7 @@ import { Rect, Image as KImage, Group } from "react-konva";
 import useImage from "use-image";
 import Konva from "konva";
 import type { BackgroundState } from "../../types";
+import { PatternFillRect } from "./PatternFillRect";
 
 interface Props {
   bg: BackgroundState;
@@ -34,6 +35,10 @@ export const Background = ({ bg, width, height }: Props) => {
         listening={false}
       />
     );
+  }
+
+  if (bg.mode === "pattern") {
+    return <PatternFillRect pattern={bg.pattern} width={width} height={height} />;
   }
 
   return <BackgroundImage bg={bg} width={width} height={height} />;
