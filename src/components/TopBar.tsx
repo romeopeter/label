@@ -26,9 +26,9 @@ export const TopBar = ({ onPreview }: Props) => {
       {/* LEFT */}
       <div className="flex items-center gap-2.5">
         <div className="flex items-center gap-2 px-1.5 py-1">
-          <img src="/icons/logo.svg" alt="Laybel logo" className="h-5 w-5.5" />
+          <img src="/icons/logo.svg" alt="Layer logo" className="h-5 w-5.5" />
           <span className="font-display text-base font-bold tracking-[-0.01em] text-text">
-            Laybel
+            Layer
           </span>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { getStage } from "../components/canvas/stageRef";
 import { useEditor } from "../store/editor";
-import { openLaybelFile } from "./importers";
+import { openLayerFile } from "./importers";
 import { isImageTiltActive } from "./tilt";
 import { prepareExportTiles } from "./export/prepareExportTiles";
 import { GRID_LAYER_NAME } from "../components/canvas/GridOverlay";
@@ -165,7 +165,7 @@ export const exportCanvas = async (
   if (!dataUrl) return;
   const ext = format === "jpg" ? "jpg" : format;
   const blob = dataURLtoBlob(dataUrl);
-  downloadBlob(blob, `laybel-design-${Date.now()}.${ext}`);
+  downloadBlob(blob, `layer-design-${Date.now()}.${ext}`);
 };
 
 export const copyCanvasToClipboard = async () => {
@@ -176,7 +176,7 @@ export const copyCanvasToClipboard = async () => {
     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
   } catch {
     // Fallback: download
-    downloadBlob(blob, `laybel-design-${Date.now()}.png`);
+    downloadBlob(blob, `layer-design-${Date.now()}.png`);
   }
 };
 
@@ -185,9 +185,9 @@ export const downloadProject = () => {
   const blob = new Blob([JSON.stringify(project, null, 2)], {
     type: "application/json",
   });
-  downloadBlob(blob, `laybel-project-${Date.now()}.laybel`);
+  downloadBlob(blob, `layer-project-${Date.now()}.layer`);
 };
 
 export const openProjectFile = async () => {
-  await openLaybelFile();
+  await openLayerFile();
 };

@@ -5,7 +5,7 @@ import { deriveBrandPatternPairs } from "./deriveBrandPatternPairs";
 const FALLBACK_PAIR = CURATED_PATTERN_PAIRS[0];
 
 /**
- * `.laybel` files store only the pair id, so hexes aren't duplicated into every
+ * `.layer` files store only the pair id, so hexes aren't duplicated into every
  * project and custom pairs stay editable in one place. Resolution happens at
  * render time against curated presets, brand-derived pairs, and the user's
  * custom pairs.

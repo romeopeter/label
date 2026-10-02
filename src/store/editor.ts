@@ -4,8 +4,8 @@ import type {
   CanvasSize,
   GridState,
   ImageElement,
-  LaybelElement,
-  LaybelProject,
+  LayerElement,
+  LayerProject,
   ShapeElement,
   ShapeKind,
   TextElement,
@@ -73,7 +73,7 @@ type Tool =
 interface EditorState {
   canvas: CanvasSize;
   background: BackgroundState;
-  elements: LaybelElement[];
+  elements: LayerElement[];
   uploadedImages: UploadedImage[];
   customPatternPairs: PatternColorPair[];
   selectedIds: string[];
@@ -110,15 +110,15 @@ interface EditorState {
   deleteUploadedImage: (id: string) => void;
   addText: (variant: "heading" | "body") => string;
   addShape: (shape: ShapeKind) => string;
-  updateElement: (id: string, patch: Partial<LaybelElement>) => void;
+  updateElement: (id: string, patch: Partial<LayerElement>) => void;
   duplicateElement: (id: string) => void;
   deleteElement: (id: string) => void;
   selectElement: (id: string | null, additive?: boolean) => void;
   moveElement: (id: string, dz: 1 | -1) => void;
 
   // project I/O
-  loadProject: (project: LaybelProject) => void;
-  toProject: () => LaybelProject;
+  loadProject: (project: LayerProject) => void;
+  toProject: () => LayerProject;
   resetProject: () => void;
 }
 
@@ -281,7 +281,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   updateElement: (id, patch) =>
     set({
       elements: get().elements.map((e) =>
-        e.id === id ? ({ ...e, ...patch } as LaybelElement) : e
+        e.id === id ? ({ ...e, ...patch } as LayerElement) : e
       ),
     }),
 
@@ -293,7 +293,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       id: uid(),
       x: source.x + 32,
       y: source.y + 32,
-    } as LaybelElement;
+    } as LayerElement;
     set({ elements: [...get().elements, copy], selectedIds: [copy.id] });
   },
 
@@ -331,7 +331,7 @@ export const useEditor = create<EditorState>((set, get) => ({
         width: project.canvas.width,
         height: project.canvas.height,
       },
-      // Spread over the defaults: `.laybel` files written before the pattern
+      // Spread over the defaults: `.layer` files written before the pattern
       // background existed have no `pattern` key, and the panel/canvas both
       // assume one is always present.
       background: { ...DEFAULT_BACKGROUND, ...project.background },

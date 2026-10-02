@@ -16,14 +16,14 @@ import {
   X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import type { ImageElement, LaybelElement, TextElement } from "@/types";
+import type { ImageElement, LayerElement, TextElement } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------------------ */
 
 interface SelectionToolbarProps {
-  element: LaybelElement;
+  element: LayerElement;
   position: { x: number; y: number };
   moreOpen: boolean;
   onMoreOpenChange: (open: boolean) => void;

@@ -95,7 +95,7 @@ export interface ShapeElement extends BaseElement {
   text?: string;
 }
 
-export type LaybelElement = ImageElement | TextElement | ShapeElement;
+export type LayerElement = ImageElement | TextElement | ShapeElement;
 
 export type BackgroundMode = "solid" | "gradient" | "image" | "pattern";
 
@@ -111,7 +111,7 @@ export interface BackgroundState {
 
 /**
  * Layout grid. A viewport aid, not artwork — it never renders into an export,
- * and like `zoom` it is deliberately absent from `LaybelProject` because it
+ * and like `zoom` it is deliberately absent from `LayerProject` because it
  * describes how you're looking at the canvas, not what's on it.
  */
 export interface GridState {
@@ -129,10 +129,10 @@ export interface CanvasSize {
 
 export * from "./pattern";
 
-export interface LaybelProject {
+export interface LayerProject {
   version: 1;
   canvas: { width: number; height: number };
   background: BackgroundState;
-  elements: LaybelElement[];
+  elements: LayerElement[];
   watermark: boolean;
 }

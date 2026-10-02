@@ -42,7 +42,7 @@ export const CustomizeSidebarModal = ({ open, onOpenChange, hiddenTools, toggleV
               <span className="flex-1 text-[13px] text-text">{t.label}</span>
               {t.exclusive && (
                 <span className="rounded-full bg-t-400/15 px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.04em] text-t-400">
-                  Laybel exclusive
+                  Layer exclusive
                 </span>
               )}
               <Button variant="icon" size="icon" onClick={() => toggleVisible(t.key)}>

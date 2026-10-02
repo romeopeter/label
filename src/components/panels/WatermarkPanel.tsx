@@ -13,7 +13,7 @@ export const WatermarkPanel = () => {
       <PanelTitle>WATERMARK</PanelTitle>
       <SwitchRow
         label="SHOW WATERMARK"
-        description={isPro ? "Toggle the Laybel watermark." : "Free plan shows 'Made with Laybel'."}
+        description={isPro ? "Toggle the Layer watermark." : "Free plan shows 'Made with Layer'."}
         checked={watermark}
         onCheckedChange={isPro ? setWatermark : undefined}
       />

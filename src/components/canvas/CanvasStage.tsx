@@ -19,7 +19,7 @@ import {
   type SnapCandidates,
 } from "@/lib/snapping";
 import { importImageFile } from "../../lib/importers";
-import type { ImageElement, LaybelElement, TextElement } from "@/types";
+import type { ImageElement, LayerElement, TextElement } from "@/types";
 import { isImageTiltActive } from "@/lib/tilt";
 
 /* ------------------------------------------------------------------------ */
@@ -292,7 +292,7 @@ export const CanvasStage = () => {
   const updateSelectedText = (patch: Partial<TextElement>) => {
     if (!selectedToolbarElement || selectedToolbarElement.type !== "text")
       return;
-    updateElement(selectedToolbarElement.id, patch as Partial<LaybelElement>);
+    updateElement(selectedToolbarElement.id, patch as Partial<LayerElement>);
   };
 
   const deleteSelectedElement = () => {
@@ -414,7 +414,7 @@ export const CanvasStage = () => {
               <KText
                 x={canvas.width - 240}
                 y={canvas.height - 50}
-                text="Made with Laybel"
+                text="Made with Layer"
                 fontSize={22}
                 fontFamily="DM Sans"
                 fontStyle="500"

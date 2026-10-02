@@ -76,9 +76,9 @@ export const ExportMenu = ({ onClose }: Props) => {
            right={<KeyBadge>⌘C</KeyBadge>}
            onClick={close(copyCanvasToClipboard)} />
       <Separator className="my-1.5" />
-      <Row icon={<Save className="h-3.5 w-3.5" />} label="Save project (.laybel)"
+      <Row icon={<Save className="h-3.5 w-3.5" />} label="Save project (.layer)"
            onClick={close(downloadProject)} />
-      <Row icon={<FolderOpen className="h-3.5 w-3.5" />} label="Open project (.laybel)"
+      <Row icon={<FolderOpen className="h-3.5 w-3.5" />} label="Open project (.layer)"
            onClick={close(openProjectFile)} />
       <button
         type="button"

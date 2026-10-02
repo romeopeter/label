@@ -1,7 +1,6 @@
-# Laybel
+# Layer
 
-Easy-to-us editor for creating marketing banner, product launch screen and polished visual for social media posts.
-
+Easy-to-us editor for creating quick shareable visual assets. Built for businesses, entrepreneurs
 ---
 
 ## Stack
@@ -48,7 +47,7 @@ npm run preview
 | Watermark (free tier)                        | [WatermarkPanel](src/components/panels/WatermarkPanel.tsx) + composited in [CanvasStage.tsx](src/components/canvas/CanvasStage.tsx) |
 | Export PNG / JPG / WebP @ 2× (default)       | [ExportMenu](src/components/ExportMenu.tsx) · [exporters.ts](src/lib/exporters.ts) |
 | Copy to clipboard                            | [exporters.ts:copyCanvasToClipboard](src/lib/exporters.ts)                  |
-| `.laybel` save / open                        | [exporters.ts](src/lib/exporters.ts) · [importers.ts](src/lib/importers.ts) |
+| `.layer` save / open                        | [exporters.ts](src/lib/exporters.ts) · [importers.ts](src/lib/importers.ts) |
 | Social preview modal                         | [SocialPreviewModal](src/components/SocialPreviewModal.tsx)                 |
 | Customize sidebar (hide tools)               | [CustomizeSidebarModal](src/components/CustomizeSidebarModal.tsx)           |
 | Keyboard: ⌘E export, ⌘C copy, ⌫ delete, esc | [App.tsx](src/App.tsx)                                                      |
@@ -79,8 +78,8 @@ src/
 ├── store/editor.ts               Zustand store (canvas, elements, selection, IO)
 ├── lib/
 │   ├── constants.ts              canvas sizes, device frames, fonts
-│   ├── importers.ts              image + .laybel project loading
-│   └── exporters.ts              PNG/JPG/WebP/clipboard/.laybel saving
-├── types/index.ts                LaybelElement / Project / Background types
+│   ├── importers.ts              image + .layer project loading
+│   └── exporters.ts              PNG/JPG/WebP/clipboard/.layer saving
+├── types/index.ts                LayerElement / Project / Background types
 └── styles/app.css                full design CSS (copied from the design artifact)
 ```

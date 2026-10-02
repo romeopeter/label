@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   LAYBEL — Tailwind v4 theme tokens (single source of truth)
+   LAYER — Tailwind v4 theme tokens (single source of truth)
    Purple (60%) / Teal (30%) / Amber (10%) on dark chrome
    ============================================================ */
 
@@ -53,7 +53,7 @@
   --font-ui: "DM Sans", "Outfit", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /* ShadCN-style semantic aliases mapped to Laybel tokens */
+  /* ShadCN-style semantic aliases mapped to Layer tokens */
   --color-background: var(--color-chrome);
   --color-foreground: var(--color-text);
   --color-muted: var(--color-panel-2);
@@ -123,7 +123,7 @@
 }
 
 /* ============================================================
-   UTILITY LAYER — Laybel-specific composites that don't read
+   UTILITY LAYER — Layer-specific composites that don't read
    cleanly as utility chains (multi-stop backgrounds, pseudo
    elements, clip-paths, etc.)
    ============================================================ */

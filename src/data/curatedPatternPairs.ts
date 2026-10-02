@@ -6,7 +6,7 @@ import type { PatternColorPair } from "@/types/pattern";
  * NOTE (per §10.1 of the brief): these hexes are a structurally-correct
  * placeholder set. The final values are meant to be eyedroppered directly off
  * the reference swatch grid by a designer before ship — replace the values in
- * place, keep the ids stable, since `.laybel` files reference them by id.
+ * place, keep the ids stable, since `.layer` files reference them by id.
  */
 export const CURATED_PATTERN_PAIRS: PatternColorPair[] = [
   // Warm
