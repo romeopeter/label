@@ -86,11 +86,13 @@ static image (Brandbird parity).
 
 1. Screenshot / image import
 2. Canvas with background control
-3. Device frame overlay
+3. Device frame overlay (Mockup)
 4. Text layers (heading + body)
 5. Basic shapes and annotations
 6. Export: static PNG/JPG (watermarked on free tier)
 7. Canvas size presets for common destinations
+8. Image upload, presets and effects
+9. Above as free version
 
 ### Phase 1 does NOT include
 
@@ -531,7 +533,7 @@ element.
 
 ### Watermark
 
-- Free tier composites "Made with Layer" on every export.
+- Free tier composites the Layer logo watermark on every export.
 - **Current state (web):** Konva node added to the stage during export and
   removed after. This is bypassable via DevTools — see §11 for the required
   Rust enforcement.
@@ -619,7 +621,7 @@ Versioned JSON snapshot of the editable state:
 ### Why the gate must not live in JS
 
 Whatever runs in the WebView is patchable (`useEditor.setState({ isPro:
-true })` → clean export). The "Made with Layer" distribution mechanic dies.
+true })` → clean export). The Layer logo watermark distribution mechanic dies.
 
 ### Target Rust design
 

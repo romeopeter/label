@@ -51,7 +51,7 @@ export const TOOLS: ToolDef[] = [
   },
   {
     key: "annotation",
-    label: "Annotation",
+    label: "Mark",
     icon: <PenLine className="h-4.5 w-4.5" />,
   },
   {
@@ -77,7 +77,7 @@ export const TOOLS: ToolDef[] = [
   },
   {
     key: "border",
-    label: "Border",
+    label: "Corner",
     icon: <Square className="h-4.5 w-4.5" />,
   },
   // {

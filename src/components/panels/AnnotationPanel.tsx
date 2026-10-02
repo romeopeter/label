@@ -389,7 +389,7 @@ export const AnnotationPanel = () => {
         <PanelTitle className="mb-0">
           <div className="flex items-center gap-1">
             <PenLine className="h-4.5 w-4.5" />
-            <span>ANNOTATION</span>
+            <span>MARK</span>
           </div>
         </PanelTitle>
         {hasAnnotations && (
@@ -406,7 +406,7 @@ export const AnnotationPanel = () => {
               <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 rounded-lg border border-hairline-strong bg-panel p-2 shadow-[0_24px_70px_rgba(0,0,0,0.65)]">
                 <div className="mb-2 flex items-center justify-between px-1">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-p-200">
-                    Add annotation
+                    Add mark
                   </span>
                   <button
                     type="button"
@@ -428,7 +428,7 @@ export const AnnotationPanel = () => {
 
       {!hasAnnotations ? (
         <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
-          <SectionLabel>ADD ANNOTATION</SectionLabel>
+          <SectionLabel>ADD MARK</SectionLabel>
           <AnnotationGrid onPick={pickAnnotation} />
           <PanelHelp>
             Click to add — then drag, resize, or double-click text to edit.

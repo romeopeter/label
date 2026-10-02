@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Transformer, Text as KText } from "react-konva";
+import { Stage, Layer, Transformer, Text as KText, Group as KGroup, Image as KImage, Rect as KRect } from "react-konva";
+import useImage from "use-image";
 import Konva from "konva";
 import { useEditor } from "../../store/editor";
 import { Background } from "./Background";
@@ -134,9 +135,11 @@ export const CanvasStage = () => {
     return () => requestObserver.disconnect();
   }, [canvas.width, canvas.height, zoom]);
 
+  // Brand logo for the watermark lockup
+  const [logoImg] = useImage("/icons/logo.svg");
+
   // Attach transformer to selected nodes
-  useEffect(() => {
-    const stage = stageRef.current;
+  useEffect(() => {    const stage = stageRef.current;
     const tr = transformerRef.current;
     if (!stage || !tr) return;
     const nodes = selectedIds
@@ -411,16 +414,30 @@ export const CanvasStage = () => {
 
             {/* Watermark (Phase 1: composited in JS, always shown for non-Pro) */}
             {watermark && (
-              <KText
-                x={canvas.width - 240}
-                y={canvas.height - 50}
-                text="Made with Layer"
-                fontSize={22}
-                fontFamily="DM Sans"
-                fontStyle="500"
-                fill="rgba(255,255,255,0.7)"
+              <KGroup
+                x={canvas.width - 144}
+                y={canvas.height - 60}
                 listening={false}
-              />
+              >
+                <KRect
+                  x={0}
+                  y={0}
+                  width={120}
+                  height={36}
+                  cornerRadius={18}
+                  fill="rgba(15,14,26,0.6)"
+                />
+                <KImage image={logoImg} x={14} y={8} width={22} height={20} />
+                <KText
+                  x={44}
+                  y={6}
+                  text="Layer"
+                  fontSize={22}
+                  fontFamily="Bricolage Grotesque"
+                  fontStyle="bold"
+                  fill="#FFFFFF"
+                />
+              </KGroup>
             )}
           </Layer>
 

@@ -1,5 +1,6 @@
 import { useEditor } from "@/store/editor";
 import type { ImageElement, ShapeElement } from "@/types";
+import { cn } from "@/lib/utils";
 import {
   PanelTitle,
   SectionLabel,
@@ -9,6 +10,23 @@ import {
   SwitchRow,
 } from "./primitives";
 import { Linebreak } from "./primitives";
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+interface BorderPreset {
+  name: string;
+  width: number;
+  radius: number;
+}
+
+const BORDER_PRESETS: BorderPreset[] = [
+  { name: "Sharp", width: 2, radius: 0 },
+  { name: "Subtle", width: 2, radius: 8 },
+  { name: "Soft", width: 3, radius: 12 },
+  { name: "Round", width: 3, radius: 18 },
+  { name: "Bold", width: 4, radius: 24 },
+  { name: "Pill", width: 4, radius: 32 },
+];
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
@@ -22,7 +40,7 @@ export const BorderPanel = () => {
   if (!el) {
     return (
       <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
-        <PanelTitle>BORDER</PanelTitle>
+        <PanelTitle>CORNER</PanelTitle>
         <PanelDesc>
           Select an element to add a border or rounded corners.
         </PanelDesc>
@@ -52,9 +70,21 @@ export const BorderPanel = () => {
       update(el.id, { cornerRadius: v });
   };
 
+  const applyPreset = (p: BorderPreset) => {
+    update(el.id, {
+      border: { ...border, enabled: true, width: p.width },
+      ...(canCorner ? { cornerRadius: p.radius } : {}),
+    });
+  };
+
+  const isActivePreset = (p: BorderPreset) =>
+    border.enabled &&
+    border.width === p.width &&
+    (!canCorner || cornerRadius === p.radius);
+
   return (
     <div className="flex flex-col gap-4 px-4 pb-6 pt-4">
-      <PanelTitle>BORDER</PanelTitle>
+      <PanelTitle>CORNER</PanelTitle>
 
       <Linebreak />
 
@@ -71,7 +101,7 @@ export const BorderPanel = () => {
       <LabeledSlider
         label="BORDER WIDTH"
         unit="px"
-        max={20}
+        max={100}
         value={border.width}
         onChange={(v) => setBorder({ width: v })}
       />
@@ -84,6 +114,37 @@ export const BorderPanel = () => {
           onChange={setCorner}
         />
       )}
+
+      <PanelTitle className="mb-2">Select preset</PanelTitle>
+      <div className="grid grid-cols-3 gap-2">
+        {BORDER_PRESETS.map((p) => {
+          const active = isActivePreset(p);
+          return (
+            <button
+              key={p.name}
+              type="button"
+              title={p.name}
+              aria-label={`${p.name} border preset`}
+              aria-pressed={active}
+              onClick={() => applyPreset(p)}
+              className={cn(
+                "bg-dot-grid bg-dot-grid-dense relative h-11.25 w-full cursor-pointer overflow-hidden rounded-md border transition-colors hover:border-secondary",
+                active ? "border-secondary" : "border-border",
+              )}
+            >
+              <span
+                aria-hidden
+                className="absolute top-[35%] bottom-[-8px] bg-primary"
+                style={{
+                  left: 10,
+                  right: 10 - p.radius,
+                  borderRadius: p.radius,
+                }}
+              />
+            </button>
+          );
+        })}
+      </div>
 
       <Linebreak />
     </div>
