@@ -6,6 +6,8 @@ import type {
   ImageElement,
   LayerElement,
   LayerProject,
+  MarkCategory,
+  MarkTool,
   ShapeElement,
   ShapeKind,
   TextElement,
@@ -13,6 +15,9 @@ import type {
 } from "../types";
 import type { PatternColorPair, PatternConfig } from "../types/pattern";
 import { DEFAULT_PATTERN_CONFIG } from "../types/pattern";
+import { migrateElement, nextNumber } from "../lib/marks";
+import { DEFAULT_MARK_STYLES, shapeDefaults } from "../lib/markTools";
+import { createHistory } from "./history";
 
 /* ------------------------------------------------------- */
 
@@ -87,6 +92,16 @@ interface EditorState {
   isPro: boolean;
   /** Transient: true while a pattern slider is held. Not part of the project. */
   patternDragging: boolean;
+  /** Transient: what a canvas drag creates. Null means it selects and moves. */
+  markTool: MarkTool | null;
+  /** Style for the next mark, by category. Lasts the session, not the project. */
+  markStyles: Record<MarkCategory, Partial<ShapeElement>>;
+  /** Transient: the element whose text is open for typing on the canvas. */
+  editingId: string | null;
+  /** Transient: the image open for cropping. */
+  cropId: string | null;
+  canUndo: boolean;
+  canRedo: boolean;
 
   // tool / UI
   setActiveTool: (t: Tool) => void;
@@ -99,6 +114,12 @@ interface EditorState {
   setPattern: (p: Partial<PatternConfig>) => void;
   setPatternDragging: (v: boolean) => void;
   setWatermark: (v: boolean) => void;
+  setMarkTool: (tool: MarkTool | null) => void;
+  setMarkStyle: (category: MarkCategory, patch: Partial<ShapeElement>) => void;
+  setEditingId: (id: string | null) => void;
+  setCropId: (id: string | null) => void;
+  undo: () => void;
+  redo: () => void;
 
   // pattern colour pairs (in-memory; see "Deferred Rust Implementations" in CLAUDE.md)
   addCustomPatternPair: (base: string, accent: string, label?: string) => string;
@@ -108,13 +129,17 @@ interface EditorState {
   addImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
   addUploadedImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
   deleteUploadedImage: (id: string) => void;
-  addText: (variant: "heading" | "body") => string;
-  addShape: (shape: ShapeKind) => string;
+  addText: (variant: "heading" | "body", overrides?: Partial<TextElement>) => string;
+  addShape: (shape: ShapeKind, overrides?: Partial<ShapeElement>) => string;
   updateElement: (id: string, patch: Partial<LayerElement>) => void;
+  /** Records a measured height, which isn't an edit and shouldn't be undoable. */
+  measureElement: (id: string, height: number) => void;
   duplicateElement: (id: string) => void;
   deleteElement: (id: string) => void;
   selectElement: (id: string | null, additive?: boolean) => void;
   moveElement: (id: string, dz: 1 | -1) => void;
+  /** Moves an element into another's place in the stacking order. */
+  reorderElement: (id: string, targetId: string) => void;
 
   // project I/O
   loadProject: (project: LayerProject) => void;
@@ -139,8 +164,15 @@ export const useEditor = create<EditorState>((set, get) => ({
   watermark: true,
   isPro: false,
   patternDragging: false,
+  markTool: null,
+  markStyles: DEFAULT_MARK_STYLES,
+  editingId: null,
+  cropId: null,
+  canUndo: false,
+  canRedo: false,
 
-  setActiveTool: (t) => set({ activeTool: t }),
+  setActiveTool: (t) =>
+    set({ activeTool: t, markTool: null, editingId: null, cropId: null }),
   setZoom: (z) => set({ zoom: Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.round(z))) }),
 
   setGrid: (g) => {
@@ -166,6 +198,24 @@ export const useEditor = create<EditorState>((set, get) => ({
   setPatternDragging: (v) => set({ patternDragging: v }),
 
   setWatermark: (v) => set({ watermark: v }),
+
+  setMarkTool: (tool) =>
+    set({ markTool: tool, selectedIds: [], editingId: null, cropId: null }),
+
+  setMarkStyle: (category, patch) => {
+    const { markStyles } = get();
+    set({
+      markStyles: {
+        ...markStyles,
+        [category]: { ...markStyles[category], ...patch },
+      },
+    });
+  },
+
+  setEditingId: (id) => set({ editingId: id }),
+  setCropId: (id) => set({ cropId: id, editingId: null }),
+  undo: () => history.undo(),
+  redo: () => history.redo(),
 
   addCustomPatternPair: (base, accent, label) => {
     const pair: PatternColorPair = {
@@ -226,7 +276,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       uploadedImages: get().uploadedImages.filter((image) => image.id !== id),
     }),
 
-  addText: (variant) => {
+  addText: (variant, overrides) => {
     const { canvas, elements } = get();
     const heading = variant === "heading";
     const el: TextElement = {
@@ -247,32 +297,47 @@ export const useEditor = create<EditorState>((set, get) => ({
       align: "left",
       letterSpacing: heading ? -2 : 0,
       lineHeight: heading ? 1.05 : 1.4,
+      ...overrides,
     };
     set({ elements: [...elements, el], selectedIds: [el.id] });
     return el.id;
   },
 
-  addShape: (shape) => {
+  addShape: (shape, overrides) => {
     const { canvas, elements } = get();
-    const baseW = shape === "arrow" || shape === "highlight" ? 360 : 240;
-    const baseH = shape === "arrow" ? 80 : shape === "highlight" ? 80 : 240;
+    const look = { ...shapeDefaults(shape, elements), ...overrides };
+    const width = look.width ?? 240;
+    const height = look.height ?? 240;
+    // Step down from centre past anything already there, or a run of new marks
+    // piles up and hides itself.
+    let x = (canvas.width - width) / 2;
+    let y = (canvas.height - height) / 2;
+    const taken = () =>
+      elements.some(
+        (e) =>
+          e.x + e.width / 2 === x + width / 2 &&
+          e.y + e.height / 2 === y + height / 2,
+      );
+    while (taken()) {
+      x += 32;
+      y += 32;
+    }
     const el: ShapeElement = {
       id: uid(),
       type: "shape",
       shape,
-      x: (canvas.width - baseW) / 2,
-      y: (canvas.height - baseH) / 2,
-      width: baseW,
-      height: baseH,
+      x,
+      y,
+      width,
+      height,
       rotation: 0,
-      opacity: shape === "highlight" ? 0.5 : 1,
-      fill: shape === "highlight" ? "#EF9F27" : "#534AB7",
+      opacity: 1,
+      fill: "#534AB7",
       stroke: "#1D9E75",
-      strokeWidth: shape === "arrow" ? 6 : 0,
-      cornerRadius: shape === "rounded-rect" ? 24 : 0,
+      strokeWidth: 0,
+      cornerRadius: 0,
       dashed: false,
-      arrowHeadSize: shape === "arrow" ? 18 : undefined,
-      text: shape === "callout" ? "Callout" : undefined,
+      ...look,
     };
     set({ elements: [...elements, el], selectedIds: [el.id] });
     return el.id;
@@ -285,6 +350,9 @@ export const useEditor = create<EditorState>((set, get) => ({
       ),
     }),
 
+  measureElement: (id, height) =>
+    history.silently(() => get().updateElement(id, { height })),
+
   duplicateElement: (id) => {
     const source = get().elements.find((e) => e.id === id);
     if (!source) return;
@@ -293,6 +361,12 @@ export const useEditor = create<EditorState>((set, get) => ({
       id: uid(),
       x: source.x + 32,
       y: source.y + 32,
+      locked: false,
+      hidden: false,
+      // A copied step marker is almost always the next step.
+      ...(source.type === "shape" && source.shape === "number"
+        ? { text: nextNumber(get().elements) }
+        : {}),
     } as LayerElement;
     set({ elements: [...get().elements, copy], selectedIds: [copy.id] });
   },
@@ -324,8 +398,21 @@ export const useEditor = create<EditorState>((set, get) => ({
     set({ elements: els });
   },
 
-  loadProject: (project) =>
+  reorderElement: (id, targetId) => {
+    const els = get().elements.slice();
+    const from = els.findIndex((e) => e.id === id);
+    const to = els.findIndex((e) => e.id === targetId);
+    if (from === -1 || to === -1 || from === to) return;
+    const [item] = els.splice(from, 1);
+    els.splice(to, 0, item);
+    set({ elements: els });
+  },
+
+  loadProject: (project) => {
     set({
+      markTool: null,
+      editingId: null,
+      cropId: null,
       canvas: {
         label: "Custom",
         width: project.canvas.width,
@@ -335,10 +422,12 @@ export const useEditor = create<EditorState>((set, get) => ({
       // background existed have no `pattern` key, and the panel/canvas both
       // assume one is always present.
       background: { ...DEFAULT_BACKGROUND, ...project.background },
-      elements: project.elements,
+      elements: project.elements.map(migrateElement),
       watermark: project.watermark,
       selectedIds: [],
-    }),
+    });
+    history.reset();
+  },
 
   toProject: () => ({
     version: 1,
@@ -348,13 +437,51 @@ export const useEditor = create<EditorState>((set, get) => ({
     watermark: get().watermark,
   }),
 
-  resetProject: () =>
+  resetProject: () => {
     set({
+      markTool: null,
+      editingId: null,
+      cropId: null,
       canvas: DEFAULT_CANVAS,
       background: DEFAULT_BACKGROUND,
       elements: [],
       selectedIds: [],
-    }),
+    });
+    history.reset();
+  },
 }));
+
+const documentOf = ({ canvas, background, elements, watermark }: EditorState) => ({
+  canvas,
+  background,
+  elements,
+  watermark,
+});
+
+const history = createHistory({
+  read: () => documentOf(useEditor.getState()),
+  write: (doc) => {
+    const ids = new Set(doc.elements.map((e) => e.id));
+    useEditor.setState({
+      ...doc,
+      // Selection isn't part of a step, but it can't outlive what it points at.
+      selectedIds: useEditor.getState().selectedIds.filter((id) => ids.has(id)),
+      editingId: null,
+      cropId: null,
+    });
+  },
+  onStacksChange: (canUndo, canRedo) => useEditor.setState({ canUndo, canRedo }),
+});
+
+useEditor.subscribe((state, previous) => {
+  if (
+    state.elements !== previous.elements ||
+    state.background !== previous.background ||
+    state.canvas !== previous.canvas ||
+    state.watermark !== previous.watermark
+  ) {
+    history.changed();
+  }
+});
 
 export type { Tool };

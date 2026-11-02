@@ -12,7 +12,7 @@
   - [Phase 1 does NOT include](#phase-1-does-not-include)
   - [Commands](#commands)
 - [2. Tech stack](#2-tech-stack)
-  - [Tauri constraints (deferred shell)](#tauri-constraints-deferred-shell)
+  - [Tauri constraints](#tauri-constraints)
 - [3. Architecture](#3-architecture)
   - [Two-layer split](#two-layer-split)
   - [Repo layout](#repo-layout)
@@ -38,7 +38,7 @@
   - [Static PNG/JPG/WebP](#static-pngjpgwebp)
   - [Watermark](#watermark)
   - [Browser download](#browser-download)
-  - [Tauri replacement (deferred)](#tauri-replacement-deferred)
+  - [Desktop export](#desktop-export)
   - [Clipboard](#clipboard)
 - [10. Project file (`.layer`)](#10-project-file-layer)
 - [11. Free vs Pro gate](#11-free-vs-pro-gate)
@@ -47,10 +47,10 @@
   - [Target Rust design](#target-rust-design)
   - [Dev activation](#dev-activation)
   - [Phase 2: Paddle / Lemon Squeezy](#phase-2-paddle--lemon-squeezy)
-- [12. Deferred: Tauri shell](#12-deferred-tauri-shell)
+- [12. Tauri shell](#12-tauri-shell)
   - [Capability map](#capability-map)
   - [IPC rules](#ipc-rules)
-  - [Migration plan](#migration-plan)
+  - [Shell configuration](#shell-configuration)
   - [Web/Tauri divergence](#webtauri-divergence)
 - [13. Deferred: SQLite persistence](#13-deferred-sqlite-persistence)
   - [Phase 1 schema](#phase-1-schema)
@@ -78,8 +78,9 @@ banners, product launch screens, and social-media visuals. Phase 1 turns
 screenshots/images and assets into polished branded visuals, exported as a
 static image (Brandbird parity).
 
-- **Platform:** Desktop app (Tauri), web as a planned future target. UI is
-  HTML/React/TypeScript/Tailwind for a minimal migration path.
+- **Platform:** Desktop app (Tauri), web as a planned future target. Mobile is
+  not a target. UI is HTML/React/TypeScript/Tailwind for a minimal migration
+  path.
 - **Phase 1 is the static editor.**
 
 ### Phase 1 includes
@@ -88,7 +89,9 @@ static image (Brandbird parity).
 2. Canvas with background control
 3. Device frame overlay (Mockup)
 4. Text layers (heading + body)
-5. Basic shapes and annotations
+5. Marks drawn directly on the canvas: shapes, arrows, lines, callouts, highlighter
+   and freehand; plus text, emoji, icons, QR codes, numbers, badges, and a layer
+   list with lock, hide and reorder for every element
 6. Export: static PNG/JPG (watermarked on free tier)
 7. Canvas size presets for common destinations
 8. Image upload, presets and effects
@@ -108,6 +111,10 @@ npm run build       # tsc -b && vite build → dist/
 npm run lint        # ESLint flat config
 npm run typecheck   # tsc -b --noEmit
 npm run preview     # serve dist/
+npm run tauri:dev   # native window + Vite hot reload
+npm run tauri:build # bundle the desktop app
+npm run emoji:sync  # regenerate src/data/emojis.json (needs FREE_EMOJI_KEY in .env)
+npm run icons:sync  # regenerate src/data/icons.json from lucide-static
 ```
 
 ## 2. Tech stack [↑ Go up](#contents)
@@ -120,18 +127,20 @@ npm run preview     # serve dist/
 | Icons | `lucide-react` | — |
 | State | Zustand | One store: `src/store/editor.ts` |
 | Canvas | Konva + `react-konva` | One `Stage` in `CanvasStage.tsx` |
-| Desktop shell | Tauri (deferred) | Rust + WebView; no Electron |
+| Desktop shell | Tauri 2 | Rust + WebView; no Electron |
 | Persistence | SQLite via `tauri-plugin-sql` (deferred) | `localStorage` forbidden |
 | Website/tweet import | Tauri Rust command pipeline (deferred) | Host adapter / invoke boundary |
 
-### Tauri constraints (deferred shell)
+### Tauri constraints
 
-- All file system access goes through Tauri Rust commands via `invoke()`.
+- All file system access goes through Tauri Rust commands via `invoke()`. The
+  webview never supplies a path: commands open the native dialog themselves.
 - IPC pattern: `invoke('command_name', { payload })` → `Result<T, String>`.
-- Window config: single window, no default chrome, custom titlebar in React,
-  min size 1100×700 px.
-- **Web portability:** the entire `src/` directory ports to Tauri without
-  changes. No `@tauri-apps/*` import at module top-level anywhere in `src/`.
+- Window config: single window, min size 1100×700 px, native OS window buttons
+  on every platform. macOS overlays them on the React top bar; Windows and Linux
+  show the normal OS title bar above it.
+- **Web portability:** everything in `src/` keeps working in a plain browser.
+  No `@tauri-apps/*` import at module top-level anywhere in `src/`.
   All Tauri calls go through a thin adapter (`src/lib/host.ts`) that no-ops
   (or falls back to browser-native behavior) when `window.__TAURI__` is
   undefined.
@@ -142,16 +151,16 @@ npm run preview     # serve dist/
 
 ```
 React UI (src/)  ← runs in WebView (Tauri) or browser (Vite dev)
-      │ Tauri IPC (when shell exists)
+      │ Tauri IPC (desktop only)
 Rust shell (src-tauri/)  ← native binary, ~3-5 MB
   - File I/O (open/save .layer)
-  - PNG/JPG export + watermark composite
-  - SQLite (tauri-plugin-sql)
-  - Licence validation
+  - PNG/JPG/WebP export file write
+  - Watermark composite (deferred)
+  - SQLite via tauri-plugin-sql (deferred)
+  - Licence validation (deferred)
 ```
 
-When the shell lands, `src-tauri/` joins as a sibling of `src/`. Nothing
-inside `src/` moves.
+`src-tauri/` is a sibling of `src/`, in the same git repo.
 
 ### Repo layout
 
@@ -160,6 +169,8 @@ layer/
 ├── AGENTS.md                  ← project memory
 ├── implementation.md          ← you are reading this (product spec)
 ├── learn/                     ← conceptual docs (reference only)
+├── scripts/                   ← emoji and icon data generators
+├── src-tauri/                 ← Rust shell (file commands in src/files.rs)
 ├── src/
 │   ├── App.tsx                ← shell + hotkeys + drag/drop
 │   ├── main.tsx
@@ -168,15 +179,25 @@ layer/
 │   │   ├── index.ts
 │   │   └── pattern.ts         ← PatternConfig, PatternColorPair, Pro gate map
 │   ├── data/
-│   │   └── curatedPatternPairs.ts
+│   │   ├── curatedPatternPairs.ts
+│   │   └── emojis.json, icons.json  ← generated; see scripts/
 │   ├── lib/
 │   │   ├── utils.ts           ← cn()
 │   │   ├── constants.ts       ← CANVAS_SIZES, DEVICE_FRAMES, SYSTEM_FONTS
+│   │   ├── host.ts            ← desktop/web boundary (all Tauri calls)
 │   │   ├── importers.ts       ← file → image element
+│   │   ├── marks.ts           ← Mark helpers (numbering, stroke geometry, migration)
+│   │   ├── markTools.ts       ← Drag gesture → mark fields, default tool styles
+│   │   ├── connectors.ts      ← Arrow and line geometry
+│   │   ├── callouts.ts        ← Bubble outlines
+│   │   ├── shapePaths.ts      ← Polygon, star and heart outlines
+│   │   ├── imageFit.ts        ← Fit an image to the canvas with padding
+│   │   ├── qr.ts              ← text → QR vector path
 │   │   ├── exporters.ts       ← stage → PNG/JPG/clipboard, .layer save/load
 │   │   ├── patterns/          ← SVG tile generators, LRU raster cache, lookups
 │   │   └── export/            ← export-time asset prep (pattern tile DPI swap)
 │   ├── store/editor.ts        ← Zustand
+│   ├── store/history.ts       ← Undo and redo
 │   └── components/
 │       ├── ui/                ← ShadCN primitives
 │       ├── canvas/            ← Konva nodes (Stage, Image, Text, Shape, Background)
@@ -235,13 +256,28 @@ interface ShapeElement extends BaseElement {
   cornerRadius: number;
   dashed: boolean;
   arrowHeadSize?: number;   // arrows
-  text?: string;            // callout text
+  filled?: boolean;         // false draws the outline only; absent means filled
+  effect?: MarkEffect;      // none | soft | hard | glow, on shapes and callouts
+  connector?: Connector;    // arrows and lines: ends, route, heads
+  calloutKind?: CalloutKind; // speech | round | thought | shout | label
+  tail?: [number, number];  // where a callout points, relative to its box
+  fontSize?: number;        // callout text size
+  text?: string;            // callout/badge label, number, emoji, QR content, icon name
+  textFill?: string;        // label colour: callout, number, badge
+  backgroundFill?: string;  // light squares of a QR code
+  iconPath?: string;        // icon outline in a 24×24 box
+  points?: number[];        // pencil, highlight: x,y pairs as 0–1 fractions of the box
 }
 ```
 
 - `ShapeKind`: `rect`, `rounded-rect`, `ellipse`, `arrow`, `line`,
-  `highlight`, `callout`, `qr-code`, `emoji`, `image`, `pencil`, `number`,
-  `icons`, `vector`, `other`.
+  `highlight`, `callout`, `qr-code`, `emoji`, `pencil`, `number`, `icons`,
+  `badge`, `triangle`, `diamond`, `pentagon`, `hexagon`, `star`, `heart`, `cross`.
+- `Connector`: `start`, `end`, optional `control` (curves), `route` (`straight`,
+  `curved`, `elbow`), `headStart`, `headEnd` (`none`, `arrow`, `open`, `dot`).
+- `BaseElement` also carries optional `locked` (can't be moved, resized or
+  deleted from the canvas) and `hidden` (not drawn or exported). The Mark panel's
+  layer rows list every element, including text and images, and set these.
 - `DeviceFrame`: `null`, `macbook-light`, `macbook-dark`, `iphone-light`,
   `iphone-dark`, `browser-light`, `browser-dark`.
 
@@ -278,7 +314,14 @@ interface EditorState {
   addUploadedImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
   deleteUploadedImage: (id: string) => void;
   addText: (variant: 'heading' | 'body') => string;
-  addShape: (shape: ShapeKind) => string;
+  addShape: (shape: ShapeKind, overrides?: Partial<ShapeElement>) => string;
+  reorderElement: (id: string, targetId: string) => void;
+  setMarkTool: (tool: MarkTool | null) => void;
+  setMarkStyle: (category: MarkCategory, patch: Partial<ShapeElement>) => void;
+  setEditingId: (id: string | null) => void;
+  setCropId: (id: string | null) => void;
+  undo: () => void;
+  redo: () => void;
   updateElement: (id: string, patch: Partial<LayerElement>) => void;
   duplicateElement: (id: string) => void;
   deleteElement: (id: string) => void;
@@ -495,31 +538,118 @@ interface TextElement extends BaseElement {
 
 | Shape | Konva primitive | Notes |
 |---|---|---|
-| Rectangle | `<Rect>` | fill, stroke, strokeWidth, cornerRadius |
+| Rectangle | `<Rect>` | fill optional, stroke, cornerRadius, effect |
 | Rounded rectangle | `<Rect cornerRadius={N}>` | same node, non-zero radius |
-| Circle / ellipse | `<Ellipse radiusX radiusY>` | uniform = circle |
-| Line / arrow | `<Arrow points>` | automatic arrowhead |
-| Highlight bar | `<Rect opacity={0.4}>` | non-destructive |
-| Callout bubble | `<Label>` + `<Tag>` + `<Text>` | Konva ships the geometry |
+| Ellipse | `<Ellipse radiusX radiusY>` | Shift-drag = circle |
+| Triangle, diamond, pentagon, hexagon, star, heart, cross | `<Path>` | Outline rebuilt from the box, so stroke width survives resize |
+| Arrow / line | `<Path>` shaft + head paths | Straight, curved or elbow; four head styles per end |
+| Highlighter | `<Line>` with `multiply` | Freehand marker stroke |
+| Callout | `<Path>` + `<Text>` | Speech, pill, square, round, thought, shout, label |
+| Number marker | `<Ellipse>` + `<Text>` | Next unused number on add and duplicate |
+| Badge | `<Rect>` + `<Text>` | Width follows the label; presets in the panel |
+| Emoji | `<Text>` | Drawn by the OS emoji font; see below |
+| Icon | `<Path>` stroke | Lucide outline, stored in the element |
+| QR code | `<Rect>` + `<Path>` fill | Generated locally, encoded as UTF-8 |
+| Freehand | `<Line tension>` | One layer per stroke; stroke width survives resize |
 
 ```ts
 interface ShapeElement extends BaseElement {
   type: 'shape';
-  shape: 'rect' | 'rounded-rect' | 'ellipse' | 'arrow' | 'highlight' | 'callout';
+  shape: ShapeKind;  // full field list in §4
   fill: string;
   stroke: string;
   strokeWidth: number;
-  cornerRadius?: number;
-  arrowHead?: number;
-  dashed?: boolean;
-  calloutText?: string;
+  cornerRadius: number;
+  dashed: boolean;
 }
 ```
+
+**Marks are drawn, not dropped.** Picking a tool arms it (`markTool` in the store)
+and a drag on the canvas creates the mark; the logic is `useMarkPlacement` plus the
+pure `gestureFields` in `src/lib/markTools.ts`. A click with no drag places a sensible
+default size. Shift gives equal sides, or 45° for lines and arrows. Esc cancels. Every
+tool, Draw and Highlight included, hands back to selecting and selects what it made, so
+its settings are right there. Number, badge, emoji, icon and QR tools are placed the
+same way: pick, then click or drag on the canvas. A tool's panel is the same
+`StyleControls` a selected layer uses, fed a stand-in element, so the two can't drift
+apart. Tool styles (`markStyles`) last the session.
+
+**Arrows and lines are defined by their ends, not a box.** They have no Transformer:
+`MarkHandles` draws drag points for each end, the curve and callout tails, in a layer
+of their own that the exporter hides. `placeConnector` re-bases a connector on its
+bounding box after every change, so `x`/`y`/`width`/`height` stay true.
+
+**Highlighter blending.** `multiply` tints what's beneath, so dark text under the
+marker stays dark. It blends within the content layer, which holds images and other
+marks; the background is its own layer, so over it the stroke is plain translucent.
+
+**Text has two resizes.** Side handles set the wrap width and never the font size.
+Corner handles scale the font and width together, keeping the same line breaks. There
+are no top or bottom handles, since the box height always follows the lines.
+`TextEditor` is the on-canvas textarea for text and callouts; double-click opens it.
+
+**Resizing is live.** Images, shapes and text clear Konva's scale on every `transform` event
+and write a real size to the store, so strokes and text never stretch mid-drag. That
+writes on every pointer move, which is why nodes are memoised on their own element.
+A callout's group reports only its box to the Transformer, so a tail doesn't inflate
+the selection. Polygon outlines must touch all four sides of their box, or the
+selection frame and the element drift apart during a resize.
+
+Images, emoji, icons and QR codes resize from the corners only, keeping their
+proportions, and so does any multi-selection that includes an image. Crop is how an
+image changes shape. Framed images keep their side handles, because the screenshot
+is cover-fitted to the frame and can't stretch.
+
+**Emoji and icon data ships in the repo.** `npm run emoji:sync` fetches the list
+from emoji-api.com using `FREE_EMOJI_KEY` in `.env`, and `npm run icons:sync`
+builds the list from `lucide-static`. The generated JSON is committed and
+lazy-loaded with its picker. The API key is used only by that script: it must
+never reach `src/`, a `VITE_` variable or the app bundle. New emoji need a re-run.
+
+**Emoji use the OS font,** because the API returns characters, not images. The
+same design can look different on macOS and Windows, can soften at very large
+sizes, and flags don't render as flags on Windows.
+
+**Icons are stored as path data in the element,** not as a name to look up, so
+`.layer` files keep working if an icon later leaves lucide.
+
+**Marks never touch the store mid-gesture.** `MarkDraft` holds the preview in its own
+state, like `SnapGuides`, drawn by the real `ShapeNode`, and is in the export hide list.
+
+**Older projects.** `migrateElement` runs on load: box-based arrows and lines become
+connectors, and callouts gain a kind and tail. Box-based highlights still draw as they
+were.
 
 Each shape element maps to exactly one Konva node (dispatched in
 `ShapeNode.tsx`). **Resize math:** store `width`/`height` for all shapes
 (Ellipse converts to radii at render) so one `Transformer` math serves every
 element.
+
+### Undo and redo
+
+`src/store/history.ts` keeps snapshots of the document (`canvas`, `background`,
+`elements`, `watermark`), not selection or view state. Elements are immutable, so
+snapshots share everything unchanged. One step is one action: everything while the
+pointer is down is one step, a new press closes the previous step, and changes with no
+pointer (typing, arrow keys) close after a 400 ms pause. Changes that aren't the user's
+doing must go through `history.silently`, as `measureElement` does, or they would wipe
+redo. Loading or resetting a project clears history. In a text field, ⌘Z belongs to the
+field. Uploads aren't part of history.
+
+### Image toolbar
+
+- **Crop** is non-destructive: `ImageElement.crop` holds the visible part as 0–1
+  fractions of the original, so a later crop can reach back out. It's unavailable on
+  framed or tilted images, where a window over the flat original wouldn't match.
+- **Padding** centres the image with a gap to the canvas edge, in proportion, as in §6,
+  but can also scale up. It sets size and position; nothing about it is stored.
+- **Highlight** arms the highlighter.
+
+### Snapping
+
+Applies to moving elements, drawing marks and dragging line ends and callout tails.
+It doesn't apply to freehand strokes, curve handles or Transformer resizing, and Shift
+turns it off for that drag because it already pins the shape or angle.
 
 ## 9. Export [↑ Go up](#contents)
 
@@ -527,39 +657,43 @@ element.
 
 - `stage.toDataURL({ pixelRatio: 2 })` — 2× for retina; the export menu
   offers 1×/2×/3× per export.
-- Hide editor chrome (Transformer, grid, snap guides) during capture;
+- Hide editor chrome (Transformer, grid, snap guides, mark draft, mark handles, crop overlay) during capture;
   `withOverlaysHidden` in `src/lib/exporters.ts` is the seam. Any future
   viewport aid belongs in that hide list.
 
 ### Watermark
 
 - Free tier composites the Layer logo watermark on every export.
-- **Current state (web):** Konva node added to the stage during export and
+- **Current state (web and desktop):** Konva node added to the stage during export and
   removed after. This is bypassable via DevTools — see §11 for the required
   Rust enforcement.
 
 ### Browser download
 
-`downloadBlob(blob, filename)` via object URL + `<a download>`;
-`dataURLtoBlob` for the conversion.
+`downloadBlob(blob, filename)` in `src/lib/host.ts`, via object URL +
+`<a download>`; `dataURLtoBlob` for the conversion. Web build only.
 
-### Tauri replacement (deferred)
+### Desktop export
+
+`<a download>` can't be relied on in the desktop webview, so `saveExport()` in
+`src/lib/host.ts` sends the encoded image to Rust as a raw IPC body:
 
 ```ts
-const path = await save({ defaultPath: `layer-${Date.now()}.png`, filters: [...] });
-if (path) {
-  await invoke('export_static', { dataUrl: url, path, format, isPro });
-  // Rust handles watermark composite + file write
-}
+await invoke('export_static', bytes, {
+  headers: { 'x-layer-filename': filename },
+});
 ```
 
-Rust re-checks `isPro` against its own SQLite licence record — never trusts
-the incoming flag.
+`export_static` opens the native save dialog and writes the file. It takes no
+path, format flag or `isPro` flag: the format comes from the filename's
+extension, and only `png`, `jpg` and `webp` are accepted. See §11 for the
+deferred watermark gate.
 
 ### Clipboard
 
 `navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])]`.
-PNG only (widely); must be called from a user gesture.
+PNG only (widely); must be called from a user gesture. If the write fails,
+the image goes through `saveExport()` instead.
 
 ## 10. Project file (`.layer`) [↑ Go up](#contents)
 
@@ -600,9 +734,12 @@ Versioned JSON snapshot of the editable state:
 }
 ```
 
-- **Today:** JSON download / upload. Open accepts `.layer` and legacy
-  `.laybel` for backward compat; reject unknown versions.
-- **Tomorrow (Tauri):** asset files copy into a `project-name.layer-assets/`
+- **Today (web):** JSON download / upload.
+- **Today (desktop):** the same JSON, through `save_project` and `open_project`,
+  which own the native dialogs. `open_project` refuses files over 512 MiB.
+- **Both:** open accepts `.layer` and legacy `.laybel` for backward compat;
+  reject unknown versions. Parsing and version checks stay in `src/lib/`.
+- **Later (desktop):** asset files copy into a `project-name.layer-assets/`
   sidecar; the JSON stores relative `src` paths instead of inline base64.
   Open reverses the process.
 - **Migrations:** always migrate up, never write old versions — a switch on
@@ -611,6 +748,9 @@ Versioned JSON snapshot of the editable state:
 ## 11. Free vs Pro gate [↑ Go up](#contents)
 
 ### Rules
+
+These describe the target. The gate is deferred with SQLite: today the
+watermark is composited in JS, as §9 describes.
 
 1. `isPro` is a SQLite-backed flag; the Rust side is the source of truth.
 2. The watermark is composited in Rust — even a spoofed JS `isPro` can't
@@ -628,26 +768,30 @@ true })` → clean export). The Layer logo watermark distribution mechanic dies.
 ```rust
 #[tauri::command]
 async fn export_static(
+    app: AppHandle,
     state: tauri::State<'_, AppState>,
-    data_url: String,
-    path: String,
-    format: ExportFormat,
+    request: tauri::ipc::Request<'_>,  // raw image bytes + filename header
 ) -> Result<(), String> {
-    let raw_png = decode_data_url(&data_url).map_err(|e| e.to_string())?;
-    let mut img = image::load_from_memory(&raw_png).map_err(|e| e.to_string())?;
+    let (filename, bytes) = parse_export_request(&request)?;
+    let format = ExportFormat::from_filename(&filename)?;
+    let mut img = image::load_from_memory(&bytes).map_err(|e| e.to_string())?;
     let is_pro = state.licence.lock().await.is_pro;  // SQLite, not the JS flag
     if !is_pro {
         img = composite_watermark(img);
     }
-    let bytes = encode(img, format).map_err(|e| e.to_string())?;
-    std::fs::write(&path, bytes).map_err(|e| e.to_string())?;
+    let encoded = encode(img, format).map_err(|e| e.to_string())?;
+    // Off the async runtime: the dialog and the write both block.
+    if let Some(path) = pick_save_path(&app, &filename, format.filter())? {
+        std::fs::write(path, encoded).map_err(|e| e.to_string())?;
+    }
     Ok(())
 }
 ```
 
 Invariants:
 
-- The signature does not accept `is_pro` — no JS path bypasses the check.
+- The signature does not accept `is_pro` or a path — no JS path bypasses the
+  check or chooses where a file lands.
 - The watermark PNG is `include_bytes!`'d into the binary.
 - The licence check is `await`'d inside the export, so mid-session revocations
   are caught on the next export.
@@ -666,55 +810,73 @@ cannot exist in release builds.
 4. Periodic re-validation (weekly) catches refunds/cancellations. Responses are
    signature-verified against the vendor's public key.
 
-## 12. Deferred: Tauri shell [↑ Go up](#contents)
+## 12. Tauri shell [↑ Go up](#contents)
 
-**Status: DEFERRED.** `src-tauri/` does not exist yet; `src/` is structured
-to migrate without changes. Deferral is product strategy: validate UX on web
-first, design IPC contracts in one pass, and ride SQLite + the Rust watermark
-gate along with the same plumbing.
+**Status: LANDED (Tauri 2).** `src-tauri/` holds the window and the file
+commands `save_project`, `open_project` and `export_static`. SQLite and the Rust
+watermark gate are still deferred (§11, §13).
 
 ### Capability map
 
-| Capability | Web (today) | Tauri (deferred) |
-|---|---|---|
-| Open file from disk | `<input type="file">` | `plugin-dialog` `open()` |
-| Save to disk | browser download | `plugin-dialog` `save()` + `plugin-fs` `writeFile()` |
-| Read clipboard image | `navigator.clipboard.read()` | same + native fallback |
-| Per-user settings | `localStorage` | `tauri-plugin-store` + SQLite |
-| Native dialogs (Save As) | `<a download>` (limited) | OS-native picker |
-| Auto-updater | manual ServiceWorker dance | `tauri-plugin-updater` |
-| App icon, menu bar, dock badge | none | `tauri.conf.json` + APIs |
-| Code signing & notarization | n/a | bundler config |
+| Capability | Web | Desktop | Desktop status |
+|---|---|---|---|
+| Open project | `<input type="file">` | `open_project` (Rust-owned dialog) | Done |
+| Save project / export | browser download | `save_project` / `export_static` (Rust-owned dialog) | Done |
+| Native dialogs (Save As) | `<a download>` (limited) | OS-native picker | Done |
+| Paste image | paste event | same | Done |
+| App icon | none | `tauri.conf.json` | Done |
+| Read clipboard image | `navigator.clipboard.read()` | same + native fallback | Planned |
+| Per-user settings | `localStorage` | `tauri-plugin-store` + SQLite | Deferred |
+| Auto-updater | manual ServiceWorker dance | `tauri-plugin-updater` | Planned |
+| Menu bar, dock badge | none | Tauri APIs | Default menu only |
+| Code signing & notarization | n/a | bundler config | Planned |
+
+File access deliberately does not use `plugin-fs` or `plugin-dialog`'s JS API,
+and the window's capabilities don't grant them. A script in the webview must not
+be able to name a path. `tauri-plugin-dialog` is used from Rust only.
 
 ### IPC rules
 
 - Commands are plain `#[tauri::command]` functions; Tauri serialises JSON
   both ways.
 - Return `Result<T, String>` — errors reach JS as rejected promises.
-- Long-running work is `async fn`; the WebView thread isn't blocked.
+- Long-running work is `async fn`; the WebView thread isn't blocked. Blocking
+  dialogs and disk I/O run on `spawn_blocking`, not on the async runtime.
+- File commands take no path. They open the dialog, and a cancelled dialog is
+  `Ok`, not an error.
+- Failures show a native error dialog as well as rejecting, and their messages
+  never include file paths.
+- Large binary payloads use a raw IPC body, not a JSON data URL.
 - Progress events: `tauri::Window::emit(...)` +
   `window.__TAURI__.event.listen(...)`.
 
-### Migration plan
+### Shell configuration
 
-1. **Scaffold:** `npm install -D @tauri-apps/cli@latest && npx tauri init`,
-   pointing at the Vite dev server (`http://localhost:5173`) and `dist/`.
-2. **Dev script:** add `tauri:dev` / `tauri:build`; `npm run dev` stays web.
-3. **Runtime SDK:** `@tauri-apps/api`, `plugin-dialog`, `plugin-fs`,
-   `plugin-sql`.
-4. **Phase 1 commands:** `save_project`, `open_project`, `export_static`
-   (sketches in §9/§11/§13).
-5. **Thin JS adapter** (`src/lib/host.ts`): use `invoke()` when
-   `window.__TAURI__` exists, else fall back to browser behaviour.
-   `src/lib/exporters.ts` never imports `@tauri-apps/*` directly.
-6. **Window config** (`tauri.conf.json`): single window, title "Layer",
-   1280×800, min 1100×700, `decorations: false` — the React `<TopBar>`
-   becomes the drag region (`data-tauri-drag-region`).
+- **Bundle ID:** `layer.duowork.tech`. Don't change it after the first release:
+  macOS treats a new ID as a different app, and user data lives under it.
+- **Targets:** desktop only. The Rust crate builds as a normal library plus
+  binary, with no mobile library outputs or mobile icons.
+- **Dev server:** `127.0.0.1:5173` with `strictPort`, since `devUrl` is fixed.
+  `npm run dev` stays web-only; `npm run tauri:dev` opens the native window.
+- **JS adapter** (`src/lib/host.ts`): uses `invoke()` when `window.__TAURI__`
+  exists, else falls back to browser behaviour. `withGlobalTauri: true` is what
+  makes that global exist. `src/lib/exporters.ts` never imports `@tauri-apps/*`
+  directly.
+- **Window** (`tauri.conf.json`): single window, title "Layer", 1280×800, min
+  1100×700.
+- **Window buttons are native on every OS; the app never draws its own.** macOS
+  uses `titleBarStyle: "Overlay"`, so the traffic lights sit over the React
+  `<TopBar>`, which reserves space for them and is the drag region
+  (`data-tauri-drag-region`). Windows and Linux show the normal OS title bar
+  above `<TopBar>`.
+- **Drag and drop:** `dragDropEnabled: false`, so Tauri doesn't intercept drops
+  and the same HTML5 `dataTransfer` code runs on web and desktop.
+- **CSP:** set in `tauri.conf.json`. It only applies to built apps, so check
+  changes with `npx tauri build --debug --no-bundle`, not `tauri:dev`.
 
 ### Web/Tauri divergence
 
-- Tauri only: native menu bar, auto-updater, desktop drag-and-drop (via
-  `tauri-plugin-fs`).
+- Tauri only: native menu bar, auto-updater.
 - Web only: `beforeunload` tab-close confirmation.
 - Everything that works on web also works on Tauri (its WebView is a
   browser); Tauri-only features are progressive enhancements behind
@@ -785,7 +947,7 @@ single-user desktop editor.
 ### Backup
 
 The SQLite file sits in the OS app data directory
-(`~/Library/Application Support/com.layer.app/layer.sqlite` on macOS) and
+(`~/Library/Application Support/layer.duowork.tech/layer.sqlite` on macOS) and
 survives reinstalls; users can put it in iCloud Drive for cross-machine sync.
 
 ## 14. Conventions [↑ Go up](#contents)

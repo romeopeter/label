@@ -22,6 +22,9 @@ export const DEVICE_FRAMES: { key: NonNullable<DeviceFrame>; label: string }[] =
   { key: "browser-dark", label: "Browser · Dark" },
 ];
 
+/** Below this a device frame's insets no longer leave room for the screen. */
+export const MIN_FRAME_SIZE = { width: 120, height: 80 };
+
 export const SYSTEM_FONTS = [
   "DM Sans",
   "Bricolage Grotesque",

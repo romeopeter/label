@@ -24,6 +24,7 @@ export const App = () => {
   const setZoom = useEditor((s) => s.setZoom);
   const addImage = useEditor((s) => s.addImage);
   const elements = useEditor((s) => s.elements);
+  const markTool = useEditor((s) => s.markTool);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
@@ -45,12 +46,24 @@ export const App = () => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
 
+      // A colour swatch keeps focus after you pick from it, but takes no typing,
+      // so it mustn't swallow shortcuts the way a text field should.
       const inField =
         !!target &&
-        (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
+        (target.tagName === "TEXTAREA" ||
+          (target.tagName === "INPUT" &&
+            (target as HTMLInputElement).type !== "color"));
       if (inField) return;
 
-      if ((e.metaKey || e.ctrlKey) && e.key === "e") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        const { undo, redo } = useEditor.getState();
+        if (e.shiftKey) redo();
+        else undo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "y") {
+        e.preventDefault();
+        useEditor.getState().redo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "e") {
         e.preventDefault();
         exportCanvas("png", 2);
       } else if ((e.metaKey || e.ctrlKey) && e.key === "c") {
@@ -109,7 +122,9 @@ export const App = () => {
           <div className="size-full bg-dot-grid absolute inset-0 bottom-20 flex items-center justify-center">
             <CanvasStage />
 
-            {elements.length === 0 && (
+            {/* Out of the way once a tool is armed: its icon takes pointer events,
+                which would swallow a click or drag starting on it. */}
+            {elements.length === 0 && !markTool && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2.5 text-text-muted">
                 <div className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-p-50 text-p-600">
                   <Upload className="h-5.5 w-5.5" />

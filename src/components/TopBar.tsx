@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Undo, Redo, Eye, ChevronDown, Download } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { Button } from "@/components/ui/button";
+import { hasOverlayTitleBar } from "@/lib/host";
+import { cn } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -18,28 +20,60 @@ interface Props {
 
 export const TopBar = ({ onPreview }: Props) => {
   const canvas = useEditor((s) => s.canvas);
+  const undo = useEditor((s) => s.undo);
+  const redo = useEditor((s) => s.redo);
+  const canUndo = useEditor((s) => s.canUndo);
+  const canRedo = useEditor((s) => s.canRedo);
   const [sizePickerOpen, setSizePickerOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
   return (
-    <header className="relative z-30 grid h-12 grid-cols-[1fr_auto_1fr] items-center border-b border-hairline bg-chrome px-3">
+    <header
+      data-tauri-drag-region
+      className="relative z-30 grid h-12 grid-cols-[1fr_auto_1fr] items-center border-b border-hairline bg-chrome px-3"
+    >
       {/* LEFT */}
-      <div className="flex items-center gap-2.5">
-        <div className="flex items-center gap-2 px-1.5 py-1">
-          <img src="/icons/logo.svg" alt="Layer logo" className="h-5 w-5.5" />
-          <span className="font-display text-base font-bold tracking-[-0.01em] text-text">
+      <div
+        data-tauri-drag-region
+        className={cn("flex items-center gap-2.5", hasOverlayTitleBar && "pl-18")}
+      >
+        <div
+          data-tauri-drag-region
+          className="flex select-none items-center gap-2 px-1.5 py-1"
+        >
+          <img
+            src="/icons/logo.svg"
+            alt="Layer logo"
+            draggable={false}
+            className="pointer-events-none h-5 w-5.5"
+          />
+          <span className="pointer-events-none font-display text-base font-bold tracking-[-0.01em] text-text">
             Layer
           </span>
         </div>
       </div>
 
       {/* CENTER */}
-      <div className="relative flex justify-center">
+      <div data-tauri-drag-region className="relative flex justify-center">
         <div className="flex items-center gap-1 rounded-lg border border-hairline bg-panel p-1">
-          <Button variant="icon" size="iconSm" title="Undo">
+          <Button
+            variant="icon"
+            size="iconSm"
+            title="Undo (⌘Z)"
+            aria-label="Undo"
+            disabled={!canUndo}
+            onClick={undo}
+          >
             <Undo className="h-3.5 w-3.5" />
           </Button>
-          <Button variant="icon" size="iconSm" title="Redo">
+          <Button
+            variant="icon"
+            size="iconSm"
+            title="Redo (⇧⌘Z)"
+            aria-label="Redo"
+            disabled={!canRedo}
+            onClick={redo}
+          >
             <Redo className="h-3.5 w-3.5" />
           </Button>
           <div className="mx-0.5 h-4.5 w-px bg-hairline" />
@@ -75,7 +109,10 @@ export const TopBar = ({ onPreview }: Props) => {
       </div>
 
       {/* RIGHT */}
-      <div className="relative flex items-center justify-end gap-2">
+      <div
+        data-tauri-drag-region
+        className="relative flex items-center justify-end gap-2"
+      >
         {/* <Button variant="ghost" size="sm" className="cursor-pointer">Save as Template</Button> */}
 
         <Popover open={exportOpen} onOpenChange={setExportOpen}>

@@ -10,6 +10,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: { port: 5173, host: "127.0.0.1" },
+  server: {
+    port: 5173,
+    host: "127.0.0.1",
+    // Tauri's devUrl is fixed, so fail rather than drift to another port.
+    strictPort: true,
+    watch: { ignored: ["**/src-tauri/**"] },
+  },
   clearScreen: false,
 });

@@ -1,5 +1,6 @@
 import { useEditor } from "../store/editor";
 import type { LayerProject } from "../types";
+import { pickProjectText } from "./host";
 
 export const fileToDataURL = (file: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -24,8 +25,7 @@ export const importImageFile = async (
   addImage(dataUrl, img.naturalWidth, img.naturalHeight);
 };
 
-export const importProjectFile = async (file: File): Promise<LayerProject> => {
-  const text = await file.text();
+const parseProject = (text: string): LayerProject => {
   const project = JSON.parse(text) as LayerProject;
   if (project.version !== 1) {
     throw new Error("Unsupported .layer file version");
@@ -35,18 +35,6 @@ export const importProjectFile = async (file: File): Promise<LayerProject> => {
 
 // Convenience: opens a file picker for .layer and loads it into the store.
 export const openLayerFile = async () => {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".layer,.laybel,application/json";
-  await new Promise<void>((resolve) => {
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (file) {
-        const project = await importProjectFile(file);
-        useEditor.getState().loadProject(project);
-      }
-      resolve();
-    };
-    input.click();
-  });
+  const text = await pickProjectText();
+  if (text !== null) useEditor.getState().loadProject(parseProject(text));
 };

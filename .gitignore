@@ -9,8 +9,6 @@ dist-ssr
 .claude*
 
 learn/
-CLAUDE.md
-AGENTS.md
 p-readme.md
 SKILLS
 .env

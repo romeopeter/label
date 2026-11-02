@@ -3,6 +3,7 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  Check,
   Copy,
   Crop,
   Highlighter,
@@ -11,20 +12,37 @@ import {
   MoreVertical,
   Pencil,
   Plus,
+  RotateCcw,
   Scan,
   Trash2,
   X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import type { ImageElement, LayerElement, TextElement } from "@/types";
+import type {
+  CanvasSize,
+  ImageElement,
+  LayerElement,
+  TextElement,
+} from "@/types";
 import { Button } from "@/components/ui/button";
+import { LabeledSlider } from "@/components/panels/primitives";
+import { fitWithPadding, paddingOf } from "@/lib/imageFit";
+import { isImageTiltActive } from "@/lib/tilt";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------------------ */
 
 interface SelectionToolbarProps {
   element: LayerElement;
+  canvas: CanvasSize;
   position: { x: number; y: number };
+  cropping: boolean;
+  onCropStart: () => void;
+  onCropApply: () => void;
+  onCropReset: () => void;
+  onCropCancel: () => void;
+  onImageChange: (patch: Partial<ImageElement>) => void;
+  onHighlight: () => void;
   moreOpen: boolean;
   onMoreOpenChange: (open: boolean) => void;
   onDelete: () => void;
@@ -45,9 +63,11 @@ const ToolbarButton = ({
   children,
   onClick,
   active,
+  disabled,
   className,
 }: {
   label: string;
+  disabled?: boolean;
   children: ReactNode;
   onClick?: () => void;
   active?: boolean;
@@ -58,6 +78,7 @@ const ToolbarButton = ({
     variant="icon"
     size="icon"
     aria-label={label}
+    disabled={disabled}
     title={label}
     onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
@@ -118,8 +139,30 @@ const MoreMenu = ({
   </div>
 );
 
+const CropToolbar = ({
+  onCropApply,
+  onCropReset,
+  onCropCancel,
+}: SelectionToolbarProps) => (
+  <div className="flex w-fit items-center gap-2.5">
+    <ToolbarButton label="Apply crop" onClick={onCropApply}>
+      <Check className="h-3.5 w-3.5" /> Apply
+    </ToolbarButton>
+    <ToolbarButton label="Show the whole image" onClick={onCropReset}>
+      <RotateCcw className="h-3.5 w-3.5" /> Reset
+    </ToolbarButton>
+    <ToolbarButton label="Cancel crop" onClick={onCropCancel}>
+      <X className="h-3.5 w-3.5" /> Cancel
+    </ToolbarButton>
+  </div>
+);
+
 const ImageToolbar = ({
   element,
+  canvas,
+  onCropStart,
+  onImageChange,
+  onHighlight,
   moreOpen,
   onMoreOpenChange,
   onDelete,
@@ -128,20 +171,53 @@ const ImageToolbar = ({
   onLayerBackward,
 }: SelectionToolbarProps) => {
   const image = element as ImageElement;
+  const [paddingOpen, setPaddingOpen] = useState(false);
+  // A frame or a 3D tilt already reshapes the picture, so a crop window drawn
+  // over the flat original wouldn't match what you see.
+  const canCrop = !image.deviceFrame && !isImageTiltActive(image.transform);
 
   return (
     <div className="w-fit flex items-center gap-2.5">
-      <ToolbarButton label="Crop">
+      <ToolbarButton
+        label={
+          canCrop ? "Crop" : "Remove the device frame and 3D tilt to crop"
+        }
+        disabled={!canCrop}
+        onClick={onCropStart}
+      >
         <Crop className="h-3.5 w-3.5" /> Crop
       </ToolbarButton>
 
-      <ToolbarButton label="Highlight">
+      <ToolbarButton label="Highlight" onClick={onHighlight}>
         <Highlighter className="h-3.5 w-3.5" /> Highlight
       </ToolbarButton>
 
-      <ToolbarButton label="Padding" active={image.deviceFrame != null}>
-        <Scan className="h-3.5 w-3.5" /> Padding
-      </ToolbarButton>
+      <div className="relative">
+        <ToolbarButton
+          label="Padding"
+          active={paddingOpen}
+          onClick={() => setPaddingOpen(!paddingOpen)}
+        >
+          <Scan className="h-3.5 w-3.5" /> Padding
+        </ToolbarButton>
+        {paddingOpen && (
+          <div className="absolute left-0 top-[calc(100%+10px)] z-10 w-56 rounded-md border border-hairline-strong bg-panel p-3 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
+            <LabeledSlider
+              label="Padding"
+              unit="%"
+              min={0}
+              max={45}
+              value={paddingOf(image, canvas)}
+              onChange={(percent) =>
+                onImageChange(fitWithPadding(image, canvas, percent))
+              }
+            />
+            <p className="mb-0 mt-2 text-[11px] leading-normal text-text-faint">
+              Centres the image with this gap to the canvas edge.
+            </p>
+          </div>
+        )}
+      </div>
 
       <ToolbarButton label="Delete" onClick={onDelete}>
         <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -307,7 +383,9 @@ export const SelectionToolbar = (props: SelectionToolbarProps) => {
       onMouseDown={(event) => event.stopPropagation()}
       onClick={(event) => event.stopPropagation()}
     >
-      {element.type === "image" ? (
+      {props.cropping ? (
+        <CropToolbar {...props} />
+      ) : element.type === "image" ? (
         <ImageToolbar {...props} />
       ) : (
         <TextToolbar {...props} />

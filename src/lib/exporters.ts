@@ -1,11 +1,15 @@
 import Konva from "konva";
 import { getStage } from "../components/canvas/stageRef";
 import { useEditor } from "../store/editor";
+import { saveExport, saveProject } from "./host";
 import { openLayerFile } from "./importers";
 import { isImageTiltActive } from "./tilt";
 import { prepareExportTiles } from "./export/prepareExportTiles";
 import { GRID_LAYER_NAME } from "../components/canvas/GridOverlay";
 import { SNAP_GUIDES_LAYER_NAME } from "../components/canvas/SnapGuides";
+import { MARK_DRAFT_LAYER_NAME } from "../components/canvas/MarkDraft";
+import { MARK_HANDLES_LAYER_NAME } from "../components/canvas/MarkHandles";
+import { CROP_LAYER_NAME } from "../components/canvas/CropOverlay";
 
 const dataURLtoBlob = (dataUrl: string): Blob => {
   const [meta, b64] = dataUrl.split(",");
@@ -14,17 +18,6 @@ const dataURLtoBlob = (dataUrl: string): Blob => {
   const buf = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
   return new Blob([buf], { type: mime });
-};
-
-const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
 const loadHtmlImage = (src: string): Promise<HTMLImageElement> =>
@@ -49,6 +42,9 @@ const withOverlaysHidden = async <T,>(
     ...stage.find("Transformer"),
     ...stage.find(`.${GRID_LAYER_NAME}`),
     ...stage.find(`.${SNAP_GUIDES_LAYER_NAME}`),
+    ...stage.find(`.${MARK_DRAFT_LAYER_NAME}`),
+    ...stage.find(`.${MARK_HANDLES_LAYER_NAME}`),
+    ...stage.find(`.${CROP_LAYER_NAME}`),
   ];
   const visible = overlays.map((node) => node.visible());
   overlays.forEach((node) => node.visible(false));
@@ -69,6 +65,7 @@ const renderTiltedImageIntoStage = async (stage: Konva.Stage) => {
   if (
     !image ||
     image.type !== "image" ||
+    image.hidden ||
     image.deviceFrame ||
     !isImageTiltActive(image.transform)
   ) {
@@ -165,7 +162,7 @@ export const exportCanvas = async (
   if (!dataUrl) return;
   const ext = format === "jpg" ? "jpg" : format;
   const blob = dataURLtoBlob(dataUrl);
-  downloadBlob(blob, `layer-design-${Date.now()}.${ext}`);
+  await saveExport(blob, `layer-design-${Date.now()}.${ext}`);
 };
 
 export const copyCanvasToClipboard = async () => {
@@ -176,16 +173,16 @@ export const copyCanvasToClipboard = async () => {
     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
   } catch {
     // Fallback: download
-    downloadBlob(blob, `layer-design-${Date.now()}.png`);
+    await saveExport(blob, `layer-design-${Date.now()}.png`);
   }
 };
 
-export const downloadProject = () => {
+export const downloadProject = async () => {
   const project = useEditor.getState().toProject();
-  const blob = new Blob([JSON.stringify(project, null, 2)], {
-    type: "application/json",
-  });
-  downloadBlob(blob, `layer-project-${Date.now()}.layer`);
+  await saveProject(
+    JSON.stringify(project, null, 2),
+    `layer-project-${Date.now()}.layer`,
+  );
 };
 
 export const openProjectFile = async () => {

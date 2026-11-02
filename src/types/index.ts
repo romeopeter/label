@@ -12,12 +12,36 @@ export type ShapeKind =
   | "callout"
   | "qr-code"
   | "emoji"
-  | "image"
   | "pencil"
   | "number"
   | "icons"
-  | "vector"
-  | "other";
+  | "badge"
+  | "triangle"
+  | "diamond"
+  | "pentagon"
+  | "hexagon"
+  | "star"
+  | "heart"
+  | "cross";
+
+export type ConnectorRoute = "straight" | "curved" | "elbow";
+
+export type ConnectorHead = "none" | "arrow" | "open" | "dot";
+
+/** A line defined by its ends, not a box. Points are relative to the element. */
+export interface Connector {
+  start: [number, number];
+  end: [number, number];
+  /** Curved routes only: the off-curve point of a quadratic curve. */
+  control?: [number, number];
+  route: ConnectorRoute;
+  headStart: ConnectorHead;
+  headEnd: ConnectorHead;
+}
+
+export type CalloutKind = "speech" | "round" | "thought" | "shout" | "label";
+
+export type MarkEffect = "none" | "soft" | "hard" | "glow";
 
 export type DeviceFrame =
   | null
@@ -37,6 +61,10 @@ export interface BaseElement {
   height: number;
   rotation: number;
   opacity: number;
+  /** Can't be moved, resized or deleted from the canvas. */
+  locked?: boolean;
+  /** Not drawn on the canvas or in exports. */
+  hidden?: boolean;
   // basic style available to all visual elements
   shadow?: {
     enabled: boolean;
@@ -58,6 +86,8 @@ export interface ImageElement extends BaseElement {
   deviceFrame: DeviceFrame;
   cornerRadius: number;
   transform: string;
+  /** The visible part of the original, as 0–1 fractions. Absent shows it all. */
+  crop?: { x: number; y: number; width: number; height: number };
 }
 
 export interface UploadedImage {
@@ -89,10 +119,27 @@ export interface ShapeElement extends BaseElement {
   strokeWidth: number;
   cornerRadius: number;
   dashed: boolean;
-  // arrows
+  // false draws the outline only; absent means filled
+  filled?: boolean;
+  // drop shadow or glow on shapes and callouts
+  effect?: MarkEffect;
+  // arrows and lines
+  connector?: Connector;
   arrowHeadSize?: number;
-  // callout text
+  // callouts: bubble style, where the tail points (relative to the box), text size
+  calloutKind?: CalloutKind;
+  tail?: [number, number];
+  fontSize?: number;
+  // callout/badge label, number, emoji character, QR content, icon name
   text?: string;
+  // label colour for callout, number and badge
+  textFill?: string;
+  // the light squares of a QR code
+  backgroundFill?: string;
+  // icon outline in a 24×24 box
+  iconPath?: string;
+  // pencil and highlighter stroke as x,y pairs in 0–1 fractions of the box
+  points?: number[];
 }
 
 export type LayerElement = ImageElement | TextElement | ShapeElement;
@@ -120,6 +167,24 @@ export interface GridState {
   size: number;
   opacity: number;
 }
+
+/** What a canvas drag creates. Null means dragging selects and moves as usual. */
+export type MarkTool =
+  | { kind: "stroke"; shape: "pencil" | "highlight" }
+  | { kind: "box"; shape: ShapeKind }
+  | { kind: "connector"; shape: "arrow" | "line" }
+  /** A ready-made mark to place: number, badge, emoji, icon, QR code. */
+  | { kind: "stamp"; shape: ShapeKind; preset: Partial<ShapeElement> }
+  | { kind: "text" };
+
+/** Tools in one category share the style used for the next mark they make. */
+export type MarkCategory =
+  | "shape"
+  | "arrow"
+  | "line"
+  | "callout"
+  | "pencil"
+  | "highlight";
 
 export interface CanvasSize {
   width: number;

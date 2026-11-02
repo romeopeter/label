@@ -1,9 +1,12 @@
+import { memo } from "react";
 import type Konva from "konva";
 import { Image as KImage, Group, Rect } from "react-konva";
 import useImage from "use-image";
 import type { ImageElement, DeviceFrame } from "../../types";
 import { useEditor } from "../../store/editor";
+import { MIN_FRAME_SIZE } from "@/lib/constants";
 import { isImageTiltActive } from "@/lib/tilt";
+import { sameNodeProps } from "./nodeProps";
 
 /* ----------------------------------------------------------------- */
 
@@ -86,15 +89,41 @@ const FRAME_INSET: Record<
   },
 };
 
-export const ImageNode = ({ el, onSelect }: Props) => {
+const ImageNodeBody = ({ el, onSelect }: Props) => {
   const [img] = useImage(el.src, "anonymous");
   const update = useEditor((s) => s.updateElement);
   const sp = shadowProps(el);
   const selectedIds = useEditor((s) => s.selectedIds);
+  const cropping = useEditor((s) => s.cropId === el.id);
   const showTiltPlaceholder =
     selectedIds.includes(el.id) && !el.deviceFrame && isImageTiltActive(el.transform);
 
-  if (!img) return null;
+  // Holds the node while the image loads: a new image is selected straight away,
+  // and the Transformer only attaches to nodes that already exist.
+  if (!img) {
+    return (
+      <Group id={el.id} x={el.x} y={el.y} rotation={el.rotation} visible={!el.hidden}>
+        <Rect width={el.width} height={el.height} opacity={0} />
+      </Group>
+    );
+  }
+
+  // A frame's insets stop fitting below its minimum. A plain image needs no
+  // floor here: flooring one side alone would break its proportions.
+  const minWidth = el.deviceFrame ? MIN_FRAME_SIZE.width : 0;
+  const minHeight = el.deviceFrame ? MIN_FRAME_SIZE.height : 0;
+
+  const onTransform = (e: Konva.KonvaEventObject<Event>) => {
+    const node = e.target;
+    const sx = node.scaleX(); const sy = node.scaleY();
+    node.scaleX(1); node.scaleY(1);
+    update(el.id, {
+      x: node.x(), y: node.y(),
+      width: Math.max(minWidth, el.width * sx),
+      height: Math.max(minHeight, el.height * sy),
+      rotation: node.rotation(),
+    });
+  };
 
   if (!el.deviceFrame) {
     return (
@@ -105,21 +134,12 @@ export const ImageNode = ({ el, onSelect }: Props) => {
         y={el.y}
         rotation={el.rotation}
         opacity={el.opacity}
-        draggable
+        draggable={!el.locked}
+        visible={!el.hidden}
         onClick={onSelect}
         onTap={onSelect}
         onDragEnd={(e) => update(el.id, { x: e.target.x(), y: e.target.y() })}
-        onTransformEnd={(e) => {
-          const node = e.target;
-          const sx = node.scaleX(); const sy = node.scaleY();
-          node.scaleX(1); node.scaleY(1);
-          update(el.id, {
-            x: node.x(), y: node.y(),
-            width: Math.max(20, el.width * sx),
-            height: Math.max(20, el.height * sy),
-            rotation: node.rotation(),
-          });
-        }}
+        onTransform={onTransform}
       >
         {showTiltPlaceholder ? (
           <Rect width={el.width} height={el.height} opacity={0} />
@@ -128,6 +148,15 @@ export const ImageNode = ({ el, onSelect }: Props) => {
             image={img}
             width={el.width}
             height={el.height}
+            visible={!cropping}
+            crop={
+              el.crop && {
+                x: el.crop.x * img.naturalWidth,
+                y: el.crop.y * img.naturalHeight,
+                width: el.crop.width * img.naturalWidth,
+                height: el.crop.height * img.naturalHeight,
+              }
+            }
             cornerRadius={el.cornerRadius}
             stroke={el.border?.enabled ? el.border.color : undefined}
             strokeWidth={el.border?.enabled ? el.border.width : 0}
@@ -163,21 +192,12 @@ export const ImageNode = ({ el, onSelect }: Props) => {
       y={el.y}
       rotation={el.rotation}
       opacity={el.opacity}
-      draggable
+      draggable={!el.locked}
+      visible={!el.hidden}
       onClick={onSelect}
       onTap={onSelect}
       onDragEnd={(e) => update(el.id, { x: e.target.x(), y: e.target.y() })}
-      onTransformEnd={(e) => {
-        const node = e.target;
-        const sx = node.scaleX(); const sy = node.scaleY();
-        node.scaleX(1); node.scaleY(1);
-        update(el.id, {
-          x: node.x(), y: node.y(),
-          width: Math.max(120, el.width * sx),
-          height: Math.max(80, el.height * sy),
-          rotation: node.rotation(),
-        });
-      }}
+      onTransform={onTransform}
     >
       {/* Frame body */}
       <Rect
@@ -243,3 +263,5 @@ export const ImageNode = ({ el, onSelect }: Props) => {
     </Group>
   );
 };
+
+export const ImageNode = memo(ImageNodeBody, sameNodeProps);

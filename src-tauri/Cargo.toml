@@ -1,0 +1,17 @@
+[package]
+name = "layer"
+version = "0.1.0"
+description = "Layer — desktop-first branded graphics editor"
+edition = "2024"
+rust-version = "1.90"
+
+[lib]
+name = "layer_lib"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+thiserror = "2"

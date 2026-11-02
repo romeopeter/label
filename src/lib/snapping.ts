@@ -126,6 +126,20 @@ export interface SnapResult {
   guides: SnapGuide[];
 }
 
+/** Snaps a lone point, like a line's end or a corner being drawn out. */
+export const snapPoint = (
+  [x, y]: [number, number],
+  candidates: SnapCandidates,
+  threshold: number,
+): { point: [number, number]; guides: SnapGuide[] } => {
+  const { dx, dy, guides } = computeSnap(
+    { minX: x, minY: y, maxX: x, maxY: y },
+    candidates,
+    threshold,
+  );
+  return { point: [x + dx, y + dy], guides };
+};
+
 /**
  * @param threshold in canvas units — convert from `SNAP_THRESHOLD_PX` through
  *   the stage scale, so the pull feels the same at every zoom level.
