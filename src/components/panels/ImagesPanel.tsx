@@ -1,8 +1,11 @@
 import { useRef } from "react";
-import { Camera, Image as ImageIcon, Twitter, Upload } from "lucide-react";
+import { Image as ImageIcon, Upload } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { Button } from "@/components/ui/button";
 import { importImageFile } from "@/lib/importers";
+import { ImageEditSection } from "./ImageEditSection";
+import { ScreenshotButton } from "./ScreenshotButton";
+import { StockImages } from "./StockImages";
 import { PanelHelp, PanelTitle, SectionLabel, Linebreak } from "./primitives";
 
 export const ImagesPanel = () => {
@@ -44,14 +47,12 @@ export const ImagesPanel = () => {
           aria-label="Upload image to canvas"
         />
 
-        <Button variant="outline" size="block" disabled>
-          <Camera className="h-3 w-3" /> Screenshot website
-        </Button>
-
-        <Button variant="outline" size="block" disabled>
-          <Twitter className="h-3 w-3" /> Import tweet
-        </Button>
+        <ScreenshotButton onCapture={(blob) => importImageFile(blob, addImage)} />
       </div>
+
+      <Linebreak />
+
+      <StockImages onPick={(blob) => importImageFile(blob, addImage)} />
 
       <Linebreak />
 
@@ -81,6 +82,8 @@ export const ImagesPanel = () => {
           </div>
         )}
       </div>
+
+      <ImageEditSection />
     </div>
   );
 };

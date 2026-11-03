@@ -100,7 +100,7 @@ static image (Brandbird parity).
 ### Phase 1 does NOT include
 
 - Custom fonts (system fonts only)
-- Functional website screenshot / tweet import (needs Tauri capture pipeline)
+- Website-by-URL capture / tweet import (no button; needs Tauri capture pipeline)
 - 3D image rendering effect (prior implementation removed; redesign needed)
 
 ### Commands
@@ -645,6 +645,46 @@ field. Uploads aren't part of history.
   but can also scale up. It sets size and position; nothing about it is stored.
 - **Highlight** arms the highlighter.
 
+### Adding images
+
+An image can go on the canvas or become the background. It comes from one of three places:
+
+- **Upload:** a file from the device, or drag and drop or paste.
+- **Screenshot:** anything on the desktop. **Add screenshot** in the Images and Background
+  panels. On macOS Layer hides and hands over to the system's own picker, so the user drags
+  over any area or presses Space to pick a window. Other systems and the web build use the
+  webview's screen picker, which takes a whole screen or window.
+- **Free images:** search Pixabay in the Images and Background panels (desktop app only).
+  The search and download run in Rust, so the API key never reaches the webview. Following
+  Pixabay's API terms, searches are cached for 24 hours, results say they come from Pixabay,
+  and a chosen image is downloaded into the project rather than linked.
+
+### Image editing
+
+Editing lives at the bottom of the **Images** panel, not in a tool of its own, because it
+only applies to images. It appears once the canvas has an image, works on the selected one,
+and Edit on the image toolbar scrolls to it. It has three tabs. Options come first, as
+thumbnails of the user's own picture, with one Strength slider, because users aren't
+expected to know photo editing.
+
+- **Fix:** Crop. Remove, Hide, Expand and Straighten are the next stages.
+- **Style:** one at a time, each with named variants: Glow, Motion, Color split, Double
+  exposure (a second image, added here or from Uploads, with six blend options shown as
+  overlapping circles), Fish-eye, Halo, Grunge, Film.
+- **Adjust:** Quick fix, Color (tints, black and white), Color grade (named looks), Lens
+  blur, then Brightness, Contrast, Highlights, Shadows, Ambience, Saturation and Warmth.
+
+**Edits are settings, not pixels.** `ImageElement.edit` is stored in the `.layer` file,
+undoes like any change, and `src` always stays the original. Removing an edit restores
+the exact original pixels, because an image with nothing to change skips the renderer.
+
+**One shared WebGL2 renderer** (`src/lib/imageEdit/`) draws edits to a 2D canvas per
+image, which Konva draws like any picture, so export needs no special handling. Browsers
+allow few WebGL contexts, so never create one per image. The crop is baked in before
+effects run, so fish-eye and lens blur centre on what's visible; the crop window itself
+shows the unedited original. Work is capped at 4096 px on the longest side. On a device
+without WebGL2, images show unedited and the panel says so.
+
 ### Snapping
 
 Applies to moving elements, drawing marks and dragging line ends and callout tails.
@@ -1011,7 +1051,7 @@ survives reinstalls; users can put it in iCloud Drive for cross-machine sync.
 ### Out of scope (Phase 1)
 
 - Custom fonts (system fonts only)
-- Functional website screenshot / tweet import (Tauri capture pipeline)
+- Website-by-URL capture / tweet import (Tauri capture pipeline)
 - 3D image rendering effect (redesign needed)
 - HEIC/HEIF decode, PSD import
 - Tests (not yet specced)
@@ -1019,4 +1059,4 @@ survives reinstalls; users can put it in iCloud Drive for cross-machine sync.
 ### Known follow-ups
 
 - CSS 3D tilt rasterization issue (tilt feature)
-- Auto website/tweet screenshot (visible stub; Tauri pipeline planned)
+- Auto website/tweet capture (no button; Tauri pipeline planned)

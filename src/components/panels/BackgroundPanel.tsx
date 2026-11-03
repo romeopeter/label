@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { LayoutDashboard, Upload } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { fileToDataURL } from "@/lib/importers";
+import { ScreenshotButton } from "./ScreenshotButton";
+import { StockImages } from "./StockImages";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -172,6 +174,16 @@ export const BackgroundPanel = () => {
               className="hidden"
               onChange={onUploadImage}
               aria-label="Upload background image"
+            />
+            <ScreenshotButton
+              onCapture={async (blob) =>
+                setBg({ mode: "image", imageSrc: await fileToDataURL(blob) })
+              }
+            />
+            <StockImages
+              onPick={async (blob) =>
+                setBg({ mode: "image", imageSrc: await fileToDataURL(blob) })
+              }
             />
             {bg.imageSrc && (
               <>

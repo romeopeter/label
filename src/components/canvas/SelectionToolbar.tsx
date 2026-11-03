@@ -7,6 +7,7 @@ import {
   Copy,
   Crop,
   Highlighter,
+  SlidersHorizontal,
   Layers,
   Minus,
   MoreVertical,
@@ -43,6 +44,7 @@ interface SelectionToolbarProps {
   onCropCancel: () => void;
   onImageChange: (patch: Partial<ImageElement>) => void;
   onHighlight: () => void;
+  onEdit: () => void;
   moreOpen: boolean;
   onMoreOpenChange: (open: boolean) => void;
   onDelete: () => void;
@@ -163,6 +165,7 @@ const ImageToolbar = ({
   onCropStart,
   onImageChange,
   onHighlight,
+  onEdit,
   moreOpen,
   onMoreOpenChange,
   onDelete,
@@ -186,6 +189,10 @@ const ImageToolbar = ({
         onClick={onCropStart}
       >
         <Crop className="h-3.5 w-3.5" /> Crop
+      </ToolbarButton>
+
+      <ToolbarButton label="Edit" onClick={onEdit}>
+        <SlidersHorizontal className="h-3.5 w-3.5" /> Edit
       </ToolbarButton>
 
       <ToolbarButton label="Highlight" onClick={onHighlight}>

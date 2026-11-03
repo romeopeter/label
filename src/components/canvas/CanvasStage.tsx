@@ -18,6 +18,7 @@ import { CROP_LAYER_NAME, CropOverlay, type CropOverlayHandle } from "./CropOver
 import { boundsOf, CONTENT_LAYER_NAME, snapCandidatesFor } from "./snapCandidates";
 import { useMarkPlacement } from "./useMarkPlacement";
 import { setStage } from "./stageRef";
+import { IMAGE_EDIT_SECTION_ID } from "@/lib/imageEdit/presets";
 import { computeSnap, SNAP_THRESHOLD_PX, type SnapCandidates } from "@/lib/snapping";
 import { importImageFile } from "../../lib/importers";
 import type { ImageElement, LayerElement, TextElement } from "@/types";
@@ -52,6 +53,9 @@ const ALL_ANCHORS = [
 const TEXT_ANCHORS = [...CORNER_ANCHORS, "middle-left", "middle-right"];
 
 const MIN_TRANSFORM_SIZE = 8;
+
+/** Half of each toolbar's width, so it stays on the canvas above an edge element. */
+const TOOLBAR_HALF_WIDTH = { image: 235, text: 120 };
 
 /** The element a clicked node belongs to: nodes draw inside an element's group. */
 const elementIdOf = (node: Konva.Node, ids: Set<string>) => {
@@ -346,12 +350,16 @@ export const CanvasStage = () => {
       ? selectedElement
       : null;
 
+  const toolbarHalfWidth = selectedToolbarElement
+    ? TOOLBAR_HALF_WIDTH[selectedToolbarElement.type]
+    : 0;
+
   const toolbarPosition = selectedToolbarElement
     ? {
         x: clamp(
           (selectedToolbarElement.x + selectedToolbarElement.width / 2) * scale,
-          120,
-          Math.max(120, displayW - 120),
+          toolbarHalfWidth,
+          Math.max(toolbarHalfWidth, displayW - toolbarHalfWidth),
         ),
         y: clamp(
           selectedToolbarElement.y * scale - 10,
@@ -590,6 +598,15 @@ export const CanvasStage = () => {
             onImageChange={(patch) =>
               updateElement(selectedToolbarElement.id, patch)
             }
+            onEdit={() => {
+              setActiveTool("images");
+              // After the panel has rendered, since the section may not exist until then.
+              requestAnimationFrame(() =>
+                document
+                  .getElementById(IMAGE_EDIT_SECTION_ID)
+                  ?.scrollIntoView({ block: "start" }),
+              );
+            }}
             onHighlight={() => {
               setActiveTool("annotation");
               useEditor

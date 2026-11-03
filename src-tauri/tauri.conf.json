@@ -25,8 +25,8 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' ipc: http://ipc.localhost data: blob:; object-src 'none'; base-uri 'self'",
-      "devCsp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:5173 data: blob:; object-src 'none'; base-uri 'self'",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.pixabay.com https://pixabay.com; connect-src 'self' ipc: http://ipc.localhost data: blob:; object-src 'none'; base-uri 'self'",
+      "devCsp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.pixabay.com https://pixabay.com; connect-src 'self' ipc: http://ipc.localhost ws://127.0.0.1:5173 data: blob:; object-src 'none'; base-uri 'self'",
       "dangerousDisableAssetCspModification": ["style-src"]
     }
   },

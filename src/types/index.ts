@@ -88,6 +88,46 @@ export interface ImageElement extends BaseElement {
   transform: string;
   /** The visible part of the original, as 0–1 fractions. Absent shows it all. */
   crop?: { x: number; y: number; width: number; height: number };
+  /** Non-destructive edits. `src` stays the original. */
+  edit?: ImageEdit;
+}
+
+/** Each is -100 to 100, where 0 changes nothing. */
+export interface ImageAdjust {
+  brightness: number;
+  contrast: number;
+  highlights: number;
+  shadows: number;
+  ambience: number;
+  saturation: number;
+  warmth: number;
+}
+
+export type ImageStyleId =
+  | "bloom"
+  | "motion"
+  | "chromatic"
+  | "double"
+  | "fisheye"
+  | "halation"
+  | "grunge"
+  | "film";
+
+export type LensBlurMode = "background" | "band" | "whole";
+
+export interface ImageEdit {
+  adjust?: Partial<ImageAdjust>;
+  /** Strengths and amounts are 0 to 100. */
+  color?: { id: string; strength: number };
+  grade?: { id: string; strength: number };
+  lensBlur?: { mode: LensBlurMode; amount: number };
+  style?: {
+    id: ImageStyleId;
+    variant: string;
+    strength: number;
+    /** The second image of a double exposure. Its variant is how the two blend. */
+    overlaySrc?: string;
+  };
 }
 
 export interface UploadedImage {

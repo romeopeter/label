@@ -60,11 +60,26 @@ flag it before implementing.
   Check `qrcode-generator` at runtime, not by its types: its ESM build lacks the
   `stringToBytesFuncs` the types declare. Layer rows list every element,
   front-most first.
+- **Image edits are settings, not pixels.** `ImageElement.edit` is rendered by one shared
+  WebGL2 context in [src/lib/imageEdit/](./src/lib/imageEdit/) to a canvas per image via
+  `useEditedImage`; Konva and export just read that canvas. Options live in `presets.ts`
+  as data. Sampling with a jittered coordinate must use `textureLod`, or mipmaps blur it.
+  See `implementation.md` §8.
 - **Uploads and Images are split.** Uploads is an in-memory asset bucket
   (`uploadedImages` in Zustand). The Images tool adds images to the canvas
-  directly and can insert from Uploads. Screenshot website / import tweet are
-  visible stubs only; their planned implementation is a Tauri-side import
-  pipeline.
+  directly and can insert from Uploads.
+- **Screenshots are of the desktop, not a URL.** `captureScreen` in
+  [host.ts](./src/lib/host.ts): macOS desktop runs the system `screencapture`
+  picker from [capture.rs](./src-tauri/src/capture.rs), with the window hidden and
+  always restored; everything else uses the webview's `getDisplayMedia` picker.
+  Both the Images and Background panels use it via `ScreenshotButton`.
+- **Pixabay's key stays in Rust.** `PIXELBAY_KEY` in `.env` is read by
+  [build.rs](./src-tauri/build.rs) and used only in
+  [pixabay.rs](./src-tauri/src/pixabay.rs). Never read it from `src/`, give it a
+  `VITE_` name, or pass an HTTP client's error text on: it contains the URL, and
+  the URL contains the key. The web build has no image search. Results must stay
+  cached 24 hours and credit Pixabay (its API terms). A key compiled into a shipped
+  app can still be dug out of the binary; only a server would change that.
 - **3D panel UI remains, but image 3D rendering is disabled.** The previous
   sliced-image perspective renderer in `ImageNode` was removed because it was
   incorrect. Do not reintroduce that approach.
@@ -155,6 +170,7 @@ layer/
 │   │   ├── callouts.ts        ← Bubble outlines
 │   │   ├── shapePaths.ts      ← Polygon, star and heart outlines
 │   │   ├── qr.ts              ← text → QR vector path
+│   │   ├── imageEdit/         ← Image edit options, shaders and WebGL renderer
 │   │   ├── exporters.ts       ← stage → PNG/JPG/clipboard, .layer save/load
 │   │   ├── patterns/          ← SVG tile generators, LRU raster cache, lookups
 │   │   └── export/            ← export-time asset prep (pattern tile DPI swap)
@@ -325,7 +341,7 @@ spec as still authoritative for everything else.
 | Custom fonts upload | Phase 2 (system fonts only in Phase 1) | Phase 2 |
 | Brand kits | Phase 2 | Phase 2 |
 | Layout templates | Phase 2 | Phase 2 |
-| Functional website screenshot / tweet import | Needs Tauri capture pipeline | With shell |
+| Website-by-URL capture / tweet import | Needs Tauri capture pipeline | With shell |
 | 3D image rendering effect | Prior implementation removed | Redesign needed |
 | Persisted custom pattern colour pairs | Needs SQLite | With shell |
 | Brand-derived pattern colour pairs | Needs the Phase-2 brand store | With brand kits |

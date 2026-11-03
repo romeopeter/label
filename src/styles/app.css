@@ -44,6 +44,18 @@
   --color-text-muted: #9d98c2;
   --color-text-faint: #6f6a92;
 
+  /*
+    Where the circles of a double exposure blend option overlap: primary (the
+    picture) blended with secondary (the second image), by the shader's formula.
+    Default is shown at 70%, the strength a style starts at; the rest at 100%.
+  */
+  --color-mix-default: #4363a3;
+  --color-mix-lighten: #539eb7;
+  --color-mix-darken: #1d4a75;
+  --color-mix-add: #70e8ff;
+  --color-mix-subtract: #005400;
+  --color-mix-overlay: #1375a8;
+
   /* Hairlines — kept as semantic CSS vars (alpha colors don't slot into Tailwind palette) */
   --hairline: color-mix(in srgb, #afa9ec 12%, transparent);
   --hairline-strong: color-mix(in srgb, #afa9ec 22%, transparent);

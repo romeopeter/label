@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useRef } from "react";
 import type Konva from "konva";
 import { Image as KImage, Group, Rect } from "react-konva";
 import useImage from "use-image";
@@ -7,6 +7,7 @@ import { useEditor } from "../../store/editor";
 import { MIN_FRAME_SIZE } from "@/lib/constants";
 import { isImageTiltActive } from "@/lib/tilt";
 import { sameNodeProps } from "./nodeProps";
+import { useEditedImage } from "./useEditedImage";
 
 /* ----------------------------------------------------------------- */
 
@@ -91,6 +92,14 @@ const FRAME_INSET: Record<
 
 const ImageNodeBody = ({ el, onSelect }: Props) => {
   const [img] = useImage(el.src, "anonymous");
+  const pictureRef = useRef<Konva.Image>(null);
+  // A frame fits the whole screenshot to its screen, so a crop doesn't reach it.
+  const { picture, edited } = useEditedImage(
+    img,
+    el.edit,
+    el.deviceFrame ? undefined : el.crop,
+    () => pictureRef.current?.getLayer()?.batchDraw(),
+  );
   const update = useEditor((s) => s.updateElement);
   const sp = shadowProps(el);
   const selectedIds = useEditor((s) => s.selectedIds);
@@ -100,7 +109,7 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
 
   // Holds the node while the image loads: a new image is selected straight away,
   // and the Transformer only attaches to nodes that already exist.
-  if (!img) {
+  if (!img || !picture) {
     return (
       <Group id={el.id} x={el.x} y={el.y} rotation={el.rotation} visible={!el.hidden}>
         <Rect width={el.width} height={el.height} opacity={0} />
@@ -145,17 +154,19 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
           <Rect width={el.width} height={el.height} opacity={0} />
         ) : (
           <KImage
-            image={img}
+            ref={pictureRef}
+            image={picture}
             width={el.width}
             height={el.height}
             visible={!cropping}
+            // An edited picture has the crop baked in.
             crop={
-              el.crop && {
+              !edited && el.crop ? {
                 x: el.crop.x * img.naturalWidth,
                 y: el.crop.y * img.naturalHeight,
                 width: el.crop.width * img.naturalWidth,
                 height: el.crop.height * img.naturalHeight,
-              }
+              } : undefined
             }
             cornerRadius={el.cornerRadius}
             stroke={el.border?.enabled ? el.border.color : undefined}
@@ -236,7 +247,7 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
         }}
       >
         <Rect x={screenX} y={screenY} width={screenW} height={screenH} fill="#0F0E1A" />
-        <KImage image={img} x={ix} y={iy} width={iw} height={ih} />
+        <KImage ref={pictureRef} image={picture} x={ix} y={iy} width={iw} height={ih} />
       </Group>
       {/* MacBook hinge */}
       {el.deviceFrame.startsWith("macbook") && (

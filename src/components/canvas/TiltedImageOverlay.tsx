@@ -1,6 +1,8 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
+import useImage from "use-image";
 import type { ImageElement } from "@/types";
 import { parseImageTilt } from "@/lib/tilt";
+import { useEditedImage } from "./useEditedImage";
 
 interface Props {
   image: ImageElement;
@@ -10,6 +12,17 @@ interface Props {
 export const TiltedImageOverlay = forwardRef<HTMLDivElement, Props>(
   ({ image, scale }, ref) => {
     const tilt = parseImageTilt(image.transform);
+    const [original] = useImage(image.src, "anonymous");
+    const { picture, edited } = useEditedImage(original, image.edit, image.crop);
+    const editedHost = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const host = editedHost.current;
+      if (!host || !edited || !(picture instanceof HTMLCanvasElement)) return;
+      picture.style.cssText = "display:block;width:100%;height:100%";
+      host.replaceChildren(picture);
+    }, [edited, picture]);
+
     const crop = image.crop ?? { x: 0, y: 0, width: 1, height: 1 };
     const shadow = image.shadow?.enabled
       ? `${image.shadow.offsetX * scale}px ${image.shadow.offsetY * scale}px ${
@@ -50,7 +63,11 @@ export const TiltedImageOverlay = forwardRef<HTMLDivElement, Props>(
               transition: "transform 0.05s ease-out",
             }}
           >
+            {edited && (
+              <div ref={editedHost} className="absolute inset-0" />
+            )}
             <img
+              hidden={edited}
               src={image.src}
               alt=""
               draggable={false}
