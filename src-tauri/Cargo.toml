@@ -20,5 +20,9 @@ serde_json = "1"
 tempfile = "3"
 thiserror = "2"
 
+# Debug info for ~350 dependencies is most of `target/`. Our own code keeps it.
+[profile.dev.package."*"]
+debug = false
+
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt"] }

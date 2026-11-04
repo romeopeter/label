@@ -634,13 +634,14 @@ pointer is down is one step, a new press closes the previous step, and changes w
 pointer (typing, arrow keys) close after a 400 ms pause. Changes that aren't the user's
 doing must go through `history.silently`, as `measureElement` does, or they would wipe
 redo. Loading or resetting a project clears history. In a text field, ⌘Z belongs to the
-field. Uploads aren't part of history.
+field. Uploads are part of history, so adding or removing one can be undone.
 
 ### Image toolbar
 
 - **Crop** is non-destructive: `ImageElement.crop` holds the visible part as 0–1
-  fractions of the original, so a later crop can reach back out. It's unavailable on
-  framed or tilted images, where a window over the flat original wouldn't match.
+  fractions of the original, so a later crop can reach back out. A tilted image crops
+  flat, then tilts again. On a framed image the frame keeps its size, and the crop
+  changes only what its screen shows.
 - **Padding** centres the image with a gap to the canvas edge, in proportion, as in §6,
   but can also scale up. It sets size and position; nothing about it is stored.
 - **Highlight** arms the highlighter.
@@ -667,7 +668,8 @@ and Edit on the image toolbar scrolls to it. It has three tabs. Options come fir
 thumbnails of the user's own picture, with one Strength slider, because users aren't
 expected to know photo editing.
 
-- **Fix:** Crop. Remove, Hide, Expand and Straighten are the next stages.
+- **Fix:** Crop, and Reset proportions on a stretched image. Remove, Hide, Expand and
+  Straighten are the next stages.
 - **Style:** one at a time, each with named variants: Glow, Motion, Color split, Double
   exposure (a second image, added here or from Uploads, with six blend options shown as
   overlapping circles), Fish-eye, Halo, Grunge, Film.

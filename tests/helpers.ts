@@ -30,7 +30,9 @@ export const addTwoToneImage = (page: Page, edit?: unknown): Promise<string> =>
     const id = s.addImage(c.toDataURL(), 800, 400);
     s.updateElement(id, { x: 200, y: 200, width: 800, height: 400, edit: ${JSON.stringify(edit ?? null)} ?? undefined });
     s.selectElement(id);
-    await new Promise((r) => setTimeout(r, 300));
+    // Until the picture has loaded, the node is only a placeholder.
+    while (!ST().findOne("#" + id)?.findOne("Image")) await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 200));
     return id;
   })()`);
 

@@ -168,14 +168,18 @@ export const exportCanvas = async (
 };
 
 export const copyCanvasToClipboard = async () => {
-  const dataUrl = await renderCanvasDataURL("png", 2);
-  if (!dataUrl) return;
-  const blob = dataURLtoBlob(dataUrl);
+  const png = renderCanvasDataURL("png", 2).then((dataUrl) => {
+    if (!dataUrl) throw new Error("There's no canvas to copy.");
+    return dataURLtoBlob(dataUrl);
+  });
   try {
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    // Handed over unfinished: WebKit refuses a write that starts after an await,
+    // because it no longer counts as part of the user's key press or click.
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
   } catch {
     // Fallback: download
-    await saveExport(blob, `layer-design-${Date.now()}.png`);
+    const blob = await png.catch(() => null);
+    if (blob) await saveExport(blob, `layer-design-${Date.now()}.png`);
   }
 };
 

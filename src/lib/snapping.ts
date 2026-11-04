@@ -141,6 +141,42 @@ export const snapPoint = (
 };
 
 /**
+ * Where a resize handle should go, given the point `snapPoint` pulled it to. A side
+ * handle moves on one axis only. With a fixed ratio both can't line up, so the
+ * corner takes the axis that snapped and stays on the box's diagonal.
+ */
+export const resizeSnapResult = (
+  anchor: string,
+  raw: [number, number],
+  snapped: [number, number],
+  start: Bounds,
+  fixedRatio: boolean,
+): { point: [number, number]; axes: SnapAxis[] } => {
+  const isSide = anchor.startsWith("middle");
+  const isTopOrBottom = anchor === "top-center" || anchor === "bottom-center";
+  if (isSide) return { point: [snapped[0], raw[1]], axes: ["x"] };
+  if (isTopOrBottom) return { point: [raw[0], snapped[1]], axes: ["y"] };
+  if (!fixedRatio) return { point: snapped, axes: ["x", "y"] };
+
+  const movedX = snapped[0] !== raw[0];
+  const movedY = snapped[1] !== raw[1];
+  if (!movedX && !movedY) return { point: raw, axes: [] };
+
+  const oppositeX = anchor.endsWith("left") ? start.maxX : start.minX;
+  const oppositeY = anchor.startsWith("top") ? start.maxY : start.minY;
+  const signX = anchor.endsWith("left") ? -1 : 1;
+  const signY = anchor.startsWith("top") ? -1 : 1;
+  const ratio = (start.maxX - start.minX) / (start.maxY - start.minY);
+
+  if (movedX) {
+    const width = Math.abs(snapped[0] - oppositeX);
+    return { point: [snapped[0], oppositeY + (signY * width) / ratio], axes: ["x"] };
+  }
+  const height = Math.abs(snapped[1] - oppositeY);
+  return { point: [oppositeX + signX * height * ratio, snapped[1]], axes: ["y"] };
+};
+
+/**
  * @param threshold in canvas units — convert from `SNAP_THRESHOLD_PX` through
  *   the stage scale, so the pull feels the same at every zoom level.
  */

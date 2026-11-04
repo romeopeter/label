@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Crop, RotateCcw, SlidersHorizontal, Upload } from "lucide-react";
+import { Crop, RotateCcw, Scaling, SlidersHorizontal, Upload } from "lucide-react";
 import useImage from "use-image";
 import { useEditor } from "@/store/editor";
 import type {
@@ -11,7 +11,6 @@ import type {
 } from "@/types";
 import { cn } from "@/lib/utils";
 import { importImageFile } from "@/lib/importers";
-import { isImageTiltActive } from "@/lib/tilt";
 import {
   COLORS,
   DEFAULT_STYLE_STRENGTH,
@@ -43,6 +42,7 @@ const THUMB_WIDTH = 132;
 const THUMB_HEIGHT = 94;
 const DEFAULT_GRADE_STRENGTH = 80;
 const DEFAULT_LENS_AMOUNT = 50;
+const STRETCH_TOLERANCE = 0.01;
 const FOCUS_MAX_WIDTH = 256;
 const FOCUS_MAX_HEIGHT = 160;
 
@@ -151,23 +151,42 @@ const ORIGINAL: ImageEdit = {};
 
 const FixTab = ({ image }: { image: ImageElement }) => {
   const setCropId = useEditor((s) => s.setCropId);
-  const canCrop = !image.deviceFrame && !isImageTiltActive(image.transform);
+  const update = useEditor((s) => s.updateElement);
+  const [picture] = useImage(image.src, "anonymous");
+
+  // Older projects can hold images stretched out of shape. A frame fits its picture
+  // to the screen, so a framed image's box says nothing about the picture's shape.
+  const trueRatio =
+    picture && !image.deviceFrame
+      ? (picture.naturalWidth * (image.crop?.width ?? 1)) /
+        (picture.naturalHeight * (image.crop?.height ?? 1))
+      : null;
+  const stretched =
+    trueRatio !== null &&
+    Math.abs(image.width / image.height / trueRatio - 1) > STRETCH_TOLERANCE;
 
   return (
     <div className="flex flex-col gap-2">
-      <Button
-        variant="ghost"
-        size="block"
-        disabled={!canCrop}
-        onClick={() => setCropId(image.id)}
-      >
+      <Button variant="ghost" size="block" onClick={() => setCropId(image.id)}>
         <Crop className="h-3 w-3" /> Crop
       </Button>
-      <PanelHelp>
-        {canCrop
-          ? "Trim the edges of the picture. You can always crop back out."
-          : "Remove the device frame and 3D tilt to crop."}
-      </PanelHelp>
+      <PanelHelp>Trim the edges of the picture. You can always crop back out.</PanelHelp>
+
+      {stretched && (
+        <>
+          <Button
+            variant="ghost"
+            size="block"
+            onClick={() => {
+              const height = image.width / trueRatio;
+              update(image.id, { height, y: image.y + (image.height - height) / 2 });
+            }}
+          >
+            <Scaling className="h-3 w-3" /> Reset proportions
+          </Button>
+          <PanelHelp>This picture is stretched. This puts it back in shape.</PanelHelp>
+        </>
+      )}
     </div>
   );
 };

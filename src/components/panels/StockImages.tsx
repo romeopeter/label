@@ -96,12 +96,15 @@ export const StockImages = ({
         type="search"
         aria-label="Search free images"
         placeholder="Search free images"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
         value={query}
         onChange={(e) => onType(e.target.value)}
       />
 
       {images.length > 0 && (
-        <div className="max-h-60 overflow-y-auto scrollbar-thin">
+        <div className="max-h-60 overflow-y-auto">
           <div className="grid grid-cols-3 gap-1.5">
             {images.map((image) => (
               <button

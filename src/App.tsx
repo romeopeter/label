@@ -111,7 +111,7 @@ export const App = () => {
       <div className="flex min-h-0 flex-1">
         <LeftRail hiddenTools={hiddenTools} />
 
-        <aside className="z-10 w-72.5 shrink-0 overflow-y-auto border-r border-hairline bg-panel scrollbar-thin">
+        <aside className="z-10 w-72.5 shrink-0 overflow-y-auto border-r border-hairline bg-panel">
           <PanelHost
             activeTool={activeTool}
             onOpenCustomizeModal={() => setCustomizeOpen(true)}

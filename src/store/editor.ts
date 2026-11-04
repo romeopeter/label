@@ -451,10 +451,17 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
 }));
 
-const documentOf = ({ canvas, background, elements, watermark }: EditorState) => ({
+const documentOf = ({
   canvas,
   background,
   elements,
+  uploadedImages,
+  watermark,
+}: EditorState) => ({
+  canvas,
+  background,
+  elements,
+  uploadedImages,
   watermark,
 });
 
@@ -476,6 +483,7 @@ const history = createHistory({
 useEditor.subscribe((state, previous) => {
   if (
     state.elements !== previous.elements ||
+    state.uploadedImages !== previous.uploadedImages ||
     state.background !== previous.background ||
     state.canvas !== previous.canvas ||
     state.watermark !== previous.watermark

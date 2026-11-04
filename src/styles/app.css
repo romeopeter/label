@@ -102,6 +102,18 @@
   *::after {
     box-sizing: border-box;
   }
+  /* macOS set to "always show scrollbars" otherwise draws bright ones in the webview. */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--hairline-strong);
+    border-radius: 4px;
+  }
   html,
   body,
   #root {

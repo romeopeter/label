@@ -30,12 +30,15 @@ const clamp = (value: number, min: number, max: number) =>
  * Crop mode: the whole original shows dimmed, with a movable, resizable window
  * onto it. Crops are stored as fractions of the original and never change the
  * pixels, so cropping again can always reach back out to the full image.
+ *
+ * A tilted image crops flat, and is tilted again afterwards. A framed image's
+ * frame keeps its size, so it shows the original fitted inside the frame's box,
+ * and applying changes only what the screen shows.
  */
-export const CropOverlay = forwardRef<
+const CropWindow = forwardRef<
   CropOverlayHandle,
-  { el: ImageElement; scale: number }
->(({ el, scale }, ref) => {
-  const [img] = useImage(el.src, "anonymous");
+  { el: ImageElement; img: HTMLImageElement; scale: number }
+>(({ el, img, scale }, ref) => {
   const update = useEditor((s) => s.updateElement);
   const setCropId = useEditor((s) => s.setCropId);
   const rectRef = useRef<Konva.Rect>(null);
@@ -46,14 +49,16 @@ export const CropOverlay = forwardRef<
     layerRef.current?.batchDraw(),
   );
 
+  const framed = !!el.deviceFrame;
   const crop = el.crop ?? { x: 0, y: 0, width: 1, height: 1 };
-  const fullWidth = el.width / crop.width;
-  const fullHeight = el.height / crop.height;
+  const frameFit = Math.min(el.width / img.naturalWidth, el.height / img.naturalHeight);
+  const fullWidth = framed ? img.naturalWidth * frameFit : el.width / crop.width;
+  const fullHeight = framed ? img.naturalHeight * frameFit : el.height / crop.height;
   const [box, setBox] = useState({
     x: crop.x * fullWidth,
     y: crop.y * fullHeight,
-    width: el.width,
-    height: el.height,
+    width: crop.width * fullWidth,
+    height: crop.height * fullHeight,
   });
 
   // The group sits where the uncropped image's corner would be, so everything
@@ -63,15 +68,17 @@ export const CropOverlay = forwardRef<
     x: x * Math.cos(angle) - y * Math.sin(angle),
     y: x * Math.sin(angle) + y * Math.cos(angle),
   });
-  const offset = toWorld(crop.x * fullWidth, crop.y * fullHeight);
+  const offset = framed
+    ? toWorld((fullWidth - el.width) / 2, (fullHeight - el.height) / 2)
+    : toWorld(crop.x * fullWidth, crop.y * fullHeight);
   const originX = el.x - offset.x;
   const originY = el.y - offset.y;
 
   useEffect(() => {
-    if (!img || !rectRef.current || !transformerRef.current) return;
+    if (!rectRef.current || !transformerRef.current) return;
     transformerRef.current.nodes([rectRef.current]);
     transformerRef.current.getLayer()?.batchDraw();
-  }, [img]);
+  }, []);
 
   useImperativeHandle(
     ref,
@@ -82,20 +89,26 @@ export const CropOverlay = forwardRef<
         const isWhole =
           fullWidth - box.width < WHOLE_IMAGE_SLOP &&
           fullHeight - box.height < WHOLE_IMAGE_SLOP;
-        update(el.id, {
-          x: originX + corner.x,
-          y: originY + corner.y,
-          width: box.width,
-          height: box.height,
-          crop: isWhole
-            ? undefined
+        const nextCrop = isWhole
+          ? undefined
+          : {
+              x: box.x / fullWidth,
+              y: box.y / fullHeight,
+              width: box.width / fullWidth,
+              height: box.height / fullHeight,
+            };
+        update(
+          el.id,
+          framed
+            ? { crop: nextCrop }
             : {
-                x: box.x / fullWidth,
-                y: box.y / fullHeight,
-                width: box.width / fullWidth,
-                height: box.height / fullHeight,
+                x: originX + corner.x,
+                y: originY + corner.y,
+                width: box.width,
+                height: box.height,
+                crop: nextCrop,
               },
-        });
+        );
         setCropId(null);
       },
       reset: () => {
@@ -106,7 +119,7 @@ export const CropOverlay = forwardRef<
     [box, el, fullWidth, fullHeight],
   );
 
-  if (!img || !picture) return null;
+  if (!picture) return null;
 
   // An edited picture can be smaller than the original, over the renderer's size limit.
   const pictureWidth = picture === img ? img.naturalWidth : picture.width;
@@ -183,6 +196,17 @@ export const CropOverlay = forwardRef<
       />
     </Layer>
   );
+});
+
+CropWindow.displayName = "CropWindow";
+
+export const CropOverlay = forwardRef<
+  CropOverlayHandle,
+  { el: ImageElement; scale: number }
+>(({ el, scale }, ref) => {
+  const [img] = useImage(el.src, "anonymous");
+  // Its starting box comes from the picture's size, so it waits for the picture.
+  return img ? <CropWindow ref={ref} el={el} img={img} scale={scale} /> : null;
 });
 
 CropOverlay.displayName = "CropOverlay";

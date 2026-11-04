@@ -125,8 +125,8 @@ flag it before implementing.
   divides through the stage scale, or the pull feels sticky zoomed out and dead
   zoomed in. `SnapGuides` is driven imperatively through a ref — holding guides
   in the store would re-render every node on every pointer move. Snapping applies
-  to moving, drawing marks, and line-end and callout-tail handles, but not to
-  freehand or Transformer resizing.
+  to moving, drawing marks, resize handles, and line-end and callout-tail handles,
+  but not to freehand, curve handles, rotated boxes or multi-selections.
 
 ## Tech stack
 
@@ -136,6 +136,7 @@ flag it before implementing.
 | Bundler | Vite 5 | Fast dev, simple prod build via Rollup |
 | Styling | **Tailwind v4 (CSS-first)** + **ShadCN** primitives | Tokens via `@theme` in [src/styles/app.css](./src/styles/app.css); primitives we own in [src/components/ui/](./src/components/ui/) |
 | Icons | `lucide-react` | The ShadCN default |
+| UI fonts | `@fontsource/*` | Bundled, so they work offline: nothing loads from Google |
 | State | Zustand | One store: [src/store/editor.ts](./src/store/editor.ts) |
 | Canvas | Konva + `react-konva` | Hit-testing, transform handles, `clipFunc` |
 | Desktop shell | **Tauri 2** | Bundle ~3-5 MB vs Electron ~100 MB |

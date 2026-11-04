@@ -116,13 +116,23 @@ where
 
     outcome.map_err(|error| {
         let message = error.to_string();
-        app.dialog()
-            .message(message.as_str())
-            .title("Layer")
-            .kind(MessageDialogKind::Error)
-            .show(|_| {});
+        show_error_dialog(&app, &message);
         message
     })
+}
+
+fn show_error_dialog(app: &AppHandle, message: &str) {
+    app.dialog()
+        .message(message)
+        .title("Layer")
+        .kind(MessageDialogKind::Error)
+        .show(|_| {});
+}
+
+/// For failures only the UI can spot, such as a project file that doesn't parse.
+#[tauri::command]
+pub fn show_error(app: AppHandle, message: String) {
+    show_error_dialog(&app, &message);
 }
 
 #[tauri::command]

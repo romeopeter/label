@@ -19,7 +19,14 @@ import { boundsOf, CONTENT_LAYER_NAME, snapCandidatesFor } from "./snapCandidate
 import { useMarkPlacement } from "./useMarkPlacement";
 import { setStage } from "./stageRef";
 import { IMAGE_EDIT_SECTION_ID } from "@/lib/imageEdit/presets";
-import { computeSnap, SNAP_THRESHOLD_PX, type SnapCandidates } from "@/lib/snapping";
+import {
+  computeSnap,
+  resizeSnapResult,
+  snapPoint,
+  SNAP_THRESHOLD_PX,
+  type Bounds,
+  type SnapCandidates,
+} from "@/lib/snapping";
 import { importImageFile } from "../../lib/importers";
 import type { ImageElement, LayerElement, TextElement } from "@/types";
 import { isImageTiltActive } from "@/lib/tilt";
@@ -105,6 +112,7 @@ export const CanvasStage = () => {
   const cropRef = useRef<CropOverlayHandle>(null);
   const [draggingElement, setDraggingElement] = useState(false);
   const snapCandidates = useRef<SnapCandidates | null>(null);
+  const resizeSnap = useRef<{ candidates: SnapCandidates; start: Bounds } | null>(null);
   const [toolbarMoreOpenFor, setToolbarMoreOpenFor] = useState<string | null>(
     null,
   );
@@ -290,6 +298,43 @@ export const CanvasStage = () => {
     guidesRef.current?.clear();
   };
 
+  const onTransformStart = () => {
+    const stage = stageRef.current;
+    const node = transformerRef.current?.nodes()[0];
+    // A rotated box has no edges to line up, and a group has no one box to snap.
+    if (!stage || !node || selectedIds.length !== 1 || node.rotation() !== 0) return;
+    const candidates = snapCandidatesFor(stage, node.id());
+    resizeSnap.current = candidates && { candidates, start: boundsOf(node) };
+  };
+
+  const onTransformEnd = () => {
+    resizeSnap.current = null;
+    guidesRef.current?.clear();
+  };
+
+  /** Pulls the handle being dragged to whatever it lines up with. Stage px in and out. */
+  const snapResizeHandle = (
+    _old: Konva.Vector2d,
+    next: Konva.Vector2d,
+    event?: MouseEvent,
+  ) => {
+    const snap = resizeSnap.current;
+    const anchor = transformerRef.current?.getActiveAnchor() ?? "";
+    if (!snap || anchor === "rotater" || event?.shiftKey) {
+      guidesRef.current?.clear();
+      return next;
+    }
+
+    const { point, guides } = snapPoint(
+      [next.x / scale, next.y / scale],
+      snap.candidates,
+      SNAP_THRESHOLD_PX / scale,
+    );
+    const resized = resizeSnapResult(anchor, [next.x / scale, next.y / scale], point, snap.start, fixedRatio);
+    guidesRef.current?.show(guides.filter((guide) => resized.axes.includes(guide.axis)));
+    return { x: resized.point[0] * scale, y: resized.point[1] * scale };
+  };
+
   // Handle element selection with shift-key multi-select support
   const onSelect = (id: string) => (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
@@ -373,6 +418,7 @@ export const CanvasStage = () => {
     selectedElement?.type === "image" &&
     !selectedElement.hidden &&
     !selectedElement.deviceFrame &&
+    selectedElement.id !== cropId &&
     isImageTiltActive(selectedElement.transform)
       ? (selectedElement as ImageElement)
       : null;
@@ -504,6 +550,9 @@ export const CanvasStage = () => {
               enabledAnchors={anchors}
               flipEnabled={false}
               ignoreStroke
+              onTransformStart={onTransformStart}
+              onTransformEnd={onTransformEnd}
+              anchorDragBoundFunc={snapResizeHandle}
               boundBoxFunc={(oldBox, newBox) =>
                 Math.abs(newBox.width) < minBoxWidth ||
                 Math.abs(newBox.height) < minBoxHeight

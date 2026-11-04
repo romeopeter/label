@@ -20,6 +20,7 @@ pub fn run() {
             capture::capture_screen,
             files::save_project,
             files::open_project,
+            files::show_error,
             files::export_static,
             pixabay::search_images,
             pixabay::download_image,

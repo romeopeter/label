@@ -93,11 +93,10 @@ const FRAME_INSET: Record<
 const ImageNodeBody = ({ el, onSelect }: Props) => {
   const [img] = useImage(el.src, "anonymous");
   const pictureRef = useRef<Konva.Image>(null);
-  // A frame fits the whole screenshot to its screen, so a crop doesn't reach it.
   const { picture, edited } = useEditedImage(
     img,
     el.edit,
-    el.deviceFrame ? undefined : el.crop,
+    el.crop,
     () => pictureRef.current?.getLayer()?.batchDraw(),
   );
   const update = useEditor((s) => s.updateElement);
@@ -184,10 +183,12 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
   const screenW = el.width - inset.left - inset.right;
   const screenH = el.height - inset.top - inset.bottom;
 
-  // Cover-fit screenshot inside screen
-  const ratio = Math.max(screenW / img.width, screenH / img.height);
-  const iw = img.width * ratio;
-  const ih = img.height * ratio;
+  // Cover-fit what's left of the screenshot inside the screen
+  const visibleW = img.width * (el.crop?.width ?? 1);
+  const visibleH = img.height * (el.crop?.height ?? 1);
+  const ratio = Math.max(screenW / visibleW, screenH / visibleH);
+  const iw = visibleW * ratio;
+  const ih = visibleH * ratio;
   const ix = screenX + (screenW - iw) / 2;
   const iy = screenY + (screenH - ih) / 2;
 
@@ -247,7 +248,24 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
         }}
       >
         <Rect x={screenX} y={screenY} width={screenW} height={screenH} fill="#0F0E1A" />
-        <KImage ref={pictureRef} image={picture} x={ix} y={iy} width={iw} height={ih} />
+        <KImage
+          ref={pictureRef}
+          image={picture}
+          x={ix}
+          y={iy}
+          width={iw}
+          height={ih}
+          visible={!cropping}
+          // An edited picture has the crop baked in.
+          crop={
+            !edited && el.crop ? {
+              x: el.crop.x * img.naturalWidth,
+              y: el.crop.y * img.naturalHeight,
+              width: el.crop.width * img.naturalWidth,
+              height: el.crop.height * img.naturalHeight,
+            } : undefined
+          }
+        />
       </Group>
       {/* MacBook hinge */}
       {el.deviceFrame.startsWith("macbook") && (

@@ -43,11 +43,20 @@ export const saveProject = async (json: string, filename: string) => {
   await invoke("save_project", { json, suggestedName: filename });
 };
 
+/** Tells the user something went wrong, for where no panel can show it. */
+export const showError = async (message: string) => {
+  if (!isTauri) return window.alert(message);
+
+  const { invoke } = await invokeCore();
+  await invoke("show_error", { message });
+};
+
 /** Resolves to the chosen project's text, or null if the user cancelled. */
 export const pickProjectText = async (): Promise<string | null> => {
   if (isTauri) {
     const { invoke } = await invokeCore();
-    return invoke<string | null>("open_project");
+    // The command has already told the user about any failure.
+    return invoke<string | null>("open_project").catch(() => null);
   }
 
   const input = document.createElement("input");

@@ -28,7 +28,6 @@ import type {
 import { Button } from "@/components/ui/button";
 import { LabeledSlider } from "@/components/panels/primitives";
 import { fitWithPadding, paddingOf } from "@/lib/imageFit";
-import { isImageTiltActive } from "@/lib/tilt";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------------------ */
@@ -175,19 +174,9 @@ const ImageToolbar = ({
 }: SelectionToolbarProps) => {
   const image = element as ImageElement;
   const [paddingOpen, setPaddingOpen] = useState(false);
-  // A frame or a 3D tilt already reshapes the picture, so a crop window drawn
-  // over the flat original wouldn't match what you see.
-  const canCrop = !image.deviceFrame && !isImageTiltActive(image.transform);
-
   return (
     <div className="w-fit flex items-center gap-2.5">
-      <ToolbarButton
-        label={
-          canCrop ? "Crop" : "Remove the device frame and 3D tilt to crop"
-        }
-        disabled={!canCrop}
-        onClick={onCropStart}
-      >
+      <ToolbarButton label="Crop" onClick={onCropStart}>
         <Crop className="h-3.5 w-3.5" /> Crop
       </ToolbarButton>
 

@@ -211,3 +211,199 @@ test("locked layers don't move; hidden layers aren't drawn", async ({ page }) =>
   await page.waitForTimeout(150);
   expect(await page.evaluate(`!ST().findOne("#" + ${JSON.stringify(id)})?.isVisible()`)).toBe(true);
 });
+
+test.describe("snapping while resizing", () => {
+  const addRect = (page: Page, x: number, width: number) =>
+    page.evaluate<string>(`(() => {
+      const s = S.getState();
+      const id = s.addShape("rect", { x: ${x}, y: 300, width: ${width}, height: 200 });
+      s.selectElement(id);
+      return id;
+    })()`);
+
+  test("a side handle pulls to the canvas centre", async ({ page }) => {
+    await openApp(page);
+    const centre = await page.evaluate<number>(`S.getState().canvas.width / 2`);
+    const id = await addRect(page, 400, 300);
+    await page.waitForTimeout(200);
+
+    const scale = await page.evaluate<number>(`ST().scaleX()`);
+    const from = await handle(page, "middle-right");
+    // Stops 4 screen px short of the centre: inside the pull.
+    await dragBy(page, from, { x: (centre - 700) * scale - 4, y: 0 });
+
+    const rect = await element<Box>(page, id);
+    expect(rect.x + rect.width).toBeCloseTo(centre, 0);
+    expect(rect.y).toBeCloseTo(300, 1);
+    expect(rect.height).toBeCloseTo(200, 0);
+  });
+
+  test("holding Shift turns it off", async ({ page }) => {
+    await openApp(page);
+    const centre = await page.evaluate<number>(`S.getState().canvas.width / 2`);
+    const id = await addRect(page, 400, 300);
+    await page.waitForTimeout(200);
+    const scale = await page.evaluate<number>(`ST().scaleX()`);
+
+    await page.keyboard.down("Shift");
+    await dragBy(page, await handle(page, "middle-right"), { x: (centre - 700) * scale - 4, y: 0 });
+    await page.keyboard.up("Shift");
+
+    const rect = await element<Box>(page, id);
+    expect(Math.abs(rect.x + rect.width - centre)).toBeGreaterThan(2);
+  });
+
+  test("an image corner reaches the line and keeps its shape", async ({ page }) => {
+    await openApp(page);
+    const centre = await page.evaluate<number>(`S.getState().canvas.width / 2`);
+    const id = await addTwoToneImage(page);
+    await page.waitForTimeout(150);
+    const scale = await page.evaluate<number>(`ST().scaleX()`);
+
+    await dragBy(page, await handle(page, "bottom-right"), { x: (centre - 1000) * scale - 3, y: -10 });
+
+    const image = await element<Box>(page, id);
+    expect(image.x + image.width).toBeCloseTo(centre, 0);
+    expect(image.width / image.height).toBeCloseTo(2, 1);
+  });
+
+  test("handles are still free away from anything", async ({ page }) => {
+    await openApp(page);
+    const id = await addRect(page, 200, 300);
+    await page.waitForTimeout(200);
+    await dragBy(page, await handle(page, "middle-right"), { x: 37, y: 0 });
+    const scale = await page.evaluate<number>(`ST().scaleX()`);
+    const rect = await element<Box>(page, id);
+    expect(rect.width).toBeCloseTo(300 + 37 / scale, -1);
+  });
+});
+
+test.describe("crop on framed and tilted images", () => {
+  test("framed: the frame keeps its size and its screen shows the crop", async ({ page }) => {
+    const errors = await openApp(page);
+    const id = await addTwoToneImage(page);
+    await page.evaluate(`S.getState().updateElement(${JSON.stringify(id)}, { deviceFrame: "browser-dark", width: 1000, height: 700 })`);
+    await page.waitForTimeout(200);
+
+    const crop = page.getByRole("button", { name: "Crop", exact: true });
+    await expect(crop).toBeEnabled();
+    await crop.click();
+    await page.waitForTimeout(250);
+
+    const windowWidth = await page.evaluate<number>(`ST().findOne(".crop-window").width()`);
+    expect(windowWidth).toBeCloseTo(1000, 0);
+    await dragBy(page, await handle(page, "middle-left"), {
+      x: 500 * (await page.evaluate<number>(`ST().scaleX()`)),
+      y: 0,
+    });
+    await page.getByRole("button", { name: "Apply crop" }).click();
+    await page.waitForTimeout(200);
+
+    const framed = await element<Box>(page, id);
+    expect(framed.width).toBe(1000);
+    expect(framed.height).toBe(700);
+    expect(framed.crop?.x).toBeCloseTo(0.5, 1);
+
+    // Only the right half is left: its grey is what the frame's screen now draws.
+    const drawn = await page.evaluate<{ x: number; width: number; crop: { x: number } }>(`(() => {
+      const node = ST().findOne("#" + ${JSON.stringify(id)}).find("Image")[0];
+      return { crop: node.crop(), x: node.x(), width: node.width() };
+    })()`);
+    expect(drawn.crop.x).toBeCloseTo(400, -1);
+    expect(errors).toEqual([]);
+  });
+
+  test("tilted: crops flat, then the tilt comes back", async ({ page }) => {
+    const errors = await openApp(page);
+    const id = await addTwoToneImage(page);
+    await page.evaluate(`(async () => {
+      const tilt = await import("/src/lib/tilt.ts");
+      S.getState().updateElement(${JSON.stringify(id)}, {
+        transform: tilt.serializeImageTilt({ ...tilt.DEFAULT_IMAGE_TILT, tiltX: 20, tiltY: 15 }),
+      });
+    })()`);
+    const overlay = page.locator(`[data-tilted-image-id="${id}"]`);
+    await expect(overlay).toHaveCount(1);
+
+    const crop = page.getByRole("button", { name: "Crop", exact: true });
+    await expect(crop).toBeEnabled();
+    await crop.click();
+    await expect(overlay).toHaveCount(0);
+    await page.waitForTimeout(200);
+
+    await dragBy(page, await handle(page, "bottom-right"), { x: -100, y: -50 });
+    await page.getByRole("button", { name: "Apply crop" }).click();
+    expect((await element<Box>(page, id)).crop?.width).toBeLessThan(1);
+    await expect(overlay).toHaveCount(1);
+    expect(errors).toEqual([]);
+  });
+});
+
+test("a stretched image can be put back in shape", async ({ page }) => {
+  await openApp(page, "Images");
+  const id = await addTwoToneImage(page);
+  const section = page.locator("#image-edit");
+  await section.getByText("Fix", { exact: true }).click();
+  const reset = section.getByRole("button", { name: "Reset proportions" });
+  await expect(reset).toHaveCount(0);
+
+  await page.evaluate(`S.getState().updateElement(${JSON.stringify(id)}, { height: 700 })`);
+  await reset.click();
+  const fixed = await element<Box>(page, id);
+  expect(fixed.width / fixed.height).toBeCloseTo(2, 2);
+  expect(fixed.width).toBe(800);
+  expect(fixed.y).toBeCloseTo(200 + (700 - 400) / 2, 0);
+  await expect(reset).toHaveCount(0);
+});
+
+test("adding and removing an upload can be undone", async ({ page }) => {
+  await openApp(page);
+  const count = () => page.evaluate<number>(`S.getState().uploadedImages.length`);
+  const id = await page.evaluate<string>(`S.getState().addUploadedImage("data:image/png;base64,AA", 2, 2)`);
+  await page.waitForTimeout(500);
+  expect(await count()).toBe(1);
+
+  await page.evaluate(`S.getState().undo()`);
+  expect(await count()).toBe(0);
+  await page.evaluate(`S.getState().redo()`);
+  expect(await count()).toBe(1);
+
+  await page.evaluate(`S.getState().deleteUploadedImage(${JSON.stringify(id)})`);
+  await page.waitForTimeout(500);
+  await page.evaluate(`S.getState().undo()`);
+  expect(await count()).toBe(1);
+});
+
+test("copy hands the clipboard a PNG straight away, as WebKit needs", async ({ page }) => {
+  await page.addInitScript(`
+    window.WRITES = [];
+    Object.defineProperty(navigator, "clipboard", { value: {
+      write: async (items) => {
+        // Called in the same tick as the click: nothing has been awaited yet.
+        window.WRITES.push({ sameTick: window.IN_CLICK === true, types: items[0].types });
+        const blob = await items[0].getType("image/png");
+        window.WRITES[0].size = blob.size;
+        window.WRITES[0].type = blob.type;
+      },
+    } });
+  `);
+  await openApp(page);
+  await addTwoToneImage(page);
+  await page.evaluate(`(async () => {
+    window.IN_CLICK = true;
+    const copied = X.copyCanvasToClipboard();
+    window.IN_CLICK = false;
+    await copied;
+  })()`);
+  const write = (await page.evaluate<{ sameTick: boolean; types: string[]; size: number; type: string }[]>(`WRITES`))[0];
+  expect(write.sameTick).toBe(true);
+  expect(write.types).toEqual(["image/png"]);
+  expect(write.type).toBe("image/png");
+  expect(write.size).toBeGreaterThan(1000);
+});
+
+test("scrollbars are styled for the dark panels", async ({ page }) => {
+  await openApp(page);
+  const width = await page.evaluate<string>(`getComputedStyle(document.querySelector("aside"), "::-webkit-scrollbar").width`);
+  expect(width).toBe("8px");
+});
