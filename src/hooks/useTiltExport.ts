@@ -26,6 +26,8 @@ export const useTiltExport = (
         height: overlayRef.current.offsetHeight,
         bgcolor: "transparent",
         cacheBust: true,
+        // A tilted image has no text, so there's nothing to embed fonts for.
+        disableEmbedFonts: true,
       });
     } catch (error) {
       throw new Error(

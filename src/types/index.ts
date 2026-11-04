@@ -120,7 +120,12 @@ export interface ImageEdit {
   /** Strengths and amounts are 0 to 100. */
   color?: { id: string; strength: number };
   grade?: { id: string; strength: number };
-  lensBlur?: { mode: LensBlurMode; amount: number };
+  lensBlur?: {
+    mode: LensBlurMode;
+    amount: number;
+    /** What stays sharp, as fractions of the picture. The centre if unset. */
+    focus?: { x: number; y: number };
+  };
   style?: {
     id: ImageStyleId;
     variant: string;

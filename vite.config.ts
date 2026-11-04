@@ -17,5 +17,15 @@ export default defineConfig({
     strictPort: true,
     watch: { ignored: ["**/src-tauri/**"] },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          konva: ["konva", "react-konva"],
+        },
+      },
+    },
+  },
   clearScreen: false,
 });

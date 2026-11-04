@@ -10,6 +10,7 @@ import { Group, Image as KImage, Layer, Rect, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useEditor } from "@/store/editor";
 import type { ImageElement } from "@/types";
+import { useEditedImage } from "./useEditedImage";
 
 /** Konva name the exporter hides before capture. */
 export const CROP_LAYER_NAME = "crop-overlay";
@@ -39,6 +40,11 @@ export const CropOverlay = forwardRef<
   const setCropId = useEditor((s) => s.setCropId);
   const rectRef = useRef<Konva.Rect>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
+  const layerRef = useRef<Konva.Layer>(null);
+  // Edited but not cropped: this window is what reaches back out to the whole image.
+  const { picture } = useEditedImage(img, el.edit, undefined, () =>
+    layerRef.current?.batchDraw(),
+  );
 
   const crop = el.crop ?? { x: 0, y: 0, width: 1, height: 1 };
   const fullWidth = el.width / crop.width;
@@ -100,23 +106,26 @@ export const CropOverlay = forwardRef<
     [box, el, fullWidth, fullHeight],
   );
 
-  if (!img) return null;
+  if (!img || !picture) return null;
 
-  const imageScaleX = img.naturalWidth / fullWidth;
-  const imageScaleY = img.naturalHeight / fullHeight;
+  // An edited picture can be smaller than the original, over the renderer's size limit.
+  const pictureWidth = picture === img ? img.naturalWidth : picture.width;
+  const pictureHeight = picture === img ? img.naturalHeight : picture.height;
+  const imageScaleX = pictureWidth / fullWidth;
+  const imageScaleY = pictureHeight / fullHeight;
 
   return (
-    <Layer name={CROP_LAYER_NAME}>
+    <Layer ref={layerRef} name={CROP_LAYER_NAME}>
       <Group x={originX} y={originY} rotation={el.rotation}>
         <KImage
-          image={img}
+          image={picture}
           width={fullWidth}
           height={fullHeight}
           opacity={0.3}
           listening={false}
         />
         <KImage
-          image={img}
+          image={picture}
           x={box.x}
           y={box.y}
           width={box.width}

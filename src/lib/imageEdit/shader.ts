@@ -88,6 +88,7 @@ uniform float uTintAmount;
 uniform vec3 uGradeShadows, uGradeHighlights;
 uniform float uGradeContrast, uGradeSaturation, uGradeLift;
 uniform int uLensMode;
+uniform vec2 uLensFocus;
 uniform int uStyle;
 uniform vec4 uP;
 uniform vec4 uQ;
@@ -197,8 +198,8 @@ void main() {
 
   if (uLensMode > 0) {
     float focus = 1.0;
-    if (uLensMode == 1) focus = smoothstep(0.14, 0.5, length((uv - 0.5) * vec2(min(aspect, 1.6), 1.0)));
-    if (uLensMode == 2) focus = smoothstep(0.1, 0.34, abs(uv.y - 0.5));
+    if (uLensMode == 1) focus = smoothstep(0.14, 0.5, length((uv - uLensFocus) * vec2(min(aspect, 1.6), 1.0)));
+    if (uLensMode == 2) focus = smoothstep(0.1, 0.34, abs(uv.y - uLensFocus.y));
     c = mix(c, texture(uLens, uv), focus);
   }
 

@@ -43,6 +43,8 @@ const THUMB_WIDTH = 132;
 const THUMB_HEIGHT = 94;
 const DEFAULT_GRADE_STRENGTH = 80;
 const DEFAULT_LENS_AMOUNT = 50;
+const FOCUS_MAX_WIDTH = 256;
+const FOCUS_MAX_HEIGHT = 160;
 
 type Tab = "fix" | "style" | "adjust";
 type SetEdit = (patch: Partial<ImageEdit>) => void;
@@ -409,6 +411,74 @@ const StyleTab = ({
   );
 };
 
+/** The picture, as the image shows it: click or drag on it to choose what stays sharp. */
+const FocusPicker = ({
+  image,
+  focus,
+  onChange,
+}: {
+  image: ImageElement;
+  focus: { x: number; y: number };
+  onChange: (focus: { x: number; y: number }) => void;
+}) => {
+  const [picture] = useImage(image.src, "anonymous");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fit = Math.min(FOCUS_MAX_WIDTH / image.width, FOCUS_MAX_HEIGHT / image.height);
+  const width = Math.round(image.width * fit);
+  const height = Math.round(image.height * fit);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!picture || !canvas) return;
+    const crop = image.crop ?? { x: 0, y: 0, width: 1, height: 1 };
+    canvas.width = width;
+    canvas.height = height;
+    canvas
+      .getContext("2d")
+      ?.drawImage(
+        picture,
+        crop.x * picture.naturalWidth,
+        crop.y * picture.naturalHeight,
+        crop.width * picture.naturalWidth,
+        crop.height * picture.naturalHeight,
+        0,
+        0,
+        width,
+        height,
+      );
+  }, [picture, image.crop, width, height]);
+
+  const place = (event: React.PointerEvent<HTMLDivElement>) => {
+    const box = event.currentTarget.getBoundingClientRect();
+    onChange({
+      x: Math.min(Math.max((event.clientX - box.left) / box.width, 0), 1),
+      y: Math.min(Math.max((event.clientY - box.top) / box.height, 0), 1),
+    });
+  };
+
+  return (
+    <div
+      role="presentation"
+      data-testid="lens-focus"
+      className="relative mx-auto cursor-crosshair touch-none overflow-hidden rounded-sm border border-hairline-strong"
+      style={{ width, height }}
+      onPointerDown={(event) => {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        place(event);
+      }}
+      onPointerMove={(event) => {
+        if (event.buttons) place(event);
+      }}
+    >
+      <canvas ref={canvasRef} className="block size-full" />
+      <span
+        className="pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-primary"
+        style={{ left: `${focus.x * 100}%`, top: `${focus.y * 100}%` }}
+      />
+    </div>
+  );
+};
+
 const LIGHT_SLIDERS: { key: keyof ImageAdjust; label: string }[] = [
   { key: "brightness", label: "BRIGHTNESS" },
   { key: "contrast", label: "CONTRAST" },
@@ -559,6 +629,7 @@ const AdjustTab = ({
                 : {
                     mode: mode as LensBlurMode,
                     amount: edit.lensBlur?.amount || DEFAULT_LENS_AMOUNT,
+                    focus: edit.lensBlur?.focus,
                   },
           });
         }}
@@ -571,6 +642,18 @@ const AdjustTab = ({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
+      {edit.lensBlur && edit.lensBlur.mode !== "whole" && (
+        <>
+          <PanelHelp>Click the picture to choose what stays sharp.</PanelHelp>
+          <FocusPicker
+            image={image}
+            focus={edit.lensBlur.focus ?? { x: 0.5, y: 0.5 }}
+            onChange={(focus) =>
+              edit.lensBlur && setEdit({ lensBlur: { ...edit.lensBlur, focus } })
+            }
+          />
+        </>
+      )}
       {edit.lensBlur && (
         <LabeledSlider
           label="BLUR AMOUNT"

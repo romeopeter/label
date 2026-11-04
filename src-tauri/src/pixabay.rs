@@ -6,8 +6,10 @@
 
 use std::{
     collections::HashMap,
+    fs, io,
+    path::{Path, PathBuf},
     sync::Mutex,
-    time::{Duration, Instant},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use reqwest::{Client, StatusCode, Url, redirect::Policy};
@@ -65,7 +67,7 @@ struct ApiHit {
     large_image_url: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StockImage {
     id: u64,
@@ -74,7 +76,7 @@ pub struct StockImage {
     large_image_url: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StockPage {
     images: Vec<StockImage>,
@@ -101,30 +103,90 @@ impl StockPage {
 
 type CacheKey = (String, u32);
 
-/// In memory for now, so it starts empty on launch: SQLite is still deferred.
-#[derive(Default)]
-pub struct SearchCache(Mutex<HashMap<CacheKey, (Instant, StockPage)>>);
+#[derive(Clone, Serialize, Deserialize)]
+struct CacheEntry {
+    query: String,
+    page: u32,
+    stored_at: u64,
+    result: StockPage,
+}
+
+/// Saved to a file so it survives a restart, since SQLite is still deferred. It
+/// holds searches and Pixabay's URLs, never the key.
+pub struct SearchCache {
+    entries: Mutex<HashMap<CacheKey, CacheEntry>>,
+    path: Option<PathBuf>,
+}
+
+fn now_secs() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |elapsed| elapsed.as_secs())
+}
+
+/// False for a time in the future too, so a changed clock can't keep it forever.
+fn is_fresh(stored_at: u64, now: u64) -> bool {
+    now.checked_sub(stored_at)
+        .is_some_and(|age| age < CACHE_LIFETIME.as_secs())
+}
 
 impl SearchCache {
-    fn get(&self, key: &CacheKey, now: Instant) -> Option<StockPage> {
-        let entries = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        let (stored, page) = entries.get(key)?;
-        (now.duration_since(*stored) < CACHE_LIFETIME).then(|| page.clone())
+    /// A missing or damaged file just means starting with an empty cache.
+    pub fn load(path: Option<PathBuf>) -> Self {
+        let now = now_secs();
+        let saved: Vec<CacheEntry> = path
+            .as_ref()
+            .and_then(|path| fs::read(path).ok())
+            .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+            .unwrap_or_default();
+        let entries = saved
+            .into_iter()
+            .filter(|entry| is_fresh(entry.stored_at, now))
+            .map(|entry| ((entry.query.clone(), entry.page), entry))
+            .collect();
+        Self {
+            entries: Mutex::new(entries),
+            path,
+        }
     }
 
-    fn put(&self, key: CacheKey, page: StockPage, now: Instant) {
-        let mut entries = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        entries.retain(|_, (stored, _)| now.duration_since(*stored) < CACHE_LIFETIME);
+    fn get(&self, key: &CacheKey, now: u64) -> Option<StockPage> {
+        let entries = self.entries.lock().unwrap_or_else(|e| e.into_inner());
+        let entry = entries.get(key)?;
+        is_fresh(entry.stored_at, now).then(|| entry.result.clone())
+    }
+
+    /// Returns what to save, so the disk write can happen away from the lock.
+    fn put(&self, key: CacheKey, result: StockPage, now: u64) -> Vec<CacheEntry> {
+        let mut entries = self.entries.lock().unwrap_or_else(|e| e.into_inner());
+        entries.retain(|_, entry| is_fresh(entry.stored_at, now));
         if entries.len() >= CACHE_ENTRIES
             && let Some(oldest) = entries
                 .iter()
-                .min_by_key(|(_, (stored, _))| *stored)
+                .min_by_key(|(_, entry)| entry.stored_at)
                 .map(|(key, _)| key.clone())
         {
             entries.remove(&oldest);
         }
-        entries.insert(key, (now, page));
+        let entry = CacheEntry {
+            query: key.0.clone(),
+            page: key.1,
+            stored_at: now,
+            result,
+        };
+        entries.insert(key, entry);
+        entries.values().cloned().collect()
     }
+}
+
+/// All or nothing, so a crash mid-write can't leave half a file behind.
+fn save_entries(path: &Path, entries: &[CacheEntry]) -> io::Result<()> {
+    let directory = path.parent().ok_or(io::ErrorKind::InvalidInput)?;
+    fs::create_dir_all(directory)?;
+    let mut file = tempfile::NamedTempFile::new_in(directory)?;
+    serde_json::to_writer(&mut file, entries)?;
+    file.persist(path)?;
+    Ok(())
 }
 
 /// The form a search is cached under, and sent as.
@@ -242,13 +304,17 @@ pub async fn search_images(
     }
 
     let key = (query, page);
-    if let Some(cached) = cache.get(&key, Instant::now()) {
+    if let Some(cached) = cache.get(&key, now_secs()) {
         return Ok(cached);
     }
     let result = fetch_page(&key.0, page)
         .await
         .map_err(|error| error.to_string())?;
-    cache.put(key, result.clone(), Instant::now());
+    let entries = cache.put(key, result.clone(), now_secs());
+    if let Some(path) = cache.path.clone() {
+        // A cache that can't be saved only costs a repeat search next launch.
+        let _ = tauri::async_runtime::spawn_blocking(move || save_entries(&path, &entries)).await;
+    }
     Ok(result)
 }
 
@@ -341,26 +407,35 @@ mod tests {
         ));
     }
 
+    const DAY: u64 = CACHE_LIFETIME.as_secs();
+    const START: u64 = 1_000_000;
+
     #[test]
     fn cache_hits_within_a_day_and_misses_after() {
-        let cache = SearchCache::default();
+        let cache = SearchCache::load(None);
         let key = ("sky".to_owned(), 1);
-        let now = Instant::now();
-        cache.put(key.clone(), stock_page(), now);
+        cache.put(key.clone(), stock_page(), START);
 
-        assert!(cache.get(&key, now + CACHE_LIFETIME / 2).is_some());
-        assert!(cache.get(&key, now + CACHE_LIFETIME).is_none());
+        assert!(cache.get(&key, START + DAY / 2).is_some());
+        assert!(cache.get(&key, START + DAY).is_none());
+    }
+
+    #[test]
+    fn cache_ignores_a_time_in_the_future() {
+        let cache = SearchCache::load(None);
+        let key = ("sky".to_owned(), 1);
+        cache.put(key.clone(), stock_page(), START);
+
+        assert!(cache.get(&key, START - 1).is_none());
     }
 
     #[test]
     fn cache_stays_bounded_and_drops_the_oldest() {
-        let cache = SearchCache::default();
-        let now = Instant::now();
+        let cache = SearchCache::load(None);
         for i in 0..=CACHE_ENTRIES {
-            let at = now + Duration::from_secs(i as u64);
-            cache.put((format!("q{i}"), 1), stock_page(), at);
+            cache.put((format!("q{i}"), 1), stock_page(), START + i as u64);
         }
-        let later = now + Duration::from_secs(CACHE_ENTRIES as u64);
+        let later = START + CACHE_ENTRIES as u64;
 
         assert!(cache.get(&("q0".to_owned(), 1), later).is_none());
         assert!(
@@ -368,6 +443,43 @@ mod tests {
                 .get(&(format!("q{CACHE_ENTRIES}"), 1), later)
                 .is_some()
         );
+    }
+
+    #[test]
+    fn cache_survives_a_restart_and_drops_old_entries() {
+        let directory = tempfile::tempdir().expect("create temp dir");
+        let path = directory.path().join("nested").join("cache.json");
+        let now = now_secs();
+        let old = CacheEntry {
+            query: "old".to_owned(),
+            page: 1,
+            stored_at: now - DAY - 1,
+            result: stock_page(),
+        };
+        let fresh = CacheEntry {
+            query: "fresh".to_owned(),
+            page: 2,
+            stored_at: now - 60,
+            result: stock_page(),
+        };
+        save_entries(&path, &[old, fresh]).expect("saves");
+
+        let reloaded = SearchCache::load(Some(path));
+
+        assert!(reloaded.get(&("fresh".to_owned(), 2), now).is_some());
+        let entries = reloaded.entries.lock().expect("not poisoned");
+        assert_eq!(entries.len(), 1);
+    }
+
+    #[test]
+    fn a_damaged_cache_file_starts_empty() {
+        let directory = tempfile::tempdir().expect("create temp dir");
+        let path = directory.path().join("cache.json");
+        fs::write(&path, "not json").expect("write");
+
+        let cache = SearchCache::load(Some(path));
+
+        assert!(cache.entries.lock().expect("not poisoned").is_empty());
     }
 
     /// Calls the real service with the real key:

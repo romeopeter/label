@@ -27,5 +27,10 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
+  },
+  {
+    // ShadCN primitives re-export Radix parts and variants beside their components.
+    files: ["src/components/ui/**"],
+    rules: { "react-refresh/only-export-components": "off" },
   }
 );

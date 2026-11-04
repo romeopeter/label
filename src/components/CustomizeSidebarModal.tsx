@@ -3,7 +3,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TOOLS } from "./LeftRail";
+import { TOOLS } from "./railTools";
 
 interface Props {
   open: boolean;

@@ -653,10 +653,10 @@ An image can go on the canvas or become the background. It comes from one of thr
 - **Screenshot:** anything on the desktop. **Add screenshot** in the Images and Background
   panels. On macOS Layer hides and hands over to the system's own picker, so the user drags
   over any area or presses Space to pick a window. Other systems and the web build use the
-  webview's screen picker, which takes a whole screen or window.
+  webview's screen picker, which takes a whole screen or window, then opens Crop to trim it.
 - **Free images:** search Pixabay in the Images and Background panels (desktop app only).
   The search and download run in Rust, so the API key never reaches the webview. Following
-  Pixabay's API terms, searches are cached for 24 hours, results say they come from Pixabay,
+  Pixabay's API terms, searches are cached in a file for 24 hours, results say they come from Pixabay,
   and a chosen image is downloaded into the project rather than linked.
 
 ### Image editing
@@ -1054,7 +1054,6 @@ survives reinstalls; users can put it in iCloud Drive for cross-machine sync.
 - Website-by-URL capture / tweet import (Tauri capture pipeline)
 - 3D image rendering effect (redesign needed)
 - HEIC/HEIF decode, PSD import
-- Tests (not yet specced)
 
 ### Known follow-ups
 

@@ -73,6 +73,8 @@ flag it before implementing.
   picker from [capture.rs](./src-tauri/src/capture.rs), with the window hidden and
   always restored; everything else uses the webview's `getDisplayMedia` picker.
   Both the Images and Background panels use it via `ScreenshotButton`.
+- **Searches are cached in a file.** `pixabay-searches.json` in the app cache folder,
+  until SQLite lands. It holds searches and Pixabay's URLs, never the key.
 - **Pixabay's key stays in Rust.** `PIXELBAY_KEY` in `.env` is read by
   [build.rs](./src-tauri/build.rs) and used only in
   [pixabay.rs](./src-tauri/src/pixabay.rs). Never read it from `src/`, give it a
@@ -193,6 +195,7 @@ npm run dev         # Vite dev server on http://127.0.0.1:5173/
 npm run build       # tsc -b && vite build → dist/
 npm run lint        # ESLint flat config for TS/React
 npm run typecheck   # tsc -b --noEmit
+npm test            # Playwright UI tests (first time: npx playwright install webkit)
 npm run preview     # serve dist/ for smoke-testing the prod build
 npm run tauri:dev   # native window + Vite hot reload
 npm run tauri:build # bundle the desktop app
@@ -205,8 +208,11 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 ```
 
-There is no frontend test suite yet; only `src-tauri/` has unit tests. Don't
-claim the UI is tested without writing them.
+`npm test` runs the Playwright suite in [tests/](./tests/) in WebKit, on its own
+port, so it's safe alongside `tauri:dev`. `@playwright/test` is pinned because newer
+WebKit builds crash on macOS 14. The desktop shell is faked there (`fakeShell`), so
+real capture and real Pixabay calls aren't covered: `cargo test -- --ignored
+real_pixabay` does the latter, and the macOS picker needs trying by hand.
 
 ## Conventions
 
@@ -345,7 +351,6 @@ spec as still authoritative for everything else.
 | 3D image rendering effect | Prior implementation removed | Redesign needed |
 | Persisted custom pattern colour pairs | Needs SQLite | With shell |
 | Brand-derived pattern colour pairs | Needs the Phase-2 brand store | With brand kits |
-| Tests | Not yet specced | When the surface stabilizes |
 
 ## Deferred Rust Implementations
 

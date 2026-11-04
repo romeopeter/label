@@ -12,6 +12,7 @@ learn/
 p-readme.md
 SKILLS
 .env
+*.tsbuildinfo
 todo.md
 implementation-phase-1.md
 /src/styles/design.html

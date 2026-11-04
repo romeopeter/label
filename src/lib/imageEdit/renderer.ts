@@ -323,6 +323,11 @@ const createRenderer = () => {
       gl.uniform1f(u("uGradeLift"), (grade?.lift ?? 0) * gradeAmount);
 
       gl.uniform1i(u("uLensMode"), lensCode);
+      gl.uniform2f(
+        u("uLensFocus"),
+        edit.lensBlur?.focus?.x ?? 0.5,
+        edit.lensBlur?.focus?.y ?? 0.5,
+      );
       gl.uniform1i(u("uStyle"), style?.code ?? 0);
       gl.uniform4f(u("uP"), p[0], p[1], p[2], p[3]);
       gl.uniform4f(u("uQ"), q[0], q[1], q[2], q[3]);

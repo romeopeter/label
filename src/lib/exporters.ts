@@ -87,6 +87,8 @@ const renderTiltedImageIntoStage = async (stage: Konva.Stage) => {
       height: overlay.offsetHeight,
       bgcolor: "transparent",
       cacheBust: true,
+      // A tilted image has no text, so there's nothing to embed fonts for.
+      disableEmbedFonts: true,
     });
     const flatImage = await loadHtmlImage(dataUrl);
     const temporaryNode = new Konva.Image({

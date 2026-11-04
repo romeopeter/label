@@ -6,7 +6,7 @@ import { PanelHelp } from "./primitives";
 
 const HELP = hasNativeScreenshot
   ? "Layer steps aside: drag over anything on your screen, or press Space to pick a window. Esc cancels."
-  : "Pick a screen or window to capture.";
+  : "Pick a screen or window to capture, then crop it down if you need to.";
 
 export const ScreenshotButton = ({
   onCapture,
@@ -30,11 +30,11 @@ export const ScreenshotButton = ({
   };
 
   return (
-    <>
+    <div className="flex flex-col gap-2 pb-2">
       <Button variant="outline" size="block" disabled={busy} onClick={capture}>
         <Camera className="h-3 w-3" /> Add screenshot
       </Button>
       <PanelHelp>{error ?? HELP}</PanelHelp>
-    </>
+    </div>
   );
 };

@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 mod capture;
 mod files;
 mod pixabay;
@@ -5,7 +7,15 @@ mod pixabay;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .manage(pixabay::SearchCache::default())
+        .setup(|app| {
+            let cache_file = app
+                .path()
+                .app_cache_dir()
+                .ok()
+                .map(|directory| directory.join("pixabay-searches.json"));
+            app.manage(pixabay::SearchCache::load(cache_file));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             capture::capture_screen,
             files::save_project,
