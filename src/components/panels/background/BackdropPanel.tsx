@@ -1,18 +1,14 @@
 import { useMemo } from "react";
-import { ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  BACKDROP_BLUR_MAX,
-  BACKDROP_STYLES,
-  BACKDROP_STYLE_LABELS,
-  type BackdropStyle,
-} from "@/types/backdrop";
+import { BACKDROP_STYLES, BACKDROP_STYLE_LABELS, type BackdropStyle } from "@/types/backdrop";
 import { BACKDROP_PRESETS, lookWithColor } from "@/lib/backdrops/presets";
 import { backdropThumb } from "@/lib/backdrops/renderer";
-import { ColorRow, LabeledSlider, MutedMini, PanelHelp, SectionLabel } from "../primitives";
+import { NO_EFFECTS } from "@/lib/background/effects";
+import { ColorRow, MutedMini, PanelHelp, SectionLabel } from "../primitives";
+import { ShuffleRow } from "./ShuffleRow";
 import { choiceClass } from "../choice";
 
 const PresetTile = ({
@@ -24,7 +20,7 @@ const PresetTile = ({
   selected: boolean;
   onSelect: () => void;
 }) => {
-  const thumb = useMemo(() => backdropThumb(preset.look, preset.effects), [preset]);
+  const thumb = useMemo(() => backdropThumb(preset.look, { ...NO_EFFECTS, ...preset.effects }), [preset]);
   return (
     <button
       type="button"
@@ -46,10 +42,8 @@ const sameColors = (a: readonly string[], b: readonly string[]) => a.every((colo
 export const BackdropPanel = () => {
   const backdrop = useEditor((s) => s.background.backdrop);
   const setBackdrop = useEditor((s) => s.setBackdrop);
-  const showBackdrop = useEditor((s) => s.showBackdrop);
-  const stepBackdrop = useEditor((s) => s.stepBackdrop);
-  const trailLength = useEditor((s) => s.backdropTrail.length);
-  const trailAt = useEditor((s) => s.backdropTrailAt);
+  const showLook = useEditor((s) => s.showLook);
+  const setEffects = useEditor((s) => s.setEffects);
 
   const isPreset = (preset: (typeof BACKDROP_PRESETS)[number]) =>
     !backdrop.color &&
@@ -82,44 +76,15 @@ export const BackdropPanel = () => {
             preset={preset}
             selected={isPreset(preset)}
             onSelect={() => {
-              showBackdrop(preset.look);
-              setBackdrop(preset.effects);
+              showLook("abstract", { mode: "abstract", backdrop: preset.look });
+              // A preset brings the effects it was made with.
+              setEffects(preset.effects);
             }}
           />
         ))}
       </div>
 
-      <SectionLabel right={trailLength > 1 && <MutedMini>{`${trailAt + 1} OF ${trailLength}`}</MutedMini>}>
-        SHUFFLE
-      </SectionLabel>
-      <div className="flex items-center gap-1.5">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Back"
-          title="Back"
-          className="cursor-pointer"
-          disabled={trailAt <= 0}
-          onClick={() => stepBackdrop(-1)}
-        >
-          <ChevronLeft className="h-3.5 w-3.5" />
-        </Button>
-        <Button variant="primary" size="sm" className="flex-1 cursor-pointer" onClick={() => showBackdrop()}>
-          <Shuffle className="h-3 w-3" /> Shuffle
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Forward"
-          title="Forward"
-          className="cursor-pointer"
-          disabled={trailAt >= trailLength - 1}
-          onClick={() => stepBackdrop(1)}
-        >
-          <ChevronRight className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-      <PanelHelp>Back and Forward return to ones you skipped.</PanelHelp>
+      <ShuffleRow mode="abstract" />
 
       <SectionLabel
         right={
@@ -145,26 +110,6 @@ export const BackdropPanel = () => {
           ? "Shuffle builds on this color, round the color wheel."
           : "Pick a color, and Shuffle builds on it."}
       </PanelHelp>
-
-      <LabeledSlider
-        label="BLUR"
-        unit="px"
-        max={BACKDROP_BLUR_MAX}
-        value={Math.round(backdrop.blur)}
-        onChange={(v) => setBackdrop({ blur: v })}
-      />
-      <LabeledSlider
-        label="FROST"
-        unit="%"
-        value={Math.round(backdrop.frost * 100)}
-        onChange={(v) => setBackdrop({ frost: v / 100 })}
-      />
-      <LabeledSlider
-        label="GRAIN"
-        unit="%"
-        value={Math.round(backdrop.grain * 100)}
-        onChange={(v) => setBackdrop({ grain: v / 100 })}
-      />
     </div>
   );
 };

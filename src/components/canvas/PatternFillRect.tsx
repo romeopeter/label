@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Group, Rect } from "react-konva";
 import type { PatternConfig } from "@/types/pattern";
 import { useEditor } from "@/store/editor";
-import { resolveColorPair } from "@/lib/patterns/resolveColorPair";
+import { patternPairOf } from "@/lib/patterns/resolveColorPair";
 import { getPatternTile } from "@/lib/patterns/tileCache";
 
 /** Konva name the exporter looks up to swap in a high-DPI tile before capture. */
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const PatternFillRect = ({ pattern, width, height }: Props) => {
-  const [tile, setTile] = useState<HTMLImageElement | null>(null);
+  const [tile, setTile] = useState<HTMLCanvasElement | null>(null);
   const [tileDpi, setTileDpi] = useState(PREVIEW_DPI);
 
   // Set by the panel sliders while they're held, so dragging doesn't rasterize
@@ -27,10 +27,7 @@ export const PatternFillRect = ({ pattern, width, height }: Props) => {
   const dragging = useEditor((s) => s.patternDragging);
   const customPairs = useEditor((s) => s.customPatternPairs);
 
-  const pair = useMemo(
-    () => resolveColorPair(pattern.colorPairId, customPairs),
-    [pattern.colorPairId, customPairs],
-  );
+  const pair = useMemo(() => patternPairOf(pattern, customPairs), [pattern, customPairs]);
 
   const { type, size } = pattern;
 
@@ -75,7 +72,8 @@ export const PatternFillRect = ({ pattern, width, height }: Props) => {
           y={0}
           width={width}
           height={height}
-          fillPatternImage={tile}
+          // Konva repeats a canvas as happily as an image; only its React prop type is narrower.
+          fillPatternImage={tile as unknown as HTMLImageElement}
           fillPatternRepeat="repeat"
           // The tile is rasterized `tileDpi` times oversized; scale it back down
           // so it keeps its intended on-canvas size but carries more pixels.

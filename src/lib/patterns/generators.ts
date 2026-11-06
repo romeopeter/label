@@ -61,14 +61,19 @@ const chevron: PatternGenerator = ({ size, base, accent }) => {
   </svg>`;
 };
 
-// Q/T pair: the reflected control point makes the exit slope match the entry
-// slope, so the wave crosses the tile boundary smoothly.
-const waves: PatternGenerator = ({ size, base, accent }) => `
+// One wave per tile, drawn from a tile before to a tile after so the viewport
+// clips it. Ending the path on the edge left the stroke's square ends standing
+// across the curve, which showed as a notch at every seam.
+const waves: PatternGenerator = ({ size, base, accent }) => {
+  const y = size * 0.5;
+  const crest = size * 0.2;
+  return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
     <rect width="${size}" height="${size}" fill="${base}"/>
-    <path d="M0 ${size * 0.5} Q ${size * 0.25} ${size * 0.2} ${size * 0.5} ${size * 0.5} T ${size} ${size * 0.5}"
+    <path d="M${-size} ${y} Q ${-size * 0.75} ${crest} ${-size * 0.5} ${y} T 0 ${y} T ${size * 0.5} ${y} T ${size} ${y} T ${size * 1.5} ${y} T ${size * 2} ${y}"
           stroke="${accent}" stroke-width="${size * 0.08}" fill="none"/>
   </svg>`;
+};
 
 // Inset off every edge so anti-aliasing along the tile boundary can't leave a
 // hairline where the rows meet.
@@ -140,35 +145,6 @@ const scatterWrapped = (
   return out;
 };
 
-/**
- * Grain is the exception to the vector rule — procedural noise has no clean
- * vector form. It is a seeded speck scatter rather than an SVG filter, because
- * `feTurbulence` rasterizes inconsistently across renderers and would make
- * export unreliable.
- */
-const grain: PatternGenerator = ({ size, base, accent }) => {
-  const rand = seededRandom(42);
-  const specks: string[] = [];
-
-  for (let i = 0; i < 60; i++) {
-    const x = rand() * size;
-    const y = rand() * size;
-    const r = rand() * size * 0.015;
-    const opacity = 0.3 + rand() * 0.4;
-    specks.push(
-      ...scatterWrapped(x, y, r, size, size, (px, py) =>
-        `<circle cx="${px}" cy="${py}" r="${r}" fill="${accent}" opacity="${opacity}"/>`,
-      ),
-    );
-  }
-
-  return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    ${specks.join("")}
-  </svg>`;
-};
-
 // Two half-tiles on opposite corners: the classic checkerboard, seamless by
 // construction.
 const checks: PatternGenerator = ({ size, base, accent }) => {
@@ -181,22 +157,31 @@ const checks: PatternGenerator = ({ size, base, accent }) => {
   </svg>`;
 };
 
-// A single hairline on the leading edge; the neighbouring tile supplies the
-// next one, so the spacing stays exact. Rotate for horizontal or diagonal rules.
-const rules: PatternGenerator = ({ size, base, accent }) => `
+/**
+ * Argyle: a lattice of diamonds in two strengths of the accent, crossed by
+ * dashed lines through their centres. The full diamond meets every edge
+ * midpoint and the corners hold quarters of the fainter ones, so it repeats
+ * point to point.
+ */
+const argyle: PatternGenerator = ({ size, base, accent }) => {
+  const h = size / 2;
+  const dash = size * 0.06;
+  return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
     <rect width="${size}" height="${size}" fill="${base}"/>
-    <rect x="0" y="0" width="${size * 0.06}" height="${size}" fill="${accent}"/>
+    <g fill="${accent}" opacity="0.38">
+      <polygon points="0,0 ${h},0 0,${h}"/>
+      <polygon points="${size},0 ${size},${h} ${h},0"/>
+      <polygon points="0,${size} 0,${h} ${h},${size}"/>
+      <polygon points="${size},${size} ${h},${size} ${size},${h}"/>
+    </g>
+    <polygon points="${h},0 ${size},${h} ${h},${size} 0,${h}" fill="${accent}"/>
+    <g stroke="${base}" stroke-width="${size * 0.018}" stroke-dasharray="${dash} ${dash}" opacity="0.8">
+      <line x1="0" y1="0" x2="${size}" y2="${size}"/>
+      <line x1="${size}" y1="0" x2="0" y2="${size}"/>
+    </g>
   </svg>`;
-
-// Harlequin lattice: the diamond meets all four edge midpoints exactly, so
-// adjacent tiles join point-to-point with no overlap.
-const diamonds: PatternGenerator = ({ size, base, accent }) => `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    <polygon points="${size / 2},0 ${size},${size / 2} ${size / 2},${size} 0,${size / 2}"
-             fill="${accent}"/>
-  </svg>`;
+};
 
 // Four quadrants of paired bars, alternating orientation — the weave read comes
 // from the perpendicular neighbours. Everything sits inside its quadrant, so
@@ -266,23 +251,6 @@ const cubes: PatternGenerator = ({ size, base, accent }) => {
   </svg>`;
 };
 
-// Plus marks on an offset lattice — centre plus all four corners, so the corner
-// marks are completed by the neighbouring tiles.
-const crosses: PatternGenerator = ({ size, base, accent }) => {
-  const a = size * 0.1; // arm half-length
-  const t = size * 0.032; // arm thickness
-  const plus = (cx: number, cy: number) =>
-    `<path d="M${cx - a} ${cy - t / 2} h${2 * a} v${t} h${-2 * a} z
-              M${cx - t / 2} ${cy - a} h${t} v${2 * a} h${-t} z" fill="${accent}"/>`;
-
-  return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    ${plus(size / 2, size / 2)}
-    ${plus(0, 0)}${plus(size, 0)}${plus(0, size)}${plus(size, size)}
-  </svg>`;
-};
-
 /**
  * Tartan. The same band set is laid horizontally and vertically; where two
  * bands cross, their opacities compound and the square reads darker — which is
@@ -321,31 +289,30 @@ const plaid: PatternGenerator = ({ size, base, accent }) => {
 };
 
 /**
- * Fish scales. Rows of touching semicircular arcs, each row offset by half an
- * arc from the one above. Rows sit at y = 0, size/2 and size, and the first and
- * last carry the same offset so the vertical repeat lines up; arcs span exactly
- * their diameter, so neighbours meet end-to-end in one continuous scallop.
+ * Seigaiha: overlapping fans of rings, each row tucked under the next. Rows are
+ * a quarter tile apart and alternate their offset by half a tile, so two rows
+ * make the vertical period and the tile holds it exactly. Rows are drawn top to
+ * bottom from above the tile to below it, which is the same painting order in
+ * every tile, so the overlaps match across the seams.
  */
 const scales: PatternGenerator = ({ size, base, accent }) => {
-  const r = size / 4;
-  const stroke = size * 0.045;
-  const arc = (cx: number, cy: number) =>
-    `<path d="M${cx - r} ${cy} A${r} ${r} 0 0 0 ${cx + r} ${cy}" fill="none"
-           stroke="${accent}" stroke-width="${stroke}"/>`;
+  const r = size / 2;
+  const fan = (cx: number, cy: number) => `
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${base}"/>
+    ${[0.92, 0.7, 0.48, 0.26]
+      .map((k) => `<circle cx="${cx}" cy="${cy}" r="${r * k}" fill="none" stroke="${accent}" stroke-width="${size * 0.05}"/>`)
+      .join("")}`;
 
-  const rows: string[] = [];
-  for (const [y, offset] of [
-    [0, r],
-    [size / 2, 0],
-    [size, r],
-  ] as const) {
-    for (let cx = offset - 2 * r; cx <= size + 2 * r; cx += 2 * r) rows.push(arc(cx, y));
+  const fans: string[] = [];
+  for (let row = -2; row <= 6; row++) {
+    const offset = row % 2 === 0 ? 0 : size / 2;
+    for (let col = -1; col <= 2; col++) fans.push(fan(col * size + offset, (row * size) / 4));
   }
 
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
     <rect width="${size}" height="${size}" fill="${base}"/>
-    ${rows.join("")}
+    ${fans.join("")}
   </svg>`;
 };
 
@@ -492,28 +459,37 @@ const raindrops: PatternGenerator = ({ size, base, accent }) => {
 };
 
 /**
- * Terrazzo chips. Rounded rectangles at random size, rotation and opacity — the
- * rotation is baked into each chip here rather than taken from the pattern's
- * rotation control, because chips all facing the same way stops looking like
- * scattered aggregate.
+ * Terrazzo: broken chips of stone, each a jagged polygon at its own angle, in
+ * the accent and a softer tone of it. Chips are kept apart, measured across the
+ * tile's wrap, so they read as separate pieces rather than clumping into blobs.
  */
 const terrazzo: PatternGenerator = ({ size, base, accent }) => {
   const rand = seededRandom(101);
+  const placed: [number, number, number][] = [];
   const chips: string[] = [];
+  const wrapped = (a: number, b: number) => {
+    const d = Math.abs(a - b) % size;
+    return Math.min(d, size - d);
+  };
 
-  for (let i = 0; i < 17; i++) {
+  for (let tries = 0; tries < 400 && placed.length < 22; tries++) {
     const x = rand() * size;
     const y = rand() * size;
-    const w = size * (0.07 + rand() * 0.12);
-    const h = size * (0.055 + rand() * 0.085);
-    const angle = rand() * 360;
-    const opacity = 0.4 + rand() * 0.6;
-    const reach = Math.max(w, h);
+    const r = size * (0.025 + rand() * 0.06);
+    if (placed.some(([px, py, pr]) => Math.hypot(wrapped(x, px), wrapped(y, py)) < r + pr + size * 0.025)) continue;
+    placed.push([x, y, r]);
+
+    const corners = 5 + Math.floor(rand() * 3);
+    const turn = rand() * Math.PI * 2;
+    const outline = Array.from({ length: corners }, (_, i) => {
+      const a = turn + (i / corners) * Math.PI * 2 + (rand() - 0.5) * 0.6;
+      const reach = r * (0.6 + rand() * 0.4);
+      return [Math.cos(a) * reach, Math.sin(a) * reach];
+    });
+    const opacity = rand() < 0.4 ? 0.45 : 1;
     chips.push(
-      ...scatterWrapped(x, y, reach, size, size, (px, py) =>
-        `<rect x="${px - w / 2}" y="${py - h / 2}" width="${w}" height="${h}"
-               rx="${Math.min(w, h) * 0.4}" fill="${accent}" opacity="${opacity}"
-               transform="rotate(${angle} ${px} ${py})"/>`,
+      ...scatterWrapped(x, y, r, size, size, (px, py) =>
+        `<polygon points="${outline.map(([dx, dy]) => `${px + dx},${py + dy}`).join(" ")}" fill="${accent}" opacity="${opacity}"/>`,
       ),
     );
   }
@@ -562,42 +538,6 @@ const truchet: PatternGenerator = ({ size, base, accent }) => {
   <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
     <rect width="${size}" height="${size}" fill="${base}"/>
     ${cells.join("")}
-  </svg>`;
-};
-
-/**
- * Bauhaus-style mosaic: the diagonal halves mixed with straight half-fills, so
- * the grid reads as blocks rather than a field of triangles.
- */
-const halfblocks: PatternGenerator = ({ size, base, accent }) => {
-  const rand = seededRandom(67);
-  const c = size / CELLS;
-  const cells: string[] = [];
-
-  const halves = [
-    (x: number, y: number) => `<rect x="${x}" y="${y + c / 2}" width="${c}" height="${c / 2}"/>`,
-    (x: number, y: number) => `<rect x="${x}" y="${y}" width="${c}" height="${c / 2}"/>`,
-    (x: number, y: number) => `<rect x="${x}" y="${y}" width="${c / 2}" height="${c}"/>`,
-    (x: number, y: number) => `<rect x="${x + c / 2}" y="${y}" width="${c / 2}" height="${c}"/>`,
-  ];
-
-  for (let row = 0; row < CELLS; row++) {
-    for (let col = 0; col < CELLS; col++) {
-      const x = col * c;
-      const y = row * c;
-      const pick = Math.floor(rand() * 8) % 8;
-      cells.push(
-        pick < 4
-          ? `<polygon points="${TRIANGLES[pick](x, y, c)}"/>`
-          : halves[pick - 4](x, y),
-      );
-    }
-  }
-
-  return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    <g fill="${accent}">${cells.join("")}</g>
   </svg>`;
 };
 
@@ -669,45 +609,15 @@ const steps: PatternGenerator = ({ size, base, accent }) => {
 /* ------------------------------------------------------------------- bold -- */
 
 /**
- * The bold half-fill set: the same reference shapes as the block patterns
- * above, but at two cells per tile edge (or one whole tile) so each mark reads
- * large and graphic instead of as fine mosaic texture.
- *
- * Only `wedge` is a literal one-shape tile. The straight half-fills are paired
- * into compositions rather than shipped alone, because a tile that is simply
- * half-filled top-to-bottom repeats into `stripes` at 50% — and its vertical
- * twin is the same thing rotated, which the rotation control already gives you.
+ * Bold blocks: the straight half-fills at two cells per tile edge, so each mark
+ * reads large and graphic instead of as fine mosaic texture. They're only
+ * shipped in a composition: a tile simply half-filled top to bottom repeats into
+ * `stripes` at 50%.
  */
 const BOLD_CELLS = 2;
 
 const boldRect = (x: number, y: number, w: number, h: number, fill: string) =>
   `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"/>`;
-
-/** One diagonal half, whole-tile. Repeats into bold diagonal sawtooth bands. */
-const wedge: PatternGenerator = ({ size, base, accent }) => `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    <polygon points="${TRIANGLES[2](0, 0, size)}" fill="${accent}"/>
-  </svg>`;
-
-/** Diagonal halves alternating orientation, so facing pairs close into bowties. */
-const bowtie: PatternGenerator = ({ size, base, accent }) => {
-  const c = size / BOLD_CELLS;
-  const cells: string[] = [];
-
-  for (let row = 0; row < BOLD_CELLS; row++) {
-    for (let col = 0; col < BOLD_CELLS; col++) {
-      const points = TRIANGLES[(col + row) % 2 === 0 ? 2 : 3](col * c, row * c, c);
-      cells.push(`<polygon points="${points}" fill="${accent}"/>`);
-    }
-  }
-
-  return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    ${cells.join("")}
-  </svg>`;
-};
 
 /**
  * The straight half-fills rotated a quarter turn per cell. Reading them around
@@ -728,51 +638,29 @@ const pinwheel: PatternGenerator = ({ size, base, accent }) => {
   </svg>`;
 };
 
-/** All four reference shapes, one per quadrant — the reference sheet itself. */
-const quarters: PatternGenerator = ({ size, base, accent }) => {
-  const c = size / BOLD_CELLS;
-  const h = c / 2;
-
-  return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
-    <rect width="${size}" height="${size}" fill="${base}"/>
-    <polygon points="${TRIANGLES[2](0, 0, c)}" fill="${accent}"/>
-    <polygon points="${TRIANGLES[3](c, 0, c)}" fill="${accent}"/>
-    ${boldRect(0, c + h, c, h, accent)}
-    ${boldRect(c, c, h, c, accent)}
-  </svg>`;
-};
-
 export const PATTERN_GENERATORS: Record<PatternType, PatternGenerator> = {
-  dots,
   stripes,
   grid,
-  chevron,
-  checks,
-  rules,
-  waves,
-  triangles,
-  hexagon,
-  grain,
-  diamonds,
-  basketweave,
-  cubes,
-  crosses,
   plaid,
+  chevron,
+  waves,
+  dots,
+  triangles,
+  checks,
+  argyle,
+  hexagon,
+  cubes,
   scales,
   arcs,
+  basketweave,
+  truchet,
+  ribbons,
+  steps,
+  pinwheel,
   circuit,
   "starry-night": starryNight,
   raindrops,
   terrazzo,
-  truchet,
-  halfblocks,
-  ribbons,
-  steps,
-  wedge,
-  bowtie,
-  pinwheel,
-  quarters,
 };
 
 /**
@@ -782,35 +670,28 @@ export const PATTERN_GENERATORS: Record<PatternType, PatternGenerator> = {
  * special handling on the canvas — only the panel thumbnail has to know.
  */
 export const PATTERN_TILE_ASPECT: Record<PatternType, number> = {
-  dots: 1,
   stripes: 1,
   grid: 1,
-  chevron: 1,
-  checks: 1,
-  rules: 1,
-  waves: 1,
-  triangles: 1,
-  hexagon: 1,
-  grain: 1,
-  diamonds: 1,
-  basketweave: 1,
-  cubes: CUBE_ROW_RATIO,
-  crosses: 1,
   plaid: 1,
+  chevron: 1,
+  waves: 1,
+  dots: 1,
+  triangles: 1,
+  checks: 1,
+  argyle: 1,
+  hexagon: 1,
+  cubes: CUBE_ROW_RATIO,
   scales: 1,
   arcs: 1,
+  basketweave: 1,
+  truchet: 1,
+  ribbons: 1,
+  steps: 1,
+  pinwheel: 1,
   circuit: 1,
   "starry-night": 1,
   raindrops: 1,
   terrazzo: 1,
-  truchet: 1,
-  halfblocks: 1,
-  ribbons: 1,
-  steps: 1,
-  wedge: 1,
-  bowtie: 1,
-  pinwheel: 1,
-  quarters: 1,
 };
 
 /** Inline `url(...)` value for panel thumbnails — no rasterization needed. */

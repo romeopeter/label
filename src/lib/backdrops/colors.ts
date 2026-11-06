@@ -70,7 +70,7 @@ const linearOf = ({ l: L, c, h }: Oklch) => {
 const inGamut = (rgb: number[]) => rgb.every((v) => v >= -0.0005 && v <= 1.0005);
 
 /** Keeps the lightness and hue, and gives up only as much colour as a screen can't show. */
-const hexOfOklch = (color: Oklch) => {
+export const hexOfOklch = (color: Oklch) => {
   const lch = { ...color, l: Math.min(Math.max(color.l, 0), 1), h: ((color.h % 360) + 360) % 360 };
   if (inGamut(linearOf(lch))) return hexOf(linearOf(lch));
   let low = 0;
@@ -108,7 +108,7 @@ export type Mood = keyof typeof MOODS;
 
 export type Palette = [string, string, string, string];
 
-const pick = <T>(random: () => number, weighted: [T, number][]) => {
+export const pick = <T>(random: () => number, weighted: [T, number][]) => {
   const total = weighted.reduce((sum, [, weight]) => sum + weight, 0);
   let at = random() * total;
   for (const [value, weight] of weighted) {

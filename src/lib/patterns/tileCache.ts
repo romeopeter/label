@@ -23,7 +23,7 @@ export interface TileSpec {
  * Rotation is not part of the key: it is applied to the pattern space by Konva
  * rather than baked into the tile (see generators.ts).
  */
-const tileCache = new Map<string, HTMLImageElement>();
+const tileCache = new Map<string, HTMLCanvasElement>();
 
 const cacheKey = (
   spec: TileSpec,
@@ -31,7 +31,7 @@ const cacheKey = (
   dpiScale: number,
 ): string => [spec.type, pair.base, pair.accent, spec.size, dpiScale].join("|");
 
-const touch = (key: string, img: HTMLImageElement) => {
+const touch = (key: string, img: HTMLCanvasElement) => {
   // Re-inserting moves the key to the end of the iteration order, which is what
   // makes the "oldest key first" eviction below actually least-recently-used.
   tileCache.delete(key);
@@ -76,7 +76,7 @@ export const getPatternTile = async (
   spec: TileSpec,
   pair: PatternColorPair,
   dpiScale = 1,
-): Promise<HTMLImageElement> => {
+): Promise<HTMLCanvasElement> => {
   const key = cacheKey(spec, pair, dpiScale);
   const cached = tileCache.get(key);
   if (cached) {
@@ -91,7 +91,14 @@ export const getPatternTile = async (
     accent: pair.accent,
   });
 
+  // Drawn onto a canvas once, and the canvas is what gets repeated. WebKit marks
+  // a canvas filled with a pattern made straight from an SVG image as unreadable,
+  // so every export of a pattern background came out empty.
   const img = await svgStringToImage(svg);
-  touch(key, img);
-  return img;
+  const tile = document.createElement("canvas");
+  tile.width = img.naturalWidth || img.width;
+  tile.height = img.naturalHeight || img.height;
+  tile.getContext("2d")?.drawImage(img, 0, 0);
+  touch(key, tile);
+  return tile;
 };

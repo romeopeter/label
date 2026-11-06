@@ -443,13 +443,13 @@ filesystem path (`.layer-assets/` sidecar) solves this — see §10.
 
 Three spec'd modes, toggled in the right panel when no element is selected:
 
-1. **Solid** — colour picker; defaults to brand purple on first launch.
-2. **Gradient** — two-stop linear, angle slider 0–360°, two colour pickers.
-3. **Image** — background image with blur slider (0–20px) and opacity slider.
+1. **Solid** — colour picker and swatches.
+2. **Gradient** — two-stop linear, angle slider 0–360°, two colour pickers, presets.
+3. **Image** — upload, screenshot or Pixabay picture, cover-fitted.
 
 A fourth mode, **pattern**, ships in the current build (beyond the spec's
-three): duotone SVG tiles, rasterized and LRU-cached, drawn as a Konva
-`fillPatternImage`. See `src/lib/patterns/` and `src/types/pattern.ts`.
+three): duotone SVG tiles, drawn once onto a canvas, LRU-cached, and repeated
+with Konva's `fillPatternImage`. See `src/lib/patterns/` and `src/types/pattern.ts`.
 
 A fifth, **abstract**, is also beyond the spec: backgrounds Layer draws itself. See
 [Abstract backgrounds](#abstract-backgrounds).
@@ -460,21 +460,59 @@ interface BackgroundState {
   color: string;
   gradient: { from: string; to: string; angle: number };
   imageSrc: string | null;
-  imageBlur: number;
-  imageOpacity: number;
-  pattern: PatternConfig;
-  backdrop: BackdropConfig;
+  pattern: PatternConfig;     // colors?: { base, accent } when Shuffle chose them
+  backdrop: BackdropLook;
+  effects: BackgroundEffects;
+}
+
+interface BackgroundEffects {
+  blur: number;      // canvas px, 0–100
+  frost: number;     // 0–1
+  grain: number;     // 0–1
+  vignette: number;  // 0–1
+  opacity: number;   // 0–1; below 1 shows through in PNG and WebP exports
 }
 ```
 
 The store keeps a fully-populated object with a discriminating `mode` field
 so toggling modes restores previous values.
 
+**Panel.** Type, then that type's own settings, then two tabs:
+
+- **Shuffle with Back and Forward** is on Solid (a colour), Gradient (two colours
+  and an angle), Pattern (its two colours) and Abstract. Colours come from the
+  abstract backgrounds' OKLCH palettes, so they're always in tune. Each type keeps
+  its own trail, for the session only, and it's not undo. Picking a swatch or a
+  colour by hand replaces the look Back and Forward are on.
+- **Saved** keeps the whole current background (type, settings and effects) to use
+  again in any project, up to 24. On the desktop the list lives in
+  `saved-backgrounds.json` in the app's data folder (`saved.rs`), until SQLite lands;
+  in the browser it lasts the session.
+- **Effects** — Blur, Frost, Grain, Vignette and Opacity — apply to every type and
+  stay as the type changes. Settings that only make sense for one type stay in its
+  section: a pattern's intensity, size and rotation.
+
+**Drawing.** Without effects, solid, gradient, image and pattern backgrounds are
+plain Konva nodes. With an effect that changes pixels, the type is drawn to a 2D
+canvas (`drawBackgroundSource`) and goes through the abstract backgrounds' renderer,
+which blurs it and adds frost, vignette and grain; export draws it again at full
+size. Opacity is a Konva group opacity, so it never needs the renderer.
+
+**Older files.** An image's `imageBlur` and `imageOpacity`, and an abstract
+background's own `blur`, `frost` and `grain`, become the background's effects when
+that type was showing.
+
+**Patterns.** 22 types, each unlike every other: none is another turned, resized or
+recoloured. Dropped because they repeated one (and what an older file gets instead):
+Rules (Stripes), Diamonds (Argyle), Crosses (Dots), Grain (Starry Night: grain is now
+an effect), Half Blocks (Pinwheel), Wedge and Bowtie (Triangles), Quarters (Truchet).
+Tiles are drawn onto a canvas before they're repeated: WebKit treats a canvas filled
+with a pattern made straight from an SVG image as unreadable, so exports of pattern
+backgrounds used to come out empty.
+
 - **Gradient:** convert the angle to start/end points on the rect's bounding
-  box (CSS-style, 0° = up) and use `fillLinearGradientStartPoint/EndPoint/
-  ColorStops`.
-- **Image blur:** Konva `Blur` filter requires `node.cache()` after the image
-  loads, then `batchDraw()`.
+  box and use `fillLinearGradientStartPoint/EndPoint/ColorStops`
+  (`gradientEnds`, shared with the 2D drawing).
 
 ### Abstract backgrounds
 
@@ -483,19 +521,17 @@ they stay sharp at any size. Code is in `src/lib/backdrops/`, types in
 `src/types/backdrop.ts`.
 
 ```ts
-interface BackdropConfig {
+interface BackdropLook {
   style: 'soft' | 'waves' | 'streaks' | 'glow' | 'glass' | 'aurora' | 'silk' | 'marble';
   seed: number;              // lays out the shapes; picks colours when none was picked
   color: string | null;      // the colour Shuffle builds on, or null for any
   colors: [deep, main, accent, highlight];  // saved, so files don't change if the generator does
-  blur: number;              // canvas px, 0–100
-  frost: number;             // 0–1
-  grain: number;             // 0–1
 }
 ```
 
 - **Panel:** Style (two rows of four), ten presets that between them show every style,
-  Shuffle with Back and Forward, Color, then Blur, Frost and Grain.
+  Shuffle with Back and Forward, and Color. Blur, Frost and Grain are background
+  effects, in the Effects tab; a preset still brings the ones it was made with.
 - **Styles:** Soft (blurred patches), Waves (layered folds), Streaks (light pulled
   along a diagonal), Glow (lights on a dark ground), Glass (clear panels over soft
   colour, bending it at their edges; usually one is fluted), Aurora (curtains of light

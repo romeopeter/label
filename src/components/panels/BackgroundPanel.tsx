@@ -7,7 +7,7 @@ import { ScreenshotButton } from "./ScreenshotButton";
 import { StockImages } from "./StockImages";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   PanelTitle,
   SectionLabel,
@@ -17,6 +17,9 @@ import {
 } from "./primitives";
 import { PatternPanel } from "./background/PatternPanel";
 import { BackdropPanel } from "./background/BackdropPanel";
+import { ShuffleRow } from "./background/ShuffleRow";
+import { SavedBackgrounds } from "./background/SavedBackgrounds";
+import { EffectsControls } from "./background/EffectsControls";
 import { choiceClass } from "./choice";
 
 const SWATCHES = [
@@ -46,7 +49,7 @@ const GRADIENTS = [
 export const BackgroundPanel = () => {
   const bg = useEditor((s) => s.background);
   const setBg = useEditor((s) => s.setBackground);
-  const [tab, setTab] = useState("Settings");
+  const [tab, setTab] = useState("effects");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,6 +110,7 @@ export const BackgroundPanel = () => {
                 ))}
               </div>
             </div>
+            <ShuffleRow mode="solid" />
           </div>
         )}
 
@@ -166,6 +170,7 @@ export const BackgroundPanel = () => {
                 ))}
               </div>
             </div>
+            <ShuffleRow mode="gradient" />
           </div>
         )}
 
@@ -198,24 +203,6 @@ export const BackgroundPanel = () => {
                 setBg({ mode: "image", imageSrc: await fileToDataURL(blob) })
               }
             />
-            {bg.imageSrc && (
-              <>
-                <LabeledSlider
-                  label="BLUR"
-                  unit="px"
-                  max={40}
-                  value={bg.imageBlur}
-                  onChange={(v) => setBg({ imageBlur: v })}
-                />
-                <LabeledSlider
-                  label="OPACITY"
-                  unit="%"
-                  max={100}
-                  value={Math.round(bg.imageOpacity * 100)}
-                  onChange={(v) => setBg({ imageOpacity: v / 100 })}
-                />
-              </>
-            )}
           </>
         )}
 
@@ -225,14 +212,21 @@ export const BackgroundPanel = () => {
 
       <Linebreak />
 
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList >
-          {/* <TabsTrigger value="Saved">Saved</TabsTrigger> */}
-          <TabsTrigger value="Settings" disabled className="disabled:cursor-not-allowed">
-            Settings
+      <Tabs value={tab} onValueChange={setTab} className="space-y-3">
+        <TabsList>
+          <TabsTrigger value="saved" className="cursor-pointer">
+            Saved
           </TabsTrigger>
-          <TabsTrigger value="Effects" className="cursor-pointer" defaultChecked>Effects</TabsTrigger>
+          <TabsTrigger value="effects" className="cursor-pointer">
+            Effects
+          </TabsTrigger>
         </TabsList>
+        <TabsContent value="saved">
+          <SavedBackgrounds />
+        </TabsContent>
+        <TabsContent value="effects">
+          <EffectsControls />
+        </TabsContent>
       </Tabs>
     </div>
   );

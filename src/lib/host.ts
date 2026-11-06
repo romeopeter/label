@@ -146,3 +146,32 @@ export const downloadStockImage = async (url: string): Promise<Blob> => {
   const bytes = await invoke<ArrayBuffer>("download_image", { url });
   return new Blob([bytes], { type: url.endsWith(".png") ? "image/png" : "image/jpeg" });
 };
+
+/**
+ * Saved backgrounds live in a file in the app's data folder on the desktop, until
+ * SQLite lands. The web build keeps them for the session only: the spec rules out
+ * localStorage.
+ */
+export const hasSavedBackgroundsFile = isTauri;
+
+export const loadSavedBackgrounds = async (): Promise<unknown[]> => {
+  if (!isTauri) return [];
+  const { invoke } = await invokeCore();
+  try {
+    const list: unknown = JSON.parse(await invoke<string>("load_saved_backgrounds"));
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+};
+
+export const storeSavedBackgrounds = async (list: unknown[]) => {
+  if (!isTauri) return;
+  const { invoke } = await invokeCore();
+  try {
+    await invoke("store_saved_backgrounds", { list: JSON.stringify(list) });
+  } catch (error) {
+    // Commands report failures as a message that's already written for the user.
+    throw new Error(String(error), { cause: error });
+  }
+};

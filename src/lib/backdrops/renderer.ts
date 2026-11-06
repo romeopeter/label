@@ -1,5 +1,6 @@
 import { BLUR, VERTEX } from "@/lib/imageEdit/shader";
-import type { BackdropConfig, BackdropLook, BackdropStyle } from "@/types/backdrop";
+import type { BackdropLook, BackdropStyle } from "@/types/backdrop";
+import type { BackgroundEffects } from "@/types";
 import { hexToLinear, randomFrom } from "./colors";
 import { BACKDROP_FINISH, BACKDROP_MAIN } from "./shader";
 
@@ -8,7 +9,14 @@ import { BACKDROP_FINISH, BACKDROP_MAIN } from "./shader";
   on or overwrite each other's work. Like that one, it's shared by every background
   and copies each result out to the caller's 2D canvas, which is what Konva and
   export read.
+
+  It draws abstract backgrounds, and it puts the background effects (blur, frost,
+  grain and vignette) on any background: another type is drawn to a 2D canvas
+  first and comes in as the source.
 */
+
+/** What to put the effects on: an abstract background, or a picture of another type. */
+export type BackgroundSource = { look: BackdropLook } | { canvas: HTMLCanvasElement };
 
 /** The largest side drawn, whatever the export scale asks for. */
 const MAX_SIDE = 8192;
@@ -205,7 +213,8 @@ const createRenderer = () => {
   };
 
   const render = (
-    config: BackdropConfig,
+    source: BackgroundSource,
+    effects: BackgroundEffects,
     size: { width: number; height: number },
     requestedScale: number,
     out: HTMLCanvasElement,
@@ -217,16 +226,34 @@ const createRenderer = () => {
     const half: [number, number] = [size.width / shorter / 2, size.height / shorter / 2];
 
     const drawn = targetOf("drawn", width, height);
-    pass(programs.main, drawn, width, height, (u) => {
-      gl.uniform2f(u("uSize"), size.width, size.height);
-      gl.uniform1f(u("uPixel"), 1 / (shorter * scale));
-      gl.uniform1i(u("uStyle"), STYLE_CODE[config.style]);
-      gl.uniform3fv(u("uColors"), config.colors.flatMap(hexToLinear));
-      gl.uniform4fv(u("uP"), placesOf(config.style, config.seed, half));
-    });
+    if ("look" in source) {
+      const { look } = source;
+      pass(programs.main, drawn, width, height, (u) => {
+        gl.uniform2f(u("uSize"), size.width, size.height);
+        gl.uniform1f(u("uPixel"), 1 / (shorter * scale));
+        gl.uniform1i(u("uStyle"), STYLE_CODE[look.style]);
+        gl.uniform3fv(u("uColors"), look.colors.flatMap(hexToLinear));
+        gl.uniform4fv(u("uP"), placesOf(look.style, look.seed, half));
+      });
+    } else {
+      // Brought to the exact size first, since the caller's rounding may differ.
+      let picture = source.canvas;
+      if (picture.width !== width || picture.height !== height) {
+        const sized = document.createElement("canvas");
+        sized.width = width;
+        sized.height = height;
+        sized.getContext("2d")?.drawImage(picture, 0, 0, width, height);
+        picture = sized;
+      }
+      gl.bindTexture(gl.TEXTURE_2D, drawn.texture);
+      // The top row goes to v = 1, as everything here expects.
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, picture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    }
 
     let result = drawn;
-    const radius = config.blur * scale;
+    const radius = effects.blur * scale;
     if (radius > 0.25) {
       // Shrunk first, so a wide blur costs no more than a narrow one.
       const shrink = Math.max(1, radius / BLUR_WORKING_RADIUS);
@@ -258,8 +285,9 @@ const createRenderer = () => {
     pass(programs.finish, null, width, height, (u) => {
       gl.uniform1i(u("uTex"), 0);
       gl.uniform2f(u("uSize"), size.width, size.height);
-      gl.uniform1f(u("uFrost"), config.frost);
-      gl.uniform1f(u("uGrain"), config.grain);
+      gl.uniform1f(u("uFrost"), effects.frost);
+      gl.uniform1f(u("uGrain"), effects.grain);
+      gl.uniform1f(u("uVignette"), effects.vignette);
     });
 
     out.width = width;
@@ -290,16 +318,17 @@ const getRenderer = () => {
 
 export const isBackdropSupported = () => !!getRenderer();
 
-/** Draws a background into `out`, at `scale` pixels to each canvas pixel. */
-export const renderBackdrop = (
-  config: BackdropConfig,
+/** Draws a background with its effects into `out`, at `scale` pixels to each canvas pixel. */
+export const renderBackground = (
+  source: BackgroundSource,
+  effects: BackgroundEffects,
   size: { width: number; height: number },
   scale: number,
   out: HTMLCanvasElement,
 ) => {
   const active = getRenderer();
   if (!active) return false;
-  active.render(config, size, scale, out);
+  active.render(source, effects, size, scale, out);
   return true;
 };
 
@@ -308,15 +337,12 @@ const thumbs = new Map<string, string>();
 const THUMB_SIZE = { width: 1200, height: 900 };
 const THUMB_SCALE = 0.14;
 
-export const backdropThumb = (
-  look: BackdropLook,
-  effects: Pick<BackdropConfig, "blur" | "frost" | "grain">,
-) => {
+export const backdropThumb = (look: BackdropLook, effects: BackgroundEffects) => {
   const key = JSON.stringify([look.style, look.seed, look.colors, effects]);
   const cached = thumbs.get(key);
   if (cached) return cached;
   const out = document.createElement("canvas");
-  if (!renderBackdrop({ ...look, ...effects }, THUMB_SIZE, THUMB_SCALE, out)) return null;
+  if (!renderBackground({ look }, effects, THUMB_SIZE, THUMB_SCALE, out)) return null;
   const url = out.toDataURL("image/png");
   thumbs.set(key, url);
   return url;

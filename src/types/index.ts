@@ -1,5 +1,5 @@
 import type { PatternConfig } from "./pattern";
-import type { BackdropConfig } from "./backdrop";
+import type { BackdropLook } from "./backdrop";
 
 export type ElementKind = "image" | "text" | "shape" | "icon";
 
@@ -216,16 +216,41 @@ export type LayerElement = ImageElement | TextElement | ShapeElement;
 
 export type BackgroundMode = "solid" | "gradient" | "image" | "pattern" | "abstract";
 
+/** Effects on the whole background, whichever type it is. */
+export interface BackgroundEffects {
+  /** In canvas pixels, 0 to 100. */
+  blur: number;
+  /** Frosted glass, 0 to 1. */
+  frost: number;
+  /** Film grain, 0 to 1. */
+  grain: number;
+  /** Darker towards the corners, 0 to 1. */
+  vignette: number;
+  /** 1 is solid. Lower shows through as transparency in PNG and WebP exports. */
+  opacity: number;
+}
+
+export interface BackgroundGradient {
+  from: string;
+  to: string;
+  angle: number;
+}
+
 export interface BackgroundState {
   mode: BackgroundMode;
   color: string;
-  gradient: { from: string; to: string; angle: number };
+  gradient: BackgroundGradient;
   imageSrc: string | null;
-  imageBlur: number;
-  imageOpacity: number;
   pattern: PatternConfig;
-  /** Drawn by Layer from a few colours. Absent in projects saved before it existed. */
-  backdrop: BackdropConfig;
+  /** Drawn by Layer from a few colours. */
+  backdrop: BackdropLook;
+  effects: BackgroundEffects;
+}
+
+/** A background the user kept, to use again in any project. */
+export interface SavedBackground {
+  id: string;
+  background: BackgroundState;
 }
 
 /**

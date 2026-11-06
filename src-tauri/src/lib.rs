@@ -3,6 +3,7 @@ use tauri::Manager;
 mod capture;
 mod files;
 mod pixabay;
+mod saved;
 
 pub fn run() {
     tauri::Builder::default()
@@ -24,6 +25,8 @@ pub fn run() {
             files::export_static,
             pixabay::search_images,
             pixabay::download_image,
+            saved::load_saved_backgrounds,
+            saved::store_saved_backgrounds,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Layer");

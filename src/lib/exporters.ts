@@ -135,7 +135,7 @@ export const renderCanvasDataURL = (
     // so the background pattern is rasterized at `pixelRatio` device pixels per
     // canvas unit regardless of the current zoom.
     const cleanupPatternTiles = await prepareExportTiles(stage, pixelRatio);
-    const cleanupBackdrop = prepareExportBackdrop(stage, pixelRatio);
+    const cleanupBackdrop = await prepareExportBackdrop(stage, pixelRatio);
 
     try {
       // Stage is currently scaled to fit; export uses the canvas's intrinsic resolution

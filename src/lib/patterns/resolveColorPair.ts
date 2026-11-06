@@ -1,4 +1,4 @@
-import type { PatternColorPair } from "@/types/pattern";
+import type { PatternColorPair, PatternConfig } from "@/types/pattern";
 import { CURATED_PATTERN_PAIRS } from "@/data/curatedPatternPairs";
 import { deriveBrandPatternPairs } from "./deriveBrandPatternPairs";
 
@@ -25,3 +25,12 @@ export const resolveColorPair = (
   customPairs.find((p) => p.id === colorPairId) ??
   deriveBrandPatternPairs().find((p) => p.id === colorPairId) ??
   FALLBACK_PAIR;
+
+/** The colours a pattern draws with: Shuffle's own, or its swatch's. */
+export const patternPairOf = (
+  pattern: PatternConfig,
+  customPairs: PatternColorPair[] = [],
+): PatternColorPair =>
+  pattern.colors
+    ? { id: "shuffled", source: "custom", ...pattern.colors }
+    : resolveColorPair(pattern.colorPairId, customPairs);

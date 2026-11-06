@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { Upload, Minus, Plus, Delete, Command } from "lucide-react";
-import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/store/editor";
+import { DEFAULT_BACKGROUND, useEditor, ZOOM_MAX, ZOOM_MIN } from "@/store/editor";
+import { loadSavedBackgrounds } from "@/lib/host";
+import { normaliseSavedBackgrounds } from "@/lib/background/normalise";
 import { TopBar } from "@/components/TopBar";
 import { LeftRail } from "@/components/LeftRail";
 import { PanelHost } from "@/components/panels";
@@ -47,6 +49,13 @@ export const App = () => {
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [hiddenTools, setHiddenTools] = useState<Record<string, boolean>>({});
   const [dragOver, setDragOver] = useState(false);
+
+  // Backgrounds saved in earlier sessions, from the desktop's file.
+  useEffect(() => {
+    void loadSavedBackgrounds().then((list) =>
+      useEditor.getState().setSavedBackgrounds(normaliseSavedBackgrounds(list, DEFAULT_BACKGROUND)),
+    );
+  }, []);
 
   const toggleVisible = useCallback((k: string) => {
     setHiddenTools((h) => ({ ...h, [k]: !h[k] }));

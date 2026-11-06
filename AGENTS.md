@@ -110,23 +110,32 @@ flag it before implementing.
 - **Rust-side export gate is still deferred** — see
   [Deferred Rust Implementations](#deferred-rust-implementations).
 - **Background patterns ship as a 4th background mode.** Duotone tiles
-  generated as SVG, rasterized and LRU-cached, drawn as a Konva
-  `fillPatternImage`. Rotation is applied via `fillPatternRotation` (pattern
+  generated as SVG, drawn once onto a canvas, LRU-cached, and repeated with Konva's
+  `fillPatternImage`. **Repeat the canvas, never the SVG image:** WebKit marks a
+  canvas filled with a pattern made from an SVG image as unreadable, and exports
+  came out empty. Rotation is applied via `fillPatternRotation` (pattern
   space), *not* baked into the tile — rotating shapes inside a tile clips them
-  and seams the repeat. All 29 types are free; `PATTERN_PRO_GATE` remains the
-  seam if any need re-gating. Scatter types (grain, starry night, raindrops,
+  and seams the repeat. 22 types, each unlike any other: a new one mustn't be an
+  existing one turned, resized or recoloured, and a dropped one needs an entry in
+  `RETIRED_TYPES` so older files still open. All are free; `PATTERN_PRO_GATE`
+  remains the seam if any need re-gating. Scatter types (starry night, raindrops,
   terrazzo) use a seeded RNG plus `scatterWrapped` so marks straddling a tile
   edge are completed on the opposite side — without it a "random" scatter reads
-  as a visible grid. Block types (truchet, half blocks, ribbons, steps at
-  `CELLS`; wedge, bowtie, pinwheel, quarters at `BOLD_CELLS`) keep each shape
-  inside its own cell, so they are seamless without wrapping. Note a
-  half-filled tile repeats into `stripes` at 50%, and its vertical twin is the
-  same thing rotated — so straight half-fills are only shipped in composition,
-  never alone. The picker is a height-capped scroll strip. Custom colour pairs
-  are in-memory only until SQLite lands.
+  as a visible grid. Block types keep each shape inside its own cell, so they are
+  seamless without wrapping. The picker is a height-capped scroll strip. Custom
+  colour pairs are in-memory only until SQLite lands.
+
+- **Background effects belong to the whole background.** Blur, Frost, Grain,
+  Vignette and Opacity (`background.effects`) apply to every type. Once one changes
+  pixels, the type is drawn to a 2D canvas (`drawBackgroundSource`) and goes through
+  the abstract backgrounds' renderer; otherwise it's plain Konva. The fill node
+  carries how to draw itself at any scale (`drawAt`), which is what export calls.
+  Shuffle with Back and Forward is shared too (`ShuffleRow`, `lookTrails`, one trail
+  per type). Saved backgrounds live in `saved-backgrounds.json` in the app data
+  folder, written by `saved.rs`, until SQLite lands.
 
 - **Abstract backgrounds are settings, drawn by Layer.** A fifth background mode,
-  beyond the spec. `BackdropConfig` saves its four colours as well as the seed, so a
+  beyond the spec. `BackdropLook` saves its four colours as well as the seed, so a
   file looks the same if the generator changes. It's drawn by its own WebGL2 context in
   [src/lib/backdrops/](./src/lib/backdrops/) and drawn again at export scale. Its noise
   hashes with integers: a float hash makes seams on the GPU. Back and Forward walk a
@@ -390,6 +399,7 @@ spec as still authoritative for everything else.
 | Website-by-URL capture / tweet import | Needs Tauri capture pipeline | With shell |
 | 3D image rendering effect | Prior implementation removed | Redesign needed |
 | Persisted custom pattern colour pairs | Needs SQLite | With shell |
+| Saved backgrounds in SQLite | A JSON file in the app data folder stands in | With SQLite |
 | Brand-derived pattern colour pairs | Needs the Phase-2 brand store | With brand kits |
 
 ## Future additions

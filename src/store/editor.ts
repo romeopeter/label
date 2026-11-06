@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type {
+  BackgroundEffects,
   BackgroundState,
+  SavedBackground,
   CanvasSize,
   DeviceFrame,
   GridState,
@@ -18,13 +20,20 @@ import type {
 } from "../types";
 import type { PatternColorPair, PatternConfig } from "../types/pattern";
 import { DEFAULT_PATTERN_CONFIG } from "../types/pattern";
-import type { BackdropConfig, BackdropLook } from "../types/backdrop";
+import type { BackdropLook } from "../types/backdrop";
+import { DEFAULT_BACKDROP } from "../lib/backdrops/presets";
+import { NO_EFFECTS } from "../lib/background/effects";
+import { DEFAULT_GRADIENT, normaliseBackground } from "../lib/background/normalise";
 import {
-  DEFAULT_BACKDROP,
-  lookOf,
-  normaliseBackdrop,
-  shuffledLook,
-} from "../lib/backdrops/presets";
+  applyLook,
+  isShuffleMode,
+  lookOfBackground,
+  sameLook,
+  shuffledLookFor,
+  type BackgroundLook,
+  type ShuffleMode,
+} from "../lib/background/looks";
+import { storeSavedBackgrounds } from "../lib/host";
 import { migrateElement, nextNumber } from "../lib/marks";
 import { placeFrame } from "../lib/mockups";
 import { DEFAULT_MARK_STYLES, shapeDefaults } from "../lib/markTools";
@@ -48,19 +57,30 @@ const DEFAULT_CANVAS: CanvasSize = {
   height: 1350,
 };
 
-const DEFAULT_BACKGROUND: BackgroundState = {
+export const DEFAULT_BACKGROUND: BackgroundState = {
   mode: "gradient",
   color: "#1A1826",
-  gradient: { from: "#1C1F3B", to: "#534AB7", angle: 135 },
+  gradient: DEFAULT_GRADIENT,
   imageSrc: null,
-  imageBlur: 0,
-  imageOpacity: 1,
   pattern: DEFAULT_PATTERN_CONFIG,
   backdrop: DEFAULT_BACKDROP,
+  effects: NO_EFFECTS,
 };
 
-/** How many abstract backgrounds Back can return to. */
+/** How many looks Back can return to, for each type. */
 const TRAIL_MAX = 50;
+
+/** How many backgrounds can be saved. Image backgrounds are large. */
+export const SAVED_MAX = 24;
+
+/** Shuffled and preset looks seen this session, for one background type. */
+interface LookTrail {
+  looks: BackgroundLook[];
+  at: number;
+}
+
+/** A saved background is one entry however many times it's saved. */
+const sameBackground = (a: BackgroundState, b: BackgroundState) => JSON.stringify(a) === JSON.stringify(b);
 
 export const ZOOM_MIN = 20;
 /**
@@ -118,11 +138,12 @@ interface EditorState {
   /** Transient: true while a pattern slider is held. Not part of the project. */
   patternDragging: boolean;
   /**
-   * Transient: abstract backgrounds seen this session, for Back and Forward. Not
-   * part of the project or of undo: it's a list to choose from, not a change.
+   * Transient: looks seen this session, for Back and Forward, by background type.
+   * Not part of the project or of undo: it's a list to choose from, not a change.
    */
-  backdropTrail: BackdropLook[];
-  backdropTrailAt: number;
+  lookTrails: Partial<Record<ShuffleMode, LookTrail>>;
+  /** Backgrounds kept to use again in any project. Not part of the project. */
+  savedBackgrounds: SavedBackground[];
   /** Transient: what a canvas drag creates. Null means it selects and moves. */
   markTool: MarkTool | null;
   /** Style for the next mark, by category. Lasts the session, not the project. */
@@ -144,12 +165,20 @@ interface EditorState {
   setBackground: (b: Partial<BackgroundState>) => void;
   setPattern: (p: Partial<PatternConfig>) => void;
   setPatternDragging: (v: boolean) => void;
-  /** Changes the abstract background. A new look replaces the one Back and Forward are on. */
-  setBackdrop: (patch: Partial<BackdropConfig>) => void;
-  /** Shows a new look, from Shuffle or a preset, and adds it to the trail. */
-  showBackdrop: (look?: BackdropLook) => void;
-  /** Moves back or forward along the trail. The effects stay as they are. */
-  stepBackdrop: (by: -1 | 1) => void;
+  /** Changes the abstract background. */
+  setBackdrop: (patch: Partial<BackdropLook>) => void;
+  /** Changes the effects on the background, whichever type it is. */
+  setEffects: (patch: Partial<BackgroundEffects>) => void;
+  /** Shows a new look for a type, from Shuffle or a preset, and adds it to that type's trail. */
+  showLook: (mode: ShuffleMode, look?: BackgroundLook) => void;
+  /** Moves back or forward along a type's trail. Effects and other settings stay as they are. */
+  stepLook: (mode: ShuffleMode, by: -1 | 1) => void;
+  /** Keeps the current background to use again. */
+  saveBackground: () => void;
+  useSavedBackground: (id: string) => void;
+  deleteSavedBackground: (id: string) => void;
+  /** Fills the list from the saved file, at launch. */
+  setSavedBackgrounds: (list: SavedBackground[]) => void;
   setWatermark: (v: boolean) => void;
   setMarkTool: (tool: MarkTool | null) => void;
   setMarkStyle: (category: MarkCategory, patch: Partial<ShapeElement>) => void;
@@ -217,8 +246,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   watermark: true,
   isPro: false,
   patternDragging: false,
-  backdropTrail: [],
-  backdropTrailAt: -1,
+  lookTrails: {},
+  savedBackgrounds: [],
   markTool: null,
   markStyles: DEFAULT_MARK_STYLES,
   editingId: null,
@@ -243,51 +272,89 @@ export const useEditor = create<EditorState>((set, get) => ({
 
   toggleSnap: () => set({ snapEnabled: !get().snapEnabled }),
   setCanvas: (c) => set({ canvas: c }),
-  setBackground: (b) => set({ background: { ...get().background, ...b } }),
+  setBackground: (b) => {
+    const { background, lookTrails } = get();
+    const next = { ...background, ...b };
+    // A look changed by hand replaces the one Back and Forward are on.
+    const mode = next.mode;
+    const trail = isShuffleMode(mode) ? lookTrails[mode] : undefined;
+    const changed =
+      isShuffleMode(mode) && trail && !sameLook(lookOfBackground(background, mode), lookOfBackground(next, mode));
+    set({
+      background: next,
+      ...(changed && trail
+        ? {
+            lookTrails: {
+              ...lookTrails,
+              [mode]: { ...trail, looks: trail.looks.map((look, i) => (i === trail.at ? lookOfBackground(next, mode) : look)) },
+            },
+          }
+        : {}),
+    });
+  },
 
   setPattern: (p) => {
     const background = get().background;
-    set({ background: { ...background, pattern: { ...background.pattern, ...p } } });
+    get().setBackground({ pattern: { ...background.pattern, ...p } });
   },
 
   setPatternDragging: (v) => set({ patternDragging: v }),
 
   setBackdrop: (patch) => {
-    const { background, backdropTrail, backdropTrailAt } = get();
-    const backdrop = { ...background.backdrop, ...patch };
-    const changesLook = (["style", "seed", "color", "colors"] as const).some((key) => key in patch);
-    set({
-      background: { ...background, mode: "abstract", backdrop },
-      ...(changesLook && backdropTrailAt >= 0
-        ? { backdropTrail: backdropTrail.map((look, i) => (i === backdropTrailAt ? lookOf(backdrop) : look)) }
-        : {}),
-    });
+    const { background } = get();
+    get().setBackground({ mode: "abstract", backdrop: { ...background.backdrop, ...patch } });
   },
 
-  showBackdrop: (look) => {
-    const { background, backdropTrail, backdropTrailAt } = get();
-    const current = lookOf(background.backdrop);
-    const next = look ?? shuffledLook(current);
+  setEffects: (patch) => {
+    const { background } = get();
+    get().setBackground({ effects: { ...background.effects, ...patch } });
+  },
+
+  showLook: (mode, look) => {
+    const { background, lookTrails } = get();
+    const current = lookOfBackground(background, mode);
+    const next = look ?? shuffledLookFor(background, mode);
+    const trail = lookTrails[mode];
     // Where you started is the first stop, so Back can always return to it.
-    const kept = backdropTrailAt < 0 ? [current] : backdropTrail.slice(0, backdropTrailAt + 1);
-    const trail = [...kept, next].slice(-TRAIL_MAX);
+    const kept = trail ? trail.looks.slice(0, trail.at + 1) : [current];
+    const looks = [...kept, next].slice(-TRAIL_MAX);
     set({
-      background: { ...background, mode: "abstract", backdrop: { ...background.backdrop, ...next } },
-      backdropTrail: trail,
-      backdropTrailAt: trail.length - 1,
+      background: { ...background, ...applyLook(background, next) },
+      lookTrails: { ...lookTrails, [mode]: { looks, at: looks.length - 1 } },
     });
   },
 
-  stepBackdrop: (by) => {
-    const { background, backdropTrail, backdropTrailAt } = get();
-    const at = backdropTrailAt + by;
-    const look = backdropTrail[at];
-    if (!look) return;
+  stepLook: (mode, by) => {
+    const { background, lookTrails } = get();
+    const trail = lookTrails[mode];
+    const look = trail?.looks[trail.at + by];
+    if (!trail || !look) return;
     set({
-      background: { ...background, mode: "abstract", backdrop: { ...background.backdrop, ...look } },
-      backdropTrailAt: at,
+      background: { ...background, ...applyLook(background, look) },
+      lookTrails: { ...lookTrails, [mode]: { ...trail, at: trail.at + by } },
     });
   },
+
+  saveBackground: () => {
+    const { background, savedBackgrounds } = get();
+    const others = savedBackgrounds.filter((saved) => !sameBackground(saved.background, background));
+    const next = [{ id: "bg_" + Math.random().toString(36).slice(2, 9), background }, ...others].slice(0, SAVED_MAX);
+    set({ savedBackgrounds: next });
+    void storeSavedBackgrounds(next).catch((error) => console.error(error));
+  },
+
+  useSavedBackground: (id) => {
+    const saved = get().savedBackgrounds.find((entry) => entry.id === id);
+    if (saved) get().setBackground(saved.background);
+  },
+
+  deleteSavedBackground: (id) => {
+    const next = get().savedBackgrounds.filter((entry) => entry.id !== id);
+    set({ savedBackgrounds: next });
+    void storeSavedBackgrounds(next).catch((error) => console.error(error));
+  },
+
+  setSavedBackgrounds: (list) => set({ savedBackgrounds: list }),
 
   setWatermark: (v) => set({ watermark: v }),
 
@@ -648,16 +715,10 @@ export const useEditor = create<EditorState>((set, get) => ({
         width: project.canvas.width,
         height: project.canvas.height,
       },
-      // Spread over the defaults: `.layer` files written before the pattern
-      // background existed have no `pattern` key, and the panel/canvas both
-      // assume one is always present.
-      background: {
-        ...DEFAULT_BACKGROUND,
-        ...project.background,
-        backdrop: normaliseBackdrop(project.background?.backdrop),
-      },
-      backdropTrail: [],
-      backdropTrailAt: -1,
+      // Older files lack whole parts (pattern, backdrop, effects), and keep some
+      // settings where they used to live.
+      background: normaliseBackground(project.background, DEFAULT_BACKGROUND),
+      lookTrails: {},
       elements: project.elements.map(migrateElement),
       watermark: project.watermark,
       layout:
@@ -685,8 +746,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       cropId: null,
       canvas: DEFAULT_CANVAS,
       background: DEFAULT_BACKGROUND,
-      backdropTrail: [],
-      backdropTrailAt: -1,
+      lookTrails: {},
       elements: [],
       layout: null,
       selectedIds: [],

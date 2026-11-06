@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { useEditor } from "@/store/editor";
 import { PATTERN_FILL_NAME } from "@/components/canvas/PatternFillRect";
-import { resolveColorPair } from "@/lib/patterns/resolveColorPair";
+import { patternPairOf } from "@/lib/patterns/resolveColorPair";
 import { getPatternTile } from "@/lib/patterns/tileCache";
 
 /** Guards against generating an absurdly large tile from a high pixel ratio. */
@@ -39,7 +39,7 @@ export const prepareExportTiles = async (
   const { type, size } = background.pattern;
   const tile = await getPatternTile(
     { type, size },
-    resolveColorPair(background.pattern.colorPairId, customPatternPairs),
+    patternPairOf(background.pattern, customPatternPairs),
     dpiScale,
   );
 

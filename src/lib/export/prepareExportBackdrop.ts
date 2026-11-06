@@ -1,24 +1,25 @@
 import Konva from "konva";
-import { useEditor } from "@/store/editor";
-import { BACKDROP_FILL_NAME } from "@/components/canvas/BackdropFill";
-import { renderBackdrop } from "@/lib/backdrops/renderer";
+import { BACKGROUND_FILL_NAME, DRAW_AT_ATTR, type DrawAt } from "@/components/canvas/BackgroundFill";
 
 /**
- * Draws the abstract background again at the export's scale before capture, and
- * hands back a cleanup that restores the preview. The preview is drawn for the
- * screen, so capturing it as it is would stretch it and leave it soft.
+ * Draws a background made by Layer's renderer (an abstract one, or any type with
+ * effects) again at the export's scale before capture, and hands back a cleanup
+ * that restores the preview. The preview is drawn for the screen, so capturing
+ * it as it is would stretch it and leave it soft.
  *
  * Shaped like `prepareExportTiles`, so it slots into the same export steps.
  */
-export const prepareExportBackdrop = (stage: Konva.Stage, exportScale: number): (() => void) | null => {
-  const { background, canvas } = useEditor.getState();
-  if (background.mode !== "abstract") return null;
-
-  const node = stage.findOne<Konva.Image>(`.${BACKDROP_FILL_NAME}`);
+export const prepareExportBackdrop = async (
+  stage: Konva.Stage,
+  exportScale: number,
+): Promise<(() => void) | null> => {
+  const node = stage.findOne<Konva.Image>(`.${BACKGROUND_FILL_NAME}`);
   if (!node || !(node instanceof Konva.Image)) return null;
+  const drawAt = node.getAttr(DRAW_AT_ATTR) as DrawAt | undefined;
+  if (!drawAt) return null;
 
   const sharp = document.createElement("canvas");
-  if (!renderBackdrop(background.backdrop, canvas, exportScale, sharp)) return null;
+  if (!(await drawAt(exportScale, sharp))) return null;
 
   const preview = node.image();
   node.image(sharp);

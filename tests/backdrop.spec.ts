@@ -6,12 +6,18 @@ interface Backdrop {
   seed: number;
   color: string | null;
   colors: string[];
+}
+
+interface Effects {
   blur: number;
   frost: number;
   grain: number;
+  vignette: number;
+  opacity: number;
 }
 
 const backdrop = (page: Page): Promise<Backdrop> => page.evaluate(`S.getState().background.backdrop`);
+const effects = (page: Page): Promise<Effects> => page.evaluate(`S.getState().background.effects`);
 const mode = (page: Page): Promise<string> => page.evaluate(`S.getState().background.mode`);
 
 const openAbstract = async (page: Page) => {
@@ -24,7 +30,7 @@ const openAbstract = async (page: Page) => {
 /** The colours of a few pixels of the background Konva is drawing, spread over it. */
 const samples = (page: Page): Promise<number[][]> =>
   page.evaluate(`(() => {
-    const picture = ST().findOne(".backdrop-fill").image();
+    const picture = ST().findOne(".background-fill").image();
     const g = picture.getContext("2d");
     return [[0.2, 0.2], [0.5, 0.5], [0.8, 0.3], [0.3, 0.8], [0.9, 0.9]].map(([x, y]) =>
       [...g.getImageData(Math.floor(picture.width * x), Math.floor(picture.height * y), 1, 1).data]);
@@ -77,15 +83,13 @@ test.describe("abstract backgrounds", () => {
     for (const label of labels) await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Grey frost", exact: true }).click();
-    let now = await backdrop(page);
-    expect(now.style).toBe("soft");
-    expect(now.frost).toBeGreaterThan(0);
+    expect((await backdrop(page)).style).toBe("soft");
+    expect((await effects(page)).frost).toBeGreaterThan(0);
     await expect(page.getByRole("button", { name: "Grey frost", exact: true })).toHaveAttribute("aria-pressed", "true");
 
     await page.getByRole("button", { name: "Sunset streaks", exact: true }).click();
-    now = await backdrop(page);
-    expect(now.style).toBe("streaks");
-    expect(now.frost).toBe(0);
+    expect((await backdrop(page)).style).toBe("streaks");
+    expect((await effects(page)).frost).toBe(0);
     expect(errors).toEqual([]);
   });
 
@@ -110,9 +114,10 @@ test.describe("abstract backgrounds", () => {
     await expect(page.getByText("3 OF 3")).toBeVisible();
 
     // Effects you've set stay as you go back.
-    await page.evaluate(`S.getState().setBackdrop({ grain: 0.4 })`);
+    await page.evaluate(`S.getState().setEffects({ grain: 0.4 })`);
     await back.click();
-    expect(await backdrop(page)).toMatchObject({ seed: second.seed, colors: second.colors, grain: 0.4 });
+    expect(await backdrop(page)).toMatchObject({ seed: second.seed, colors: second.colors });
+    expect((await effects(page)).grain).toBe(0.4);
     await back.click();
     expect(await backdrop(page)).toMatchObject({ seed: first.seed, colors: first.colors });
     await expect(back).toBeDisabled();
@@ -180,7 +185,7 @@ test.describe("abstract backgrounds", () => {
       await slider.focus();
       for (let i = 0; i < 10; i++) await page.keyboard.press("ArrowRight");
     }
-    const now = await backdrop(page);
+    const now = await effects(page);
     expect(now.blur).toBeGreaterThan(0);
     expect(now.frost).toBeGreaterThan(0);
     expect(now.grain).toBeGreaterThan(0);
@@ -191,7 +196,7 @@ test.describe("abstract backgrounds", () => {
   test("exports at full size, then puts the preview back", async ({ page }) => {
     const errors = await openAbstract(page);
     const result: { width: number; height: number; restored: boolean } = await page.evaluate(`(async () => {
-      const node = ST().findOne(".backdrop-fill");
+      const node = ST().findOne(".background-fill");
       const preview = node.image();
       const url = await X.renderCanvasDataURL("png", 2);
       const image = new Image();
@@ -216,7 +221,7 @@ test.describe("abstract backgrounds", () => {
       return S.getState().background.backdrop;
     })()`);
     expect(reopened).toEqual(saved);
-    expect(await page.evaluate(`S.getState().backdropTrail.length`)).toBe(0);
+    expect(await page.evaluate(`Object.keys(S.getState().lookTrails).length`)).toBe(0);
 
     // From before abstract backgrounds, and from a damaged file.
     const older: Backdrop = await page.evaluate(`(() => {
@@ -227,15 +232,18 @@ test.describe("abstract backgrounds", () => {
       return S.getState().background.backdrop;
     })()`);
     expect(older.colors).toHaveLength(4);
-    const damaged: Backdrop = await page.evaluate(`(() => {
+    // Before shared effects, an abstract background kept its own blur, frost and grain.
+    const damaged: { backdrop: Backdrop; effects: Effects } = await page.evaluate(`(() => {
       const s = S.getState();
       const project = JSON.parse(JSON.stringify(s.toProject()));
-      project.background.backdrop = { style: "lava", seed: "x", colors: ["red"], blur: 9999, frost: -1, color: 5 };
+      delete project.background.effects;
+      project.background.backdrop = { style: "lava", seed: "x", colors: ["red"], blur: 9999, frost: -1, grain: 0.3, color: 5 };
       s.loadProject(project);
-      return S.getState().background.backdrop;
+      return S.getState().background;
     })()`);
-    expect(damaged).toMatchObject({ style: "waves", color: null, blur: 100, frost: 0, grain: 0 });
-    expect(damaged.colors.every((c) => /^#[0-9a-f]{6}$/.test(c))).toBe(true);
+    expect(damaged.backdrop).toMatchObject({ style: "waves", color: null });
+    expect(damaged.backdrop.colors.every((c) => /^#[0-9a-f]{6}$/.test(c))).toBe(true);
+    expect(damaged.effects).toEqual({ blur: 100, frost: 0, grain: 0.3, vignette: 0, opacity: 1 });
     expect(errors).toEqual([]);
   });
 

@@ -17,7 +17,7 @@ export const BACKDROP_STYLE_LABELS: Record<BackdropStyle, string> = {
   marble: "Marble",
 };
 
-/** What Shuffle, the presets, and Back and Forward change. The effects stay as they are. */
+/** What Shuffle, the presets, and Back and Forward change. Effects belong to the whole background. */
 export interface BackdropLook {
   style: BackdropStyle;
   /** Lays out the shapes, and chooses the colours when none was picked. */
@@ -30,14 +30,3 @@ export interface BackdropLook {
    */
   colors: [string, string, string, string];
 }
-
-export interface BackdropConfig extends BackdropLook {
-  /** In canvas pixels. */
-  blur: number;
-  /** 0 to 1. */
-  frost: number;
-  /** 0 to 1. */
-  grain: number;
-}
-
-export const BACKDROP_BLUR_MAX = 100;

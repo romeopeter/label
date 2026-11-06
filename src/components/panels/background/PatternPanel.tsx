@@ -15,6 +15,7 @@ import { PATTERN_TILE_ASPECT, patternPreviewUrl } from "@/lib/patterns/generator
 import { deriveBrandPatternPairs } from "@/lib/patterns/deriveBrandPatternPairs";
 import { CURATED_PATTERN_PAIRS } from "@/data/curatedPatternPairs";
 import { LabeledSlider, MutedMini, PanelHelp, SectionLabel } from "../primitives";
+import { ShuffleRow } from "./ShuffleRow";
 import { ColorPairSwatchGrid } from "./ColorPairSwatchGrid";
 import { CustomColorPairPicker } from "./CustomColorPairPicker";
 import { choiceClass } from "../choice";
@@ -86,7 +87,9 @@ export const PatternPanel = () => {
     setPattern({ type });
   };
 
-  const selectPair = (colorPairId: string) => setPattern({ colorPairId });
+  // A swatch replaces any colours Shuffle chose.
+  const selectPair = (colorPairId: string) => setPattern({ colorPairId, colors: undefined });
+  const selectedPair = pattern.colors ? "" : pattern.colorPairId;
 
   const onSaveCustomPair = (base: string, accent: string) => {
     const id = addCustomPatternPair(base, accent);
@@ -149,23 +152,25 @@ export const PatternPanel = () => {
         </>
       )}
 
+      <ShuffleRow mode="pattern" />
+
       {/* Colour pairs stay free on every tier — only the pattern type is gated. */}
       <ColorPairSwatchGrid
         title="From your brand"
         pairs={brandPairs}
-        selectedId={pattern.colorPairId}
+        selectedId={selectedPair}
         onSelect={selectPair}
       />
       <ColorPairSwatchGrid
         title="Curated color swatch"
         pairs={CURATED_PATTERN_PAIRS}
-        selectedId={pattern.colorPairId}
+        selectedId={selectedPair}
         onSelect={selectPair}
       />
       <ColorPairSwatchGrid
         title="Custom"
         pairs={customPairs}
-        selectedId={pattern.colorPairId}
+        selectedId={selectedPair}
         onSelect={selectPair}
         onDelete={onDeleteCustomPair}
         onAdd={() => setPickerOpen((open) => !open)}

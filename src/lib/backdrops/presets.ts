@@ -1,10 +1,5 @@
-import {
-  BACKDROP_BLUR_MAX,
-  BACKDROP_STYLES,
-  type BackdropConfig,
-  type BackdropLook,
-  type BackdropStyle,
-} from "@/types/backdrop";
+import { BACKDROP_STYLES, type BackdropLook, type BackdropStyle } from "@/types/backdrop";
+import type { BackgroundEffects } from "@/types";
 import {
   isHex,
   newSeed,
@@ -25,7 +20,7 @@ interface Preset {
   main: string;
   harmony: Harmony;
   mood: Mood;
-  effects?: Partial<Pick<BackdropConfig, "blur" | "frost" | "grain">>;
+  effects?: Partial<Pick<BackgroundEffects, "blur" | "frost" | "grain">>;
 }
 
 const PRESET_LIST: Preset[] = [
@@ -53,10 +48,7 @@ export const BACKDROP_PRESETS = PRESET_LIST.map((preset) => ({
   effects: { blur: 0, frost: 0, grain: 0, ...preset.effects },
 }));
 
-export const DEFAULT_BACKDROP: BackdropConfig = {
-  ...BACKDROP_PRESETS[0].look,
-  ...BACKDROP_PRESETS[0].effects,
-};
+export const DEFAULT_BACKDROP: BackdropLook = BACKDROP_PRESETS[0].look;
 
 /** Styles that only look right in some moods. Aurora needs a night sky, for one. */
 const STYLE_MOODS: Partial<Record<BackdropStyle, [Mood, number][]>> = {
@@ -89,13 +81,10 @@ export const lookOf = ({ style, seed, color, colors }: BackdropLook): BackdropLo
   colors,
 });
 
-const clamp = (value: unknown, max: number, fallback: number) =>
-  typeof value === "number" && Number.isFinite(value) ? Math.min(Math.max(value, 0), max) : fallback;
-
-/** A saved background, made safe to draw whatever the file says. */
-export const normaliseBackdrop = (saved: unknown): BackdropConfig => {
+/** A saved abstract background, made safe to draw whatever the file says. */
+export const normaliseBackdrop = (saved: unknown): BackdropLook => {
   if (!saved || typeof saved !== "object") return DEFAULT_BACKDROP;
-  const value = saved as Partial<Record<keyof BackdropConfig, unknown>>;
+  const value = saved as Partial<Record<keyof BackdropLook, unknown>>;
   const colors =
     Array.isArray(value.colors) && value.colors.length === 4 && value.colors.every(isHex)
       ? (value.colors as Palette)
@@ -105,8 +94,5 @@ export const normaliseBackdrop = (saved: unknown): BackdropConfig => {
     seed: typeof value.seed === "number" && Number.isFinite(value.seed) ? Math.floor(value.seed) : DEFAULT_BACKDROP.seed,
     color: isHex(value.color) ? value.color : null,
     colors,
-    blur: clamp(value.blur, BACKDROP_BLUR_MAX, 0),
-    frost: clamp(value.frost, 1, 0),
-    grain: clamp(value.grain, 1, 0),
   };
 };

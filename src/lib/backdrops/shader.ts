@@ -272,7 +272,7 @@ void main() {
   outColor = vec4(toGamma(clamp(col, 0.0, 1.0)), 1.0);
 }`;
 
-/** Frost and grain, over the drawn or blurred background. */
+/** Frost, vignette and grain, over the drawn or blurred background. */
 export const BACKDROP_FINISH = `#version 300 es
 precision highp float;
 in vec2 vUv;
@@ -281,6 +281,7 @@ uniform sampler2D uTex;
 uniform vec2 uSize;
 uniform float uFrost;
 uniform float uGrain;
+uniform float uVignette;
 ${COMMON}
 /** How far frosted glass scatters what's behind it, in canvas pixels, at full frost. */
 const float SCATTER = 14.0;
@@ -295,6 +296,10 @@ void main() {
   vec3 milky = mix(col, vec3(1.0), 0.32);
   float light = dot(milky, vec3(0.2126, 0.7152, 0.0722));
   col = mix(col, mix(vec3(light), milky, 0.72), uFrost * 0.85);
+
+  // Darker towards the corners, along the canvas's own shape.
+  float edge = length((vUv - 0.5) * 2.0) / 1.41421356;
+  col *= 1.0 - uVignette * 0.85 * smoothstep(0.3, 1.0, edge);
 
   col += (hash(cell + vec2(7919.0, 0.0)) - 0.5) * uGrain * 0.24;
   // A hair of noise in every background, so smooth gradients don't band.
