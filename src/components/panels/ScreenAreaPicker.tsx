@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,8 @@ export const ScreenAreaPicker = ({
   useEffect(() => {
     keysRef.current = { capture, onCancel };
   });
-  useEffect(() => {
+  // Before the first paint, so no key can slip past while it's opening.
+  useLayoutEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       // Nothing reaches the editor; Tab still moves between the buttons.
       event.stopImmediatePropagation();

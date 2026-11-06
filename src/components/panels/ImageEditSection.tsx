@@ -1,5 +1,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Crop, RotateCcw, Scaling, SlidersHorizontal, Upload } from "lucide-react";
+import {
+  Bandage,
+  Crop,
+  EyeOff,
+  Expand,
+  RotateCcw,
+  Scaling,
+  SlidersHorizontal,
+  Upload,
+} from "lucide-react";
 import useImage from "use-image";
 import { useEditor } from "@/store/editor";
 import type {
@@ -27,6 +36,8 @@ import {
 } from "@/lib/imageEdit/presets";
 import { isImageEditSupported, renderEdit } from "@/lib/imageEdit/renderer";
 import { Button } from "@/components/ui/button";
+import { encodePicture, expandedPlace, loadPicture } from "@/lib/fix/fixes";
+import { FixEditor, type FixResult, type FixTool } from "./fix/FixEditor";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   LabeledSlider,
@@ -152,10 +163,19 @@ const ORIGINAL: ImageEdit = {};
 
 /* ------------------------------------------------------------------------------------------- */
 
+const FIXES: { id: "crop" | FixTool; label: string; help: string; icon: React.ReactNode }[] = [
+  { id: "crop", label: "Crop", help: "Trim the edges", icon: <Crop className="h-3.5 w-3.5" /> },
+  { id: "heal", label: "Heal", help: "Paint out spots and things", icon: <Bandage className="h-3.5 w-3.5" /> },
+  { id: "hide", label: "Hide", help: "Cover private details", icon: <EyeOff className="h-3.5 w-3.5" /> },
+  { id: "expand", label: "Expand", help: "Grow past the edges", icon: <Expand className="h-3.5 w-3.5" /> },
+];
+
 const FixTab = ({ image }: { image: ImageElement }) => {
   const setCropId = useEditor((s) => s.setCropId);
   const update = useEditor((s) => s.updateElement);
   const [picture] = useImage(image.src, "anonymous");
+  const [open, setOpen] = useState<{ tool: FixTool; picture: HTMLCanvasElement } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Older projects can hold images stretched out of shape. A frame fits its picture
   // to the screen, so a framed image's box says nothing about the picture's shape.
@@ -169,12 +189,54 @@ const FixTab = ({ image }: { image: ImageElement }) => {
     trueRatio !== null &&
     Math.abs(image.width / image.height / trueRatio - 1) > STRETCH_TOLERANCE;
 
+  const start = async (id: (typeof FIXES)[number]["id"]) => {
+    setError(null);
+    if (id === "crop") return setCropId(image.id);
+    try {
+      setOpen({ tool: id, picture: await loadPicture(image.src) });
+    } catch {
+      setError("Layer couldn't open this picture.");
+    }
+  };
+
+  const apply = ({ picture: fixed, sides }: FixResult) => {
+    if (!open) return;
+    const before = { width: open.picture.width, height: open.picture.height };
+    update(image.id, {
+      src: encodePicture(fixed, image.src),
+      naturalWidth: fixed.width,
+      naturalHeight: fixed.height,
+      ...(sides ? expandedPlace(image, before, sides) : {}),
+    });
+    setOpen(null);
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <Button variant="ghost" size="block" onClick={() => setCropId(image.id)}>
-        <Crop className="h-3 w-3" /> Crop
-      </Button>
-      <PanelHelp>Trim the edges of the picture. You can always crop back out.</PanelHelp>
+      <div className="grid grid-cols-2 gap-1.5">
+        {FIXES.map((fix) => (
+          <button
+            key={fix.id}
+            type="button"
+            onClick={() => void start(fix.id)}
+            className={cn(
+              "flex cursor-pointer items-center gap-2 rounded-md border bg-chrome/50 px-2 py-2 text-left transition-colors hover:text-text",
+              choiceClass(false),
+            )}
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-p-50/[0.04] text-text">
+              {fix.icon}
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span className="text-[11px] text-text">{fix.label}</span>
+              <span className="truncate text-[9.5px] text-text-muted">{fix.help}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+      <PanelHelp>
+        {error ?? "Heal, Hide and Expand change the picture itself. Undo brings it back."}
+      </PanelHelp>
 
       {stretched && (
         <>
@@ -190,6 +252,10 @@ const FixTab = ({ image }: { image: ImageElement }) => {
           </Button>
           <PanelHelp>This picture is stretched. This puts it back in shape.</PanelHelp>
         </>
+      )}
+
+      {open && (
+        <FixEditor tool={open.tool} picture={open.picture} onCancel={() => setOpen(null)} onApply={apply} />
       )}
     </div>
   );

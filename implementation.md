@@ -809,7 +809,10 @@ An image can go on the canvas or become the background. It comes from one of thr
   keeps the box, or the whole screen if none was drawn; **Cancel** (or Esc) keeps
   nothing. The area goes on as it is, without opening Crop. While the picker is open,
   no key reaches the editor.
-- **Free images:** search Pixabay in the Images and Background panels (desktop app only).
+- **Free photos:** Pixabay in the Images and Background panels (desktop app only).
+  Before any search the panel shows a random page of Pixabay's editors' picks. Only
+  photographs: searches ask for `image_type=photo`, and results tagged as AI-made,
+  illustration, painting, vector, icon and the like are dropped as well.
   The search and download run in Rust, so the API key never reaches the webview. Following
   Pixabay's API terms, searches are cached in a file for 24 hours, results say they come from Pixabay,
   and a chosen image is downloaded into the project rather than linked.
@@ -845,8 +848,15 @@ and Edit on the image toolbar scrolls to it. It has three tabs. Options come fir
 thumbnails of the user's own picture, with one Strength slider, because users aren't
 expected to know photo editing.
 
-- **Fix:** Crop, and Reset proportions on a stretched image. Remove, Hide, Expand and
-  Straighten are the next stages.
+- **Fix:** Crop, Heal, Hide and Expand, as tiles, plus Reset proportions on a stretched
+  image. Heal, Hide and Expand open over the whole window, with Cancel and Apply (Esc
+  and Enter), and nothing changes on the canvas until Apply:
+  - **Heal** — paint over spots or things; each stroke is filled in from around it when
+    the brush lifts, and Undo steps back.
+  - **Hide** — drag over private details; each area becomes Pixels, Blur or a black Bar.
+  - **Expand** — choose sides and an amount (5–50%), filled in from the picture, mirrored,
+    or carried on from its edges. The element grows at the same scale, so what was
+    showing stays put, and its crop is dropped.
 - **Style:** one at a time, each with named variants: Glow, Motion, Color split, Double
   exposure (a second image, added here or from Uploads, with six blend options shown as
   overlapping circles), Fish-eye, Halo, Grunge, Film.
@@ -856,6 +866,18 @@ expected to know photo editing.
 **Edits are settings, not pixels.** `ImageElement.edit` is stored in the `.layer` file,
 undoes like any change, and `src` always stays the original. Removing an edit restores
 the exact original pixels, because an image with nothing to change skips the renderer.
+
+**Except Heal, Hide and Expand, which change the picture itself** (`src/lib/fix/`), and
+undo brings back the picture from before. Hide has to: covered details must leave the
+project file as well as exports. Expand changes the picture's size, which crop, frames
+and layouts measure from. Heal is too costly to work out again on every draw. JPEG
+pictures stay JPEG.
+
+**Filling in** (Heal, and Expand's Fill in) copies small patches from the rest of the
+picture (Wexler et al., with PatchMatch to find them), from a small copy up to full
+size, then evens out the shade where fill meets picture. It works on a copy at most
+360 px (Heal, around what was painted) or 512 px (Expand) on a side, and pastes back
+only the filled part, so the rest of the picture keeps every pixel.
 
 **One shared WebGL2 renderer** (`src/lib/imageEdit/`) draws edits to a 2D canvas per
 image, which Konva draws like any picture, so export needs no special handling. Browsers

@@ -65,6 +65,11 @@ flag it before implementing.
   `useEditedImage`; Konva and export just read that canvas. Options live in `presets.ts`
   as data. Sampling with a jittered coordinate must use `textureLod`, or mipmaps blur it.
   See `implementation.md` §8.
+- **Heal, Hide and Expand change pixels on purpose.** They replace `src` (undo brings it
+  back), because Hide must remove details from the project file too. Their fill-in is
+  `src/lib/fix/inpaint.ts`, pure and DOM-free. The editor over the window
+  (`FixEditor`) and the screenshot picker take every key while open; attach that
+  listener in a layout effect, or a key pressed as they open reaches the canvas.
 - **Device frames are generated, and measured.** `npm run devices:sync` renders
   react-mockframe and Devices.css in WebKit to `public/frames/` and
   `src/data/deviceFrames.json`, with each screen area measured from the render. Each
@@ -103,7 +108,9 @@ flag it before implementing.
   `VITE_` name, or pass an HTTP client's error text on: it contains the URL, and
   the URL contains the key. The web build has no image search. Results must stay
   cached 24 hours and credit Pixabay (its API terms). A key compiled into a shipped
-  app can still be dug out of the binary; only a server would change that.
+  app can still be dug out of the binary; only a server would change that. Only
+  photographs: `image_type=photo` plus a tag filter in `pixabay.rs`. With no search,
+  the panel shows a random page of editors' picks.
 - **3D panel UI remains, but image 3D rendering is disabled.** The previous
   sliced-image perspective renderer in `ImageNode` was removed because it was
   incorrect. Do not reintroduce that approach.

@@ -42,21 +42,32 @@ test.describe("on the desktop", () => {
     await fakeShell(page, shell);
   });
 
-  const box = (page: Page) => page.getByRole("searchbox", { name: "Search free images" });
+  const box = (page: Page) => page.getByRole("searchbox", { name: "Search free photos" });
   const tiles = (page: Page) => page.getByRole("button", { name: /^Use image:/ });
+
+  test("shows picks straight away, from a random page", async ({ page }) => {
+    const errors = await openApp(page, "Images");
+    await expect(tiles(page)).toHaveCount(30);
+    const [picks] = await shellCalls(page, "search_images");
+    expect(picks.query).toBe("");
+    expect(picks.page).toBeGreaterThanOrEqual(1);
+    expect(picks.page).toBeLessThanOrEqual(16);
+    await expect(page.getByText("Editors' picks from Pixabay. Search for more.")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
 
   test("searches once typing pauses, credits Pixabay, and pages", async ({ page }) => {
     await useAppCsp(page);
     const errors = await openApp(page, "Images");
-    await expect(page.getByText("Images from Pixabay")).toHaveCount(0);
+    await expect.poll(async () => (await shellCalls(page, "search_images")).length).toBe(1);
 
     await box(page).pressSequentially("flower", { delay: 30 });
-    expect(await shellCalls(page, "search_images")).toHaveLength(0);
+    expect(await shellCalls(page, "search_images")).toHaveLength(1);
+    await expect(page.getByText("Photos from Pixabay")).toBeVisible();
     await expect(tiles(page)).toHaveCount(30);
 
     const calls = await shellCalls(page, "search_images");
-    expect(calls).toEqual([{ query: "flower", page: 1 }]);
-    await expect(page.getByText("Images from Pixabay")).toBeVisible();
+    expect(calls.slice(1)).toEqual([{ query: "flower", page: 1 }]);
 
     const rects = await tiles(page).evaluateAll((nodes) =>
       nodes.slice(0, 4).map((node) => {
@@ -67,15 +78,16 @@ test.describe("on the desktop", () => {
     for (const r of rects) expect(Math.abs(r.width - r.height)).toBeLessThan(1);
     expect(rects[3].top).toBeGreaterThanOrEqual(rects[0].bottom);
 
-    await page.getByRole("button", { name: "More images", exact: true }).click();
+    await page.getByRole("button", { name: "More photos", exact: true }).click();
     await expect(tiles(page)).toHaveCount(60);
-    await expect(page.getByRole("button", { name: "More images", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "More photos", exact: true })).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
   test("a chosen image is downloaded and embedded on the canvas", async ({ page }) => {
     await openApp(page, "Images");
     await box(page).fill("flower");
+    await expect(page.getByText("Photos from Pixabay")).toBeVisible();
     await tiles(page).first().click();
     await expect
       .poll(() => page.evaluate(`S.getState().elements[0]?.src.slice(0, 11)`))
@@ -89,6 +101,7 @@ test.describe("on the desktop", () => {
     await openApp(page, "Background");
     await page.getByRole("radio", { name: "Image" }).click();
     await box(page).fill("sky");
+    await expect(page.getByText("Photos from Pixabay")).toBeVisible();
     await tiles(page).first().click();
     await expect
       .poll(() => page.evaluate(`S.getState().background.imageSrc?.slice(0, 11)`))
@@ -99,7 +112,8 @@ test.describe("on the desktop", () => {
   test("an older, slower search can't replace a newer one", async ({ page }) => {
     await openApp(page, "Images");
     await box(page).fill("slow");
-    await expect.poll(async () => (await shellCalls(page, "search_images")).length).toBe(1);
+    // The picks, then the slow search.
+    await expect.poll(async () => (await shellCalls(page, "search_images")).length).toBe(2);
     await box(page).fill("flower");
     await expect(tiles(page)).toHaveCount(30);
     await page.waitForTimeout(1600);
@@ -110,10 +124,12 @@ test.describe("on the desktop", () => {
     await openApp(page, "Images");
     await box(page).fill("zzzz");
     await expect(page.getByText("No images found. Try another word.")).toBeVisible();
-    await expect(page.getByText("Images from Pixabay")).toHaveCount(0);
+    await expect(page.getByText("Photos from Pixabay")).toHaveCount(0);
 
+    // Clearing the search goes back to picks.
     await box(page).fill("");
     await expect(page.getByText("No images found")).toHaveCount(0);
+    await expect(page.getByText("Editors' picks from Pixabay. Search for more.")).toBeVisible();
 
     await page.evaluate(`window.MODE = "rate"`);
     await box(page).fill("flower");
@@ -121,6 +137,7 @@ test.describe("on the desktop", () => {
 
     await page.evaluate(`window.MODE = "download"`);
     await box(page).fill("flowers");
+    await expect(page.getByText("Photos from Pixabay")).toBeVisible();
     await tiles(page).first().click();
     await expect(page.getByText("couldn't reach Pixabay")).toBeVisible();
     expect(await page.evaluate(`S.getState().elements.length`)).toBe(0);
@@ -130,6 +147,6 @@ test.describe("on the desktop", () => {
 
 test("the web build explains that search is desktop only", async ({ page }) => {
   await openApp(page, "Images");
-  await expect(page.getByText("Searching free images works in the desktop app.")).toBeVisible();
-  await expect(page.getByRole("searchbox", { name: "Search free images" })).toHaveCount(0);
+  await expect(page.getByText("Free photos work in the desktop app.")).toBeVisible();
+  await expect(page.getByRole("searchbox", { name: "Search free photos" })).toHaveCount(0);
 });

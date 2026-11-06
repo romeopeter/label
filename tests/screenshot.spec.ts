@@ -11,7 +11,7 @@ test.describe("on the macOS desktop", () => {
   test.skip(process.platform !== "darwin", "The native path is chosen on macOS");
 
   test("adds to the canvas once captured, and becomes a background", async ({ page }) => {
-    await fakeShell(page, `() => ${pngBytes}`);
+    await fakeShell(page, `(command) => command === "capture_screen" ? ${pngBytes} : null`);
     const errors = await openApp(page, "Images");
     await page.getByRole("button", BUTTON).click();
     await page.getByRole("dialog", { name: "Choose an area" }).getByRole("button", { name: "Capture" }).click();
@@ -31,7 +31,7 @@ test.describe("on the macOS desktop", () => {
   });
 
   test("a cancel adds nothing and says nothing", async ({ page }) => {
-    await fakeShell(page, `() => new ArrayBuffer(0)`);
+    await fakeShell(page, `(command) => command === "capture_screen" ? new ArrayBuffer(0) : null`);
     await openApp(page, "Images");
     await page.getByRole("button", BUTTON).click();
     await expect(page.getByRole("button", BUTTON)).toBeEnabled();
@@ -39,7 +39,7 @@ test.describe("on the macOS desktop", () => {
   });
 
   test("a refused permission explains what to do, and can be retried", async ({ page }) => {
-    await fakeShell(page, `() => { throw "Allow Layer under Screen Recording in System Settings."; }`);
+    await fakeShell(page, `(command) => { if (command === "capture_screen") throw "Allow Layer under Screen Recording in System Settings."; return null; }`);
     await openApp(page, "Images");
     await page.getByRole("button", BUTTON).click();
     await expect(page.getByText("Allow Layer under Screen Recording")).toBeVisible();
