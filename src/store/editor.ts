@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   BackgroundState,
   CanvasSize,
+  DeviceFrame,
   GridState,
   ImageElement,
   LayerElement,
@@ -12,11 +13,29 @@ import type {
   ShapeKind,
   TextElement,
   UploadedImage,
+  CanvasLayout,
+  LayoutId,
 } from "../types";
 import type { PatternColorPair, PatternConfig } from "../types/pattern";
 import { DEFAULT_PATTERN_CONFIG } from "../types/pattern";
+import type { BackdropConfig, BackdropLook } from "../types/backdrop";
+import {
+  DEFAULT_BACKDROP,
+  lookOf,
+  normaliseBackdrop,
+  shuffledLook,
+} from "../lib/backdrops/presets";
 import { migrateElement, nextNumber } from "../lib/marks";
+import { placeFrame } from "../lib/mockups";
 import { DEFAULT_MARK_STYLES, shapeDefaults } from "../lib/markTools";
+import {
+  arrangeLayout,
+  fittedCanvas,
+  layoutOf,
+  newLayout,
+  settleLayout,
+  withoutLayoutCrop,
+} from "../lib/layouts";
 import { createHistory } from "./history";
 
 /* ------------------------------------------------------- */
@@ -37,7 +56,11 @@ const DEFAULT_BACKGROUND: BackgroundState = {
   imageBlur: 0,
   imageOpacity: 1,
   pattern: DEFAULT_PATTERN_CONFIG,
+  backdrop: DEFAULT_BACKDROP,
 };
+
+/** How many abstract backgrounds Back can return to. */
+const TRAIL_MAX = 50;
 
 export const ZOOM_MIN = 20;
 /**
@@ -82,6 +105,8 @@ interface EditorState {
   uploadedImages: UploadedImage[];
   customPatternPairs: PatternColorPair[];
   selectedIds: string[];
+  /** Null means images are placed by hand. */
+  layout: CanvasLayout | null;
 
   activeTool: Tool;
   zoom: number;
@@ -92,6 +117,12 @@ interface EditorState {
   isPro: boolean;
   /** Transient: true while a pattern slider is held. Not part of the project. */
   patternDragging: boolean;
+  /**
+   * Transient: abstract backgrounds seen this session, for Back and Forward. Not
+   * part of the project or of undo: it's a list to choose from, not a change.
+   */
+  backdropTrail: BackdropLook[];
+  backdropTrailAt: number;
   /** Transient: what a canvas drag creates. Null means it selects and moves. */
   markTool: MarkTool | null;
   /** Style for the next mark, by category. Lasts the session, not the project. */
@@ -113,6 +144,12 @@ interface EditorState {
   setBackground: (b: Partial<BackgroundState>) => void;
   setPattern: (p: Partial<PatternConfig>) => void;
   setPatternDragging: (v: boolean) => void;
+  /** Changes the abstract background. A new look replaces the one Back and Forward are on. */
+  setBackdrop: (patch: Partial<BackdropConfig>) => void;
+  /** Shows a new look, from Shuffle or a preset, and adds it to the trail. */
+  showBackdrop: (look?: BackdropLook) => void;
+  /** Moves back or forward along the trail. The effects stay as they are. */
+  stepBackdrop: (by: -1 | 1) => void;
   setWatermark: (v: boolean) => void;
   setMarkTool: (tool: MarkTool | null) => void;
   setMarkStyle: (category: MarkCategory, patch: Partial<ShapeElement>) => void;
@@ -127,11 +164,24 @@ interface EditorState {
 
   // elements
   addImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
+  /** Records a picture's size once loaded, for images saved without it. Not an edit. */
+  setNaturalSize: (id: string, width: number, height: number) => void;
+  setLayout: (id: LayoutId | null) => void;
+  updateLayout: (patch: Partial<CanvasLayout>) => void;
+  setSlotFocus: (index: number, focus: { x: number; y: number }) => void;
+  swapSlots: (a: number, b: number) => void;
+  /** Adds an image into this slot, replacing what's there. */
+  fillSlot: (index: number, src: string, width: number, height: number) => string;
+  fitCanvasToLayout: () => void;
+  /** Gives the layout's other images this one's shadow, corners, border and frame. */
+  matchLayoutStyle: (sourceId: string) => void;
   addUploadedImage: (src: string, naturalWidth: number, naturalHeight: number) => string;
   deleteUploadedImage: (id: string) => void;
   addText: (variant: "heading" | "body", overrides?: Partial<TextElement>) => string;
   addShape: (shape: ShapeKind, overrides?: Partial<ShapeElement>) => string;
   updateElement: (id: string, patch: Partial<LayerElement>) => void;
+  /** Puts an image on a device, or takes it off, and gives it the right shape. */
+  setDeviceFrame: (id: string, frame: DeviceFrame | null) => void;
   /** Records a measured height, which isn't an edit and shouldn't be undoable. */
   measureElement: (id: string, height: number) => void;
   duplicateElement: (id: string) => void;
@@ -147,6 +197,8 @@ interface EditorState {
   resetProject: () => void;
 }
 
+const FIT_PASSES = 8;
+
 export const useEditor = create<EditorState>((set, get) => ({
   canvas: DEFAULT_CANVAS,
   background: DEFAULT_BACKGROUND,
@@ -154,6 +206,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   uploadedImages: [],
   customPatternPairs: [],
   selectedIds: [],
+  layout: null,
 
   activeTool: "uploads",
   zoom: 62,
@@ -164,6 +217,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   watermark: true,
   isPro: false,
   patternDragging: false,
+  backdropTrail: [],
+  backdropTrailAt: -1,
   markTool: null,
   markStyles: DEFAULT_MARK_STYLES,
   editingId: null,
@@ -196,6 +251,43 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
 
   setPatternDragging: (v) => set({ patternDragging: v }),
+
+  setBackdrop: (patch) => {
+    const { background, backdropTrail, backdropTrailAt } = get();
+    const backdrop = { ...background.backdrop, ...patch };
+    const changesLook = (["style", "seed", "color", "colors"] as const).some((key) => key in patch);
+    set({
+      background: { ...background, mode: "abstract", backdrop },
+      ...(changesLook && backdropTrailAt >= 0
+        ? { backdropTrail: backdropTrail.map((look, i) => (i === backdropTrailAt ? lookOf(backdrop) : look)) }
+        : {}),
+    });
+  },
+
+  showBackdrop: (look) => {
+    const { background, backdropTrail, backdropTrailAt } = get();
+    const current = lookOf(background.backdrop);
+    const next = look ?? shuffledLook(current);
+    // Where you started is the first stop, so Back can always return to it.
+    const kept = backdropTrailAt < 0 ? [current] : backdropTrail.slice(0, backdropTrailAt + 1);
+    const trail = [...kept, next].slice(-TRAIL_MAX);
+    set({
+      background: { ...background, mode: "abstract", backdrop: { ...background.backdrop, ...next } },
+      backdropTrail: trail,
+      backdropTrailAt: trail.length - 1,
+    });
+  },
+
+  stepBackdrop: (by) => {
+    const { background, backdropTrail, backdropTrailAt } = get();
+    const at = backdropTrailAt + by;
+    const look = backdropTrail[at];
+    if (!look) return;
+    set({
+      background: { ...background, mode: "abstract", backdrop: { ...background.backdrop, ...look } },
+      backdropTrailAt: at,
+    });
+  },
 
   setWatermark: (v) => set({ watermark: v }),
 
@@ -250,13 +342,141 @@ export const useEditor = create<EditorState>((set, get) => ({
       rotation: 0,
       opacity: 1,
       src,
+      naturalWidth,
+      naturalHeight,
       deviceFrame: null,
       cornerRadius: 8,
       shadow: { enabled: true, color: "rgba(0,0,0,0.45)", blur: 60, offsetX: 0, offsetY: 30 },
       transform: "rotate3d(0deg, 0deg, 0deg)"
     };
-    set({ elements: [...elements, el], selectedIds: [el.id] });
+    // Whichever way an image arrives, it takes the layout's next free slot.
+    const { layout } = get();
+    const free = layout ? layout.slots.findIndex((slot) => !slot.id) : -1;
+    set({
+      elements: [...elements, el],
+      selectedIds: [el.id],
+      ...(layout && free !== -1
+        ? { layout: { ...layout, slots: layout.slots.map((slot, i) => (i === free ? { id: el.id } : slot)) } }
+        : {}),
+    });
     return el.id;
+  },
+
+  setNaturalSize: (id, naturalWidth, naturalHeight) =>
+    history.silently(() =>
+      get().updateElement(id, { naturalWidth, naturalHeight } as Partial<LayerElement>),
+    ),
+
+  setLayout: (id) => {
+    const { layout, elements } = get();
+    const bake = (keep: Set<string | null>) =>
+      elements.map((el) =>
+        el.type === "image" && !keep.has(el.id) ? withoutLayoutCrop(el) : el,
+      );
+
+    if (!id) {
+      set({ layout: null, elements: bake(new Set()) });
+      return;
+    }
+
+    // Images already in the layout keep their order, then any others fill up.
+    const next = newLayout(id, layout);
+    const current = (layout?.slots ?? []).flatMap((slot) => (slot.id ? [slot.id] : []));
+    const others = elements
+      .filter((el) => el.type === "image" && !current.includes(el.id))
+      .map((el) => el.id);
+    const queue = [...current, ...others].slice(0, next.slots.length);
+    next.slots = next.slots.map((slot, i) => ({ id: queue[i] ?? null }));
+    set({ layout: next, elements: bake(new Set(queue)) });
+  },
+
+  updateLayout: (patch) => {
+    const { layout } = get();
+    if (layout) set({ layout: { ...layout, ...patch } });
+  },
+
+  setSlotFocus: (index, focus) => {
+    const { layout } = get();
+    if (!layout) return;
+    set({
+      layout: {
+        ...layout,
+        slots: layout.slots.map((slot, i) => (i === index ? { ...slot, focus } : slot)),
+      },
+    });
+  },
+
+  swapSlots: (a, b) => {
+    const { layout } = get();
+    if (!layout || !layout.slots[a] || !layout.slots[b]) return;
+    const slots = layout.slots.slice();
+    // The focus belongs to the picture it was chosen for, so it moves too.
+    [slots[a], slots[b]] = [slots[b], slots[a]];
+    set({ layout: { ...layout, slots } });
+  },
+
+  fillSlot: (index, src, width, height) => {
+    const { layout, elements, addImage } = get();
+    const old = layout?.slots[index]?.id;
+    if (layout && old) {
+      set({
+        elements: elements.filter((el) => el.id !== old),
+        layout: {
+          ...layout,
+          slots: layout.slots.map((slot, i) => (i === index ? { id: null } : slot)),
+        },
+      });
+    }
+    const id = addImage(src, width, height);
+    const after = get().layout;
+    if (after) {
+      // addImage took the first free slot, which may be an earlier one.
+      set({
+        layout: {
+          ...after,
+          slots: after.slots.map((slot, i) => {
+            if (i === index) return { id };
+            return slot.id === id ? { id: null } : slot;
+          }),
+        },
+      });
+    }
+    return id;
+  },
+
+  fitCanvasToLayout: () => {
+    const { layout, elements, canvas } = get();
+    if (!layout) return;
+    // Gaps scale with the canvas, so a new size changes what fits. It settles quickly.
+    let fitted = canvas;
+    for (let pass = 0; pass < FIT_PASSES; pass++) {
+      const next = fittedCanvas(layout, arrangeLayout(layout, elements, fitted));
+      if (!next) return;
+      const settled = next.width === fitted.width && next.height === fitted.height;
+      fitted = next;
+      if (settled) break;
+    }
+    set({ canvas: fitted });
+  },
+
+  matchLayoutStyle: (sourceId) => {
+    const { layout, elements } = get();
+    const source = elements.find((el) => el.id === sourceId);
+    if (!layout || source?.type !== "image") return;
+    const ids = new Set(layout.slots.map((slot) => slot.id));
+    set({
+      elements: elements.map((el) =>
+        el.type === "image" && el.id !== sourceId && ids.has(el.id)
+          ? {
+              ...el,
+              shadow: source.shadow,
+              cornerRadius: source.cornerRadius,
+              border: source.border,
+              deviceFrame: source.deviceFrame,
+            }
+          : el,
+      ),
+    });
   },
 
   addUploadedImage: (src, naturalWidth, naturalHeight) => {
@@ -350,6 +570,15 @@ export const useEditor = create<EditorState>((set, get) => ({
       ),
     }),
 
+  setDeviceFrame: (id, frame) =>
+    set({
+      elements: get().elements.map((el) =>
+        el.id === id && el.type === "image"
+          ? { ...el, deviceFrame: frame, ...placeFrame(el, frame, get().canvas) }
+          : el,
+      ),
+    }),
+
   measureElement: (id, height) =>
     history.silently(() => get().updateElement(id, { height })),
 
@@ -357,7 +586,8 @@ export const useEditor = create<EditorState>((set, get) => ({
     const source = get().elements.find((e) => e.id === id);
     if (!source) return;
     const copy = {
-      ...source,
+      // A copy is free of the layout, so the slot's trim becomes its own crop.
+      ...(source.type === "image" ? withoutLayoutCrop(source) : source),
       id: uid(),
       x: source.x + 32,
       y: source.y + 32,
@@ -421,9 +651,19 @@ export const useEditor = create<EditorState>((set, get) => ({
       // Spread over the defaults: `.layer` files written before the pattern
       // background existed have no `pattern` key, and the panel/canvas both
       // assume one is always present.
-      background: { ...DEFAULT_BACKGROUND, ...project.background },
+      background: {
+        ...DEFAULT_BACKGROUND,
+        ...project.background,
+        backdrop: normaliseBackdrop(project.background?.backdrop),
+      },
+      backdropTrail: [],
+      backdropTrailAt: -1,
       elements: project.elements.map(migrateElement),
       watermark: project.watermark,
+      layout:
+        project.layout && layoutOf(project.layout.id) && Array.isArray(project.layout.slots)
+          ? project.layout
+          : null,
       selectedIds: [],
     });
     history.reset();
@@ -435,6 +675,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     background: get().background,
     elements: get().elements,
     watermark: get().watermark,
+    layout: get().layout,
   }),
 
   resetProject: () => {
@@ -444,7 +685,10 @@ export const useEditor = create<EditorState>((set, get) => ({
       cropId: null,
       canvas: DEFAULT_CANVAS,
       background: DEFAULT_BACKGROUND,
+      backdropTrail: [],
+      backdropTrailAt: -1,
       elements: [],
+      layout: null,
       selectedIds: [],
     });
     history.reset();
@@ -456,12 +700,14 @@ const documentOf = ({
   background,
   elements,
   uploadedImages,
+  layout,
   watermark,
 }: EditorState) => ({
   canvas,
   background,
   elements,
   uploadedImages,
+  layout,
   watermark,
 });
 
@@ -480,10 +726,25 @@ const history = createHistory({
   onStacksChange: (canUndo, canRedo) => useEditor.setState({ canUndo, canRedo }),
 });
 
+// Keeps images in a layout where it says they go, whatever just changed.
+useEditor.subscribe((state, previous) => {
+  if (
+    !state.layout ||
+    (state.layout === previous.layout &&
+      state.elements === previous.elements &&
+      state.canvas === previous.canvas)
+  ) {
+    return;
+  }
+  const settled = settleLayout(state.layout, state.elements, state.canvas);
+  if (settled) useEditor.setState(settled);
+});
+
 useEditor.subscribe((state, previous) => {
   if (
     state.elements !== previous.elements ||
     state.uploadedImages !== previous.uploadedImages ||
+    state.layout !== previous.layout ||
     state.background !== previous.background ||
     state.canvas !== previous.canvas ||
     state.watermark !== previous.watermark

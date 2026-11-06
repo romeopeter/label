@@ -10,6 +10,8 @@ import { SocialPreviewModal } from "@/components/SocialPreviewModal";
 import { CustomizeSidebarModal } from "@/components/CustomizeSidebarModal";
 import { KeyBadge } from "@/components/ui/key-badge";
 import { importImageFile } from "@/lib/importers";
+import { arrangeLayout, slotAt } from "@/lib/layouts";
+import { getStage } from "@/components/canvas/stageRef";
 import {
   exportCanvas,
   copyCanvasToClipboard,
@@ -17,6 +19,20 @@ import {
 } from "@/lib/exporters";
 
 /* ------------------------------------------------------------------------------------------ */
+
+/** Which layout slot a screen position is over, if any. */
+const layoutSlotAt = (clientX: number, clientY: number) => {
+  const { layout, elements, canvas } = useEditor.getState();
+  const stage = getStage();
+  if (!layout || !stage) return null;
+  const box = stage.container().getBoundingClientRect();
+  const scale = stage.scaleX();
+  return slotAt(
+    arrangeLayout(layout, elements, canvas),
+    (clientX - box.left) / scale,
+    (clientY - box.top) / scale,
+  );
+};
 
 export const App = () => {
   const activeTool = useEditor((s) => s.activeTool);
@@ -94,8 +110,17 @@ export const App = () => {
   const onDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
+    // The first image goes in the slot it was dropped on; the rest fill what's free.
+    let slot = layoutSlotAt(e.clientX, e.clientY);
     for (const file of Array.from(e.dataTransfer.files)) {
-      if (file.type.startsWith("image/")) await importImageFile(file, addImage);
+      if (!file.type.startsWith("image/")) continue;
+      const chosen = slot;
+      await importImageFile(file, (src, width, height) =>
+        chosen === null
+          ? addImage(src, width, height)
+          : useEditor.getState().fillSlot(chosen, src, width, height),
+      );
+      slot = null;
     }
   };
 

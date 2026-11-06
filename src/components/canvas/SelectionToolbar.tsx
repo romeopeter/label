@@ -1,3 +1,4 @@
+import { useEditor } from "@/store/editor";
 import {
   AlignCenter,
   AlignLeft,
@@ -174,6 +175,8 @@ const ImageToolbar = ({
 }: SelectionToolbarProps) => {
   const image = element as ImageElement;
   const [paddingOpen, setPaddingOpen] = useState(false);
+  // A slot decides an image's size, so padding has nothing to change.
+  const inLayout = useEditor((s) => !!s.layout?.slots.some((slot) => slot.id === image.id));
   return (
     <div className="w-fit flex items-center gap-2.5">
       <ToolbarButton label="Crop" onClick={onCropStart}>
@@ -188,32 +191,34 @@ const ImageToolbar = ({
         <Highlighter className="h-3.5 w-3.5" /> Highlight
       </ToolbarButton>
 
-      <div className="relative">
-        <ToolbarButton
-          label="Padding"
-          active={paddingOpen}
-          onClick={() => setPaddingOpen(!paddingOpen)}
-        >
-          <Scan className="h-3.5 w-3.5" /> Padding
-        </ToolbarButton>
-        {paddingOpen && (
-          <div className="absolute left-0 top-[calc(100%+10px)] z-10 w-56 rounded-md border border-hairline-strong bg-panel p-3 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
-            <LabeledSlider
-              label="Padding"
-              unit="%"
-              min={0}
-              max={45}
-              value={paddingOf(image, canvas)}
-              onChange={(percent) =>
-                onImageChange(fitWithPadding(image, canvas, percent))
-              }
-            />
-            <p className="mb-0 mt-2 text-[11px] leading-normal text-text-faint">
-              Centres the image with this gap to the canvas edge.
-            </p>
-          </div>
-        )}
-      </div>
+      {!inLayout && (
+        <div className="relative">
+          <ToolbarButton
+            label="Padding"
+            active={paddingOpen}
+            onClick={() => setPaddingOpen(!paddingOpen)}
+          >
+            <Scan className="h-3.5 w-3.5" /> Padding
+          </ToolbarButton>
+          {paddingOpen && (
+            <div className="absolute left-0 top-[calc(100%+10px)] z-10 w-56 rounded-md border border-hairline-strong bg-panel p-3 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
+              <LabeledSlider
+                label="Padding"
+                unit="%"
+                min={0}
+                max={45}
+                value={paddingOf(image, canvas)}
+                onChange={(percent) =>
+                  onImageChange(fitWithPadding(image, canvas, percent))
+                }
+              />
+              <p className="mb-0 mt-2 text-[11px] leading-normal text-text-faint">
+                Centres the image with this gap to the canvas edge.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <ToolbarButton label="Delete" onClick={onDelete}>
         <Trash2 className="h-3.5 w-3.5" /> Delete

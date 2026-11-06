@@ -18,6 +18,7 @@ export const PositionPanel = () => {
   const update = useEditor((s) => s.updateElement);
 
   const el = elements.find((e) => e.id === selectedIds[0]);
+  const inLayout = useEditor((s) => !!s.layout?.slots.some((slot) => slot.id === el?.id));
 
   if (!el) {
     return (
@@ -25,6 +26,17 @@ export const PositionPanel = () => {
         <PanelTitle>POSITION</PanelTitle>
         <PanelDesc>
           Select an element to adjust its position and scale.
+        </PanelDesc>
+      </div>
+    );
+  }
+
+  if (inLayout) {
+    return (
+      <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
+        <PanelTitle>POSITION</PanelTitle>
+        <PanelDesc>
+          This image's place comes from its layout. Choose None in Layout to move it freely.
         </PanelDesc>
       </div>
     );
@@ -64,7 +76,7 @@ export const PositionPanel = () => {
               aria-label={`Align ${i}`}
               onClick={() => align(h, v)}
               className={cn(
-                "flex aspect-square items-center justify-center rounded-sm border border-dashed border-p-200/25 bg-transparent transition-colors hover:border-p-300",
+                "flex aspect-square items-center justify-center rounded-sm border border-dashed border-p-200/25 bg-transparent transition-colors hover:border-secondary",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-transparent" />

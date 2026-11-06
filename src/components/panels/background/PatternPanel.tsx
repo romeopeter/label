@@ -17,6 +17,7 @@ import { CURATED_PATTERN_PAIRS } from "@/data/curatedPatternPairs";
 import { LabeledSlider, MutedMini, PanelHelp, SectionLabel } from "../primitives";
 import { ColorPairSwatchGrid } from "./ColorPairSwatchGrid";
 import { CustomColorPairPicker } from "./CustomColorPairPicker";
+import { choiceClass } from "../choice";
 
 /** Thumbnails use panel-neutral colours so the grid reads regardless of the
  *  user's selected pair, and a small tile so the repeat is visible. */
@@ -43,9 +44,7 @@ const PatternTypeTile = ({
     onClick={onSelect}
     className={cn(
       "relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md border transition-colors",
-      // `border-primary` aliases t-400. Not `border-t-400` — Tailwind reads that
-      // as border-top-width: 400px, not a colour.
-      selected ? "border-primary" : "border-hairline hover:border-p-300",
+      choiceClass(selected),
     )}
     style={{
       backgroundImage: patternPreviewUrl(type, THUMB_BASE, THUMB_ACCENT, THUMB_TILE_PX),

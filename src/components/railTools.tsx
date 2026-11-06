@@ -11,7 +11,7 @@ import {
   Box,
   CircleDashed,
   Square,
-  // Columns,
+  LayoutPanelLeft,
   Type,
   Stamp,
   // Award,
@@ -75,12 +75,11 @@ export const TOOLS: ToolDef[] = [
     label: "Corner",
     icon: <Square className="h-4.5 w-4.5" />,
   },
-  // {
-  //   key: "layout",
-  //   label: "Layout",
-  //   icon: <Columns className="h-4.5 w-4.5" />,
-  //   pro: true,
-  // },
+  {
+    key: "layout",
+    label: "Layout",
+    icon: <LayoutPanelLeft className="h-4.5 w-4.5" />,
+  },
   {
     key: "header",
     label: "Text",

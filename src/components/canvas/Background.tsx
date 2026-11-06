@@ -4,6 +4,7 @@ import useImage from "use-image";
 import Konva from "konva";
 import type { BackgroundState } from "../../types";
 import { PatternFillRect } from "./PatternFillRect";
+import { BackdropFill } from "./BackdropFill";
 
 interface Props {
   bg: BackgroundState;
@@ -35,6 +36,10 @@ export const Background = ({ bg, width, height }: Props) => {
         listening={false}
       />
     );
+  }
+
+  if (bg.mode === "abstract") {
+    return <BackdropFill backdrop={bg.backdrop} width={width} height={height} />;
   }
 
   if (bg.mode === "pattern") {

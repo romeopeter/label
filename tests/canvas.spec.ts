@@ -7,6 +7,7 @@ import {
   elementCount,
   handle,
   openApp,
+  toScreen,
 } from "./helpers";
 
 interface Box {
@@ -194,6 +195,33 @@ test("dragging snaps to the canvas centre, and export hides the guides", async (
   expect(snapped.x + snapped.width / 2).toBeCloseTo(canvas.width / 2, 0);
 });
 
+test("a guide stays on screen while a drag is snapped", async ({ page }) => {
+  await openApp(page);
+  const canvas = await page.evaluate<{ width: number }>(`S.getState().canvas`);
+  await page.evaluate(`(() => {
+    const s = S.getState();
+    s.selectElement(s.addShape("rect", { x: 200, y: 300, width: 400, height: 200 }));
+  })()`);
+  await page.waitForTimeout(150);
+
+  // The Transformer follows the element with drag events of its own, which used to
+  // wipe the guide the element had just drawn.
+  const start = await toScreen(page, 400, 400);
+  const end = await toScreen(page, canvas.width / 2 + 4, 400);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x, end.y, { steps: 8 });
+  await page.waitForTimeout(100);
+  const guides: { x: number; count: number } = await page.evaluate(`(() => {
+    const lines = ST().findOne(".snap-guides").getChildren();
+    return { count: lines.length, x: lines[0]?.points()[0] };
+  })()`);
+  await page.mouse.up();
+  expect(guides).toEqual({ count: 1, x: canvas.width / 2 });
+  await page.waitForTimeout(100);
+  expect(await page.evaluate(`ST().findOne(".snap-guides").getChildren().length`)).toBe(0);
+});
+
 test("locked layers don't move; hidden layers aren't drawn", async ({ page }) => {
   await openApp(page);
   const id = await page.evaluate<string>(`(() => {
@@ -279,10 +307,10 @@ test.describe("snapping while resizing", () => {
 });
 
 test.describe("crop on framed and tilted images", () => {
-  test("framed: the frame keeps its size and its screen shows the crop", async ({ page }) => {
+  test("framed: a browser keeps its width, wraps the crop and shows it", async ({ page }) => {
     const errors = await openApp(page);
     const id = await addTwoToneImage(page);
-    await page.evaluate(`S.getState().updateElement(${JSON.stringify(id)}, { deviceFrame: "browser-dark", width: 1000, height: 700 })`);
+    await page.evaluate(`S.getState().updateElement(${JSON.stringify(id)}, { deviceFrame: { device: "safari", finish: "dark", landscape: true, fit: "fill", zoom: 1, panX: 0, panY: 0, barColor: "#000000", thickness: 1, roundness: 1, address: "example.com" }, width: 1000, height: 700 })`);
     await page.waitForTimeout(200);
 
     const crop = page.getByRole("button", { name: "Crop", exact: true });
@@ -301,12 +329,13 @@ test.describe("crop on framed and tilted images", () => {
 
     const framed = await element<Box>(page, id);
     expect(framed.width).toBe(1000);
-    expect(framed.height).toBe(700);
+    // Only a square is left, so the window is a square and its title bar.
+    expect(Math.abs(framed.height - 1055)).toBeLessThan(5);
     expect(framed.crop?.x).toBeCloseTo(0.5, 1);
 
     // Only the right half is left: its grey is what the frame's screen now draws.
     const drawn = await page.evaluate<{ x: number; width: number; crop: { x: number } }>(`(() => {
-      const node = ST().findOne("#" + ${JSON.stringify(id)}).find("Image")[0];
+      const node = ST().findOne("#" + ${JSON.stringify(id)}).findOne(".mockup-picture");
       return { crop: node.crop(), x: node.x(), width: node.width() };
     })()`);
     expect(drawn.crop.x).toBeCloseTo(400, -1);

@@ -152,6 +152,12 @@
    elements, clip-paths, etc.)
    ============================================================ */
 @layer utilities {
+  /* The screenshot area picker: everything outside the chosen area is dimmed by
+     the area's own shadow, which the picture's frame clips. */
+  .screen-area-dim {
+    box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--color-chrome) 62%, transparent);
+  }
+
   /* Dotted canvas grid */
   .bg-dot-grid {
     background-image: radial-gradient(
@@ -259,12 +265,4 @@
     background-color: var(--hairline);
   }
 
-  /* Mockup thumb decoration */
-  .mockup-thumb {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, #afa9ec 15%, transparent),
-      color-mix(in srgb, #1d9e75 8%, transparent)
-    );
-  }
 }

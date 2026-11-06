@@ -1,0 +1,676 @@
+{
+  "devices": [
+    {
+      "id": "iphone-18-pro",
+      "label": "iPhone 18 Pro",
+      "group": "Phones",
+      "rotates": true,
+      "width": 439.25,
+      "height": 905.25,
+      "screen": {
+        "x": 0.04269,
+        "y": 0.0174,
+        "width": 0.9152,
+        "height": 0.9652
+      },
+      "corners": [
+        0.14479,
+        0.14479,
+        0.14479,
+        0.14479
+      ],
+      "finishes": [
+        {
+          "id": "silver",
+          "label": "Silver"
+        },
+        {
+          "id": "black",
+          "label": "Black"
+        },
+        {
+          "id": "glacier",
+          "label": "Glacier"
+        },
+        {
+          "id": "burgundy",
+          "label": "Burgundy"
+        }
+      ]
+    },
+    {
+      "id": "iphone-duo",
+      "label": "iPhone Duo",
+      "group": "Phones",
+      "rotates": true,
+      "width": 510.25,
+      "height": 712.75,
+      "screen": {
+        "x": 0.05047,
+        "y": 0.02631,
+        "width": 0.91279,
+        "height": 0.95125
+      },
+      "corners": [
+        0.01562,
+        0.11375,
+        0.11375,
+        0.01562
+      ],
+      "finishes": [
+        {
+          "id": "night-sky",
+          "label": "Night Sky"
+        },
+        {
+          "id": "star-white",
+          "label": "Star White"
+        }
+      ]
+    },
+    {
+      "id": "iphone-17",
+      "label": "iPhone 17",
+      "group": "Phones",
+      "rotates": true,
+      "width": 437,
+      "height": 902.75,
+      "screen": {
+        "x": 0.04062,
+        "y": 0.01579,
+        "width": 0.91934,
+        "height": 0.96815
+      },
+      "corners": [
+        0.14531,
+        0.14531,
+        0.14531,
+        0.14531
+      ],
+      "finishes": [
+        {
+          "id": "black",
+          "label": "Black"
+        },
+        {
+          "id": "white",
+          "label": "White"
+        },
+        {
+          "id": "mist-blue",
+          "label": "Mist Blue"
+        },
+        {
+          "id": "sage",
+          "label": "Sage"
+        },
+        {
+          "id": "lavender",
+          "label": "Lavender"
+        },
+        {
+          "id": "cosmic-orange",
+          "label": "Cosmic Orange"
+        },
+        {
+          "id": "deep-blue",
+          "label": "Deep Blue"
+        }
+      ]
+    },
+    {
+      "id": "iphone-14-pro",
+      "label": "iPhone 14 Pro",
+      "group": "Phones",
+      "rotates": true,
+      "width": 432,
+      "height": 868,
+      "screen": {
+        "x": 0.05093,
+        "y": 0.02304,
+        "width": 0.90278,
+        "height": 0.95622
+      },
+      "corners": [
+        0.11343,
+        0.11343,
+        0.11343,
+        0.11343
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Purple"
+        },
+        {
+          "id": "black",
+          "label": "Black"
+        },
+        {
+          "id": "silver",
+          "label": "Silver"
+        },
+        {
+          "id": "gold",
+          "label": "Gold"
+        }
+      ]
+    },
+    {
+      "id": "pixel-10",
+      "label": "Pixel 10",
+      "group": "Phones",
+      "rotates": true,
+      "width": 458,
+      "height": 967,
+      "screen": {
+        "x": 0.04694,
+        "y": 0.02223,
+        "width": 0.89956,
+        "height": 0.95553
+      },
+      "corners": [
+        0.10917,
+        0.10917,
+        0.10917,
+        0.10917
+      ],
+      "finishes": [
+        {
+          "id": "obsidian",
+          "label": "Obsidian"
+        },
+        {
+          "id": "frost",
+          "label": "Frost"
+        },
+        {
+          "id": "indigo",
+          "label": "Indigo"
+        },
+        {
+          "id": "lemongrass",
+          "label": "Lemongrass"
+        }
+      ]
+    },
+    {
+      "id": "google-pixel-6-pro",
+      "label": "Pixel 6 Pro",
+      "group": "Phones",
+      "rotates": true,
+      "width": 402,
+      "height": 862,
+      "screen": {
+        "x": 0.02985,
+        "y": 0.0232,
+        "width": 0.93532,
+        "height": 0.94664
+      },
+      "corners": [
+        0.06716,
+        0.06716,
+        0.06716,
+        0.06716
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        },
+        {
+          "id": "black",
+          "label": "Black"
+        },
+        {
+          "id": "gold",
+          "label": "Gold"
+        }
+      ]
+    },
+    {
+      "id": "galaxy-s25",
+      "label": "Galaxy S25",
+      "group": "Phones",
+      "rotates": true,
+      "width": 387.5,
+      "height": 805,
+      "screen": {
+        "x": 0.03226,
+        "y": 0.01553,
+        "width": 0.92903,
+        "height": 0.96894
+      },
+      "corners": [
+        0.0929,
+        0.0929,
+        0.0929,
+        0.0929
+      ],
+      "finishes": [
+        {
+          "id": "blue-black",
+          "label": "Blue Black"
+        },
+        {
+          "id": "icy-blue",
+          "label": "Icy Blue"
+        },
+        {
+          "id": "navy",
+          "label": "Navy"
+        },
+        {
+          "id": "mint",
+          "label": "Mint"
+        },
+        {
+          "id": "silver-shadow",
+          "label": "Silver Shadow"
+        },
+        {
+          "id": "coral-red",
+          "label": "Coral Red"
+        },
+        {
+          "id": "pink-gold",
+          "label": "Pink Gold"
+        }
+      ]
+    },
+    {
+      "id": "galaxy-s8",
+      "label": "Galaxy S8",
+      "group": "Phones",
+      "rotates": true,
+      "width": 386,
+      "height": 828,
+      "screen": {
+        "x": 0.03886,
+        "y": 0.06643,
+        "width": 0.92228,
+        "height": 0.88889
+      },
+      "corners": [
+        0.0829,
+        0.0829,
+        0.0829,
+        0.0829
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Black"
+        },
+        {
+          "id": "blue",
+          "label": "Blue"
+        }
+      ]
+    },
+    {
+      "id": "ipad-pro",
+      "label": "iPad Pro",
+      "group": "Tablets",
+      "rotates": true,
+      "width": 558.25,
+      "height": 729.25,
+      "screen": {
+        "x": 0.03986,
+        "y": 0.03257,
+        "width": 0.91715,
+        "height": 0.93658
+      },
+      "corners": [
+        0.02579,
+        0.02579,
+        0.02579,
+        0.02579
+      ],
+      "finishes": [
+        {
+          "id": "silver",
+          "label": "Silver"
+        },
+        {
+          "id": "space-black",
+          "label": "Space Black"
+        }
+      ]
+    },
+    {
+      "id": "ipad-mini",
+      "label": "iPad Mini",
+      "group": "Tablets",
+      "rotates": true,
+      "width": 626,
+      "height": 948,
+      "screen": {
+        "x": 0.03994,
+        "y": 0.09494,
+        "width": 0.92013,
+        "height": 0.81013
+      },
+      "corners": [
+        0.0016,
+        0.0016,
+        0.0016,
+        0.0016
+      ],
+      "finishes": [
+        {
+          "id": "silver",
+          "label": "Silver"
+        },
+        {
+          "id": "black",
+          "label": "Black"
+        }
+      ]
+    },
+    {
+      "id": "surface-pro-2017",
+      "label": "Surface Pro",
+      "group": "Tablets",
+      "rotates": true,
+      "width": 561,
+      "height": 396,
+      "screen": {
+        "x": 0.04635,
+        "y": 0.07576,
+        "width": 0.90731,
+        "height": 0.85354
+      },
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        }
+      ]
+    },
+    {
+      "id": "macbook-pro",
+      "label": "MacBook Pro",
+      "group": "Computers",
+      "rotates": false,
+      "width": 1075,
+      "height": 726,
+      "screen": {
+        "x": 0.05349,
+        "y": 0.0241,
+        "width": 0.89302,
+        "height": 0.8595
+      },
+      "corners": [
+        0.01107,
+        0.01107,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "silver",
+          "label": "Silver"
+        },
+        {
+          "id": "space-black",
+          "label": "Space Black"
+        }
+      ]
+    },
+    {
+      "id": "macbook",
+      "label": "MacBook",
+      "group": "Computers",
+      "rotates": false,
+      "width": 740,
+      "height": 432,
+      "screen": {
+        "x": 0.11351,
+        "y": 0.07176,
+        "width": 0.77297,
+        "height": 0.82407
+      },
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        },
+        {
+          "id": "spacegray",
+          "label": "Space gray"
+        },
+        {
+          "id": "gold",
+          "label": "Gold"
+        },
+        {
+          "id": "rosegold",
+          "label": "Rose gold"
+        }
+      ]
+    },
+    {
+      "id": "laptop",
+      "label": "Laptop",
+      "group": "Computers",
+      "rotates": false,
+      "width": 1600,
+      "height": 1160,
+      "screen": {
+        "x": 0.1,
+        "y": 0.09483,
+        "width": 0.8,
+        "height": 0.68966
+      },
+      "corners": [
+        0.00187,
+        0.00187,
+        0.00187,
+        0.00187
+      ],
+      "finishes": [
+        {
+          "id": "dark",
+          "label": "Graphite"
+        },
+        {
+          "id": "silver",
+          "label": "Silver"
+        }
+      ]
+    },
+    {
+      "id": "surface-book",
+      "label": "Surface Book",
+      "group": "Computers",
+      "rotates": false,
+      "width": 728,
+      "height": 430,
+      "screen": {
+        "x": 0.13187,
+        "y": 0.06512,
+        "width": 0.73626,
+        "height": 0.82791
+      },
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        }
+      ]
+    },
+    {
+      "id": "imac",
+      "label": "iMac",
+      "group": "Computers",
+      "rotates": false,
+      "width": 640,
+      "height": 540,
+      "screen": {
+        "x": 0.02813,
+        "y": 0.03333,
+        "width": 0.94375,
+        "height": 0.62593
+      },
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        },
+        {
+          "id": "blue",
+          "label": "Blue"
+        },
+        {
+          "id": "green",
+          "label": "Green"
+        },
+        {
+          "id": "pink",
+          "label": "Pink"
+        },
+        {
+          "id": "purple",
+          "label": "Purple"
+        },
+        {
+          "id": "orange",
+          "label": "Orange"
+        },
+        {
+          "id": "yellow",
+          "label": "Yellow"
+        }
+      ]
+    },
+    {
+      "id": "pro-display-xdr",
+      "label": "Pro Display",
+      "group": "Computers",
+      "rotates": false,
+      "width": 640,
+      "height": 477,
+      "screen": {
+        "x": 0.01563,
+        "y": 0.02096,
+        "width": 0.96875,
+        "height": 0.72956
+      },
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        }
+      ]
+    },
+    {
+      "id": "surface-studio",
+      "label": "Surface Studio",
+      "group": "Computers",
+      "rotates": false,
+      "width": 640,
+      "height": 506,
+      "screen": {
+        "x": 0.03438,
+        "y": 0.04348,
+        "width": 0.93125,
+        "height": 0.78261
+      },
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Silver"
+        }
+      ]
+    },
+    {
+      "id": "apple-watch-ultra",
+      "label": "Watch Ultra",
+      "group": "Watches",
+      "rotates": false,
+      "width": 340,
+      "height": 380,
+      "screen": {
+        "x": 0.12059,
+        "y": 0.10526,
+        "width": 0.70588,
+        "height": 0.78947
+      },
+      "corners": [
+        0.17647,
+        0.17647,
+        0.17647,
+        0.17647
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Titanium"
+        }
+      ]
+    },
+    {
+      "id": "apple-watch-s8",
+      "label": "Watch Series 8",
+      "group": "Watches",
+      "rotates": false,
+      "width": 333,
+      "height": 380,
+      "screen": {
+        "x": 0.08408,
+        "y": 0.07895,
+        "width": 0.79279,
+        "height": 0.84211
+      },
+      "corners": [
+        0.18018,
+        0.18018,
+        0.18018,
+        0.18018
+      ],
+      "finishes": [
+        {
+          "id": "default",
+          "label": "Midnight"
+        }
+      ]
+    }
+  ]
+}

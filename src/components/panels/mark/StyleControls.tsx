@@ -26,6 +26,7 @@ import {
   SHAPE_OPTIONS,
   type MarkOption,
 } from "./options";
+import { choiceClass } from "../choice";
 
 /* ------------------------------------------------------------------------------------------- */
 
@@ -71,14 +72,14 @@ export const OptionGrid = ({
         aria-pressed={isActive?.(index)}
         onClick={() => onPick(index)}
         className={cn(
-          "group flex cursor-pointer flex-col items-center gap-1 rounded-md px-0.5 py-2 text-[9.5px] transition-colors hover:bg-p-200/10 hover:text-text [&:hover_.annot-ic]:text-t-400",
-          isActive?.(index) ? "bg-p-200/10 text-text" : "text-text-muted",
+          "group flex cursor-pointer flex-col items-center gap-1 rounded-md border px-0.5 py-2 text-[9.5px] transition-colors hover:text-text",
+          choiceClass(!!isActive?.(index)),
+          isActive?.(index) ? "text-text" : "text-text-muted",
         )}
       >
         <span
           className={cn(
             "annot-ic flex h-[30px] w-[30px] items-center justify-center rounded-md bg-p-50/[0.04]",
-            isActive?.(index) && "text-t-400",
           )}
         >
           {option.icon}
@@ -281,9 +282,7 @@ export const StyleControls = ({
                   onClick={() => onChange({ stroke: color })}
                   className={cn(
                     "h-5.5 w-5.5 cursor-pointer rounded-full border transition-colors",
-                    subject.stroke === color
-                      ? "border-text"
-                      : "border-hairline hover:border-p-300",
+                    choiceClass(subject.stroke === color),
                   )}
                   style={{ backgroundColor: color }}
                 />

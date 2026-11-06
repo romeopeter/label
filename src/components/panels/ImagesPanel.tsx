@@ -2,7 +2,6 @@ import { useRef } from "react";
 import { Image as ImageIcon, Upload } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { Button } from "@/components/ui/button";
-import { hasNativeScreenshot } from "@/lib/host";
 import { importImageFile } from "@/lib/importers";
 import { ImageEditSection } from "./ImageEditSection";
 import { ScreenshotButton } from "./ScreenshotButton";
@@ -12,23 +11,17 @@ import { PanelHelp, PanelTitle, SectionLabel, Linebreak } from "./primitives";
 export const ImagesPanel = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const addImage = useEditor((s) => s.addImage);
-  const setCropId = useEditor((s) => s.setCropId);
   const uploadedImages = useEditor((s) => s.uploadedImages);
 
-  // The system picker on macOS can select an area. Others take a whole screen or
-  // window, so they go straight to Crop to trim it down.
-  const onScreenshot = (blob: Blob) =>
-    importImageFile(blob, (src, width, height) => {
-      const id = addImage(src, width, height);
-      if (!hasNativeScreenshot) setCropId(id);
-      return id;
-    });
+  // The area was chosen before it got here, so it goes on as it is.
+  const onScreenshot = (blob: Blob) => importImageFile(blob, addImage);
 
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    await importImageFile(file, addImage);
-    e.target.value = "";
+    const input = e.target;
+    for (const file of Array.from(input.files ?? [])) {
+      await importImageFile(file, addImage);
+    }
+    input.value = "";
   };
 
   return (
@@ -53,6 +46,7 @@ export const ImagesPanel = () => {
           ref={fileRef}
           type="file"
           accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          multiple
           className="hidden"
           onChange={onPick}
           aria-label="Upload image to canvas"
@@ -83,7 +77,7 @@ export const ImagesPanel = () => {
                   key={image.id}
                   type="button"
                   aria-label="Add uploaded image to canvas"
-                  className="aspect-square rounded-md border border-hairline bg-canvas bg-cover bg-center transition-colors hover:border-p-300"
+                  className="aspect-square rounded-md border border-hairline bg-canvas bg-cover bg-center transition-colors hover:border-secondary"
                   style={{ backgroundImage: `url(${image.src})` }}
                   onClick={() =>
                     addImage(image.src, image.naturalWidth, image.naturalHeight)

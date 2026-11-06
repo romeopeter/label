@@ -14,6 +14,8 @@ import {
   Linebreak,
 } from "./primitives";
 import { Box } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { choiceClass } from "./choice";
 
 /* --------------------------------------------------------------------------------------- */
 const presets = [
@@ -142,12 +144,23 @@ export const ThreeDPanel = () => {
               transform: `rotateX(${p.x}deg) rotateY(${p.y}deg) rotateZ(${p.z}deg)`,
             };
 
+            const selected =
+              currentTransform.tiltX === p.x &&
+              currentTransform.tiltY === p.y &&
+              currentTransform.tiltZ === p.z;
+
             return (
               <button
                 key={p.name}
+                type="button"
                 style={{ perspective: "100px" }}
-                className="w-15.25 h-11.25 flex items-center justify-center rounded-md border border-border hover:border-secondary cursor-pointer"
+                className={cn(
+                  "w-15.25 h-11.25 flex items-center justify-center rounded-md border transition-colors cursor-pointer",
+                  choiceClass(selected),
+                )}
                 title={p.name}
+                aria-label={p.name}
+                aria-pressed={selected}
                 onClick={() => set3Drotation(p.x, p.y, p.z)}
               >
                 <div

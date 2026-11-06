@@ -114,7 +114,7 @@ export const StockImages = ({
                 aria-label={`Use image: ${image.tags}`}
                 disabled={addingId !== null}
                 onClick={() => add(image)}
-                className="aspect-square cursor-pointer overflow-hidden rounded-md border border-hairline bg-canvas transition-colors hover:border-p-300 disabled:cursor-default disabled:opacity-50"
+                className="aspect-square cursor-pointer overflow-hidden rounded-md border border-hairline bg-canvas transition-colors hover:border-secondary disabled:cursor-default disabled:opacity-50"
               >
                 <img
                   src={image.previewUrl}

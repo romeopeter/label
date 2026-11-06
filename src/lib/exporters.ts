@@ -5,11 +5,13 @@ import { saveExport, saveProject } from "./host";
 import { openLayerFile } from "./importers";
 import { isImageTiltActive } from "./tilt";
 import { prepareExportTiles } from "./export/prepareExportTiles";
+import { prepareExportBackdrop } from "./export/prepareExportBackdrop";
 import { GRID_LAYER_NAME } from "../components/canvas/GridOverlay";
 import { SNAP_GUIDES_LAYER_NAME } from "../components/canvas/SnapGuides";
 import { MARK_DRAFT_LAYER_NAME } from "../components/canvas/MarkDraft";
 import { MARK_HANDLES_LAYER_NAME } from "../components/canvas/MarkHandles";
 import { CROP_LAYER_NAME } from "../components/canvas/CropOverlay";
+import { LAYOUT_SLOTS_LAYER_NAME } from "../components/canvas/LayoutOverlay";
 
 const dataURLtoBlob = (dataUrl: string): Blob => {
   const [meta, b64] = dataUrl.split(",");
@@ -45,6 +47,7 @@ const withOverlaysHidden = async <T,>(
     ...stage.find(`.${MARK_DRAFT_LAYER_NAME}`),
     ...stage.find(`.${MARK_HANDLES_LAYER_NAME}`),
     ...stage.find(`.${CROP_LAYER_NAME}`),
+    ...stage.find(`.${LAYOUT_SLOTS_LAYER_NAME}`),
   ];
   const visible = overlays.map((node) => node.visible());
   overlays.forEach((node) => node.visible(false));
@@ -132,6 +135,7 @@ export const renderCanvasDataURL = (
     // so the background pattern is rasterized at `pixelRatio` device pixels per
     // canvas unit regardless of the current zoom.
     const cleanupPatternTiles = await prepareExportTiles(stage, pixelRatio);
+    const cleanupBackdrop = prepareExportBackdrop(stage, pixelRatio);
 
     try {
       // Stage is currently scaled to fit; export uses the canvas's intrinsic resolution
@@ -152,6 +156,7 @@ export const renderCanvasDataURL = (
     } finally {
       cleanupTiltedImage?.();
       cleanupPatternTiles?.();
+      cleanupBackdrop?.();
     }
   });
 };

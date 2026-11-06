@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Stage, Layer, Transformer, Text as KText, Group as KGroup, Image as KImage, Rect as KRect } from "react-konva";
 import useImage from "use-image";
 import Konva from "konva";
@@ -8,6 +8,9 @@ import { ImageNode } from "./ImageNode";
 import { TextNode } from "./TextNode";
 import { ShapeNode } from "./ShapeNode";
 import { TiltedImageOverlay } from "./TiltedImageOverlay";
+import { LayoutDecorNodes, LayoutSlotsLayer } from "./LayoutOverlay";
+import { useLayoutDrag } from "./useLayoutDrag";
+import { usePictureDrag } from "./usePictureDrag";
 import { SelectionToolbar } from "./SelectionToolbar";
 import { GRID_LAYER_NAME, GridOverlay } from "./GridOverlay";
 import { SnapGuides, type SnapGuidesHandle } from "./SnapGuides";
@@ -19,6 +22,7 @@ import { boundsOf, CONTENT_LAYER_NAME, snapCandidatesFor } from "./snapCandidate
 import { useMarkPlacement } from "./useMarkPlacement";
 import { setStage } from "./stageRef";
 import { IMAGE_EDIT_SECTION_ID } from "@/lib/imageEdit/presets";
+import { arrangeLayout } from "@/lib/layouts";
 import {
   computeSnap,
   resizeSnapResult,
@@ -77,6 +81,12 @@ const elementIdOf = (node: Konva.Node, ids: Set<string>) => {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
+/** Whether a node is one of the document's elements, not the Transformer or an overlay. */
+const isElementNode = (node: Konva.Node) => {
+  const id = node.id();
+  return !!id && useEditor.getState().elements.some((el) => el.id === id);
+};
+
 export const CanvasStage = () => {
   // Store selectors
   const canvas = useEditor((s) => s.canvas);
@@ -101,6 +111,7 @@ export const CanvasStage = () => {
   const editingId = useEditor((s) => s.editingId);
   const cropId = useEditor((s) => s.cropId);
   const setCropId = useEditor((s) => s.setCropId);
+  const layout = useEditor((s) => s.layout);
 
   // Refs for Konva stage, transformer, and container div
   const stageRef = useRef<Konva.Stage>(null);
@@ -110,6 +121,10 @@ export const CanvasStage = () => {
   const guidesRef = useRef<SnapGuidesHandle>(null);
   const draftRef = useRef<MarkDraftHandle>(null);
   const cropRef = useRef<CropOverlayHandle>(null);
+  const layoutFileRef = useRef<HTMLInputElement>(null);
+  const layoutFileSlot = useRef<number | null>(null);
+  const dropSlot = useLayoutDrag(stageRef);
+  usePictureDrag(stageRef);
   const [draggingElement, setDraggingElement] = useState(false);
   const snapCandidates = useRef<SnapCandidates | null>(null);
   const resizeSnap = useRef<{ candidates: SnapCandidates; start: Bounds } | null>(null);
@@ -266,6 +281,7 @@ export const CanvasStage = () => {
     would be pure waste.
   */
   const onElementDragStart = (e: Konva.KonvaEventObject<DragEvent>) => {
+    if (!isElementNode(e.target)) return;
     setDraggingElement(true);
     if (!snapEnabled) return;
 
@@ -275,7 +291,9 @@ export const CanvasStage = () => {
 
   const onElementDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
     const candidates = snapCandidates.current;
-    if (!candidates) return;
+    // The Transformer fires drag events of its own as it follows the element. Snapping
+    // those would move the Transformer, and their empty guides would wipe the real ones.
+    if (!candidates || !isElementNode(e.target)) return;
 
     const node = e.target;
     // The threshold is in screen px, so it divides through the stage scale —
@@ -292,7 +310,8 @@ export const CanvasStage = () => {
     guidesRef.current?.show(guides);
   };
 
-  const onElementDragEnd = () => {
+  const onElementDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+    if (!isElementNode(e.target)) return;
     setDraggingElement(false);
     snapCandidates.current = null;
     guidesRef.current?.clear();
@@ -348,13 +367,12 @@ export const CanvasStage = () => {
 
   // Checks the whole selection: resizing a group scales every element in it, so
   // one free handle would stretch any image in the group.
-  const hasPlainImage = elements.some(
-    (el) =>
-      selectedIds.includes(el.id) && el.type === "image" && !el.deviceFrame,
+  const hasImage = elements.some(
+    (el) => selectedIds.includes(el.id) && el.type === "image",
   );
 
   const fixedRatio =
-    hasPlainImage ||
+    hasImage ||
     selectedElement?.type === "text" ||
     (selectedElement?.type === "shape" &&
       FIXED_RATIO_SHAPES.has(selectedElement.shape));
@@ -369,6 +387,38 @@ export const CanvasStage = () => {
     selectedElement?.type === "image" && selectedElement.id === cropId
       ? selectedElement
       : null;
+
+  const arrangement = useMemo(
+    () => (layout ? arrangeLayout(layout, elements, canvas) : null),
+    [layout, elements, canvas],
+  );
+
+  // A slot decides where an image goes and how big it is, so there's nothing to drag.
+  const selectionInLayout = !!layout?.slots.some(
+    (slot) => slot.id && selectedIds.includes(slot.id),
+  );
+
+  const addToLayout = (slot: number) => {
+    layoutFileSlot.current = slot;
+    layoutFileRef.current?.click();
+  };
+
+  const onLayoutFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const files = Array.from(input.files ?? []);
+    let slot = layoutFileSlot.current;
+    for (const file of files) {
+      const chosen = slot;
+      await importImageFile(file, (src, width, height) =>
+        chosen === null
+          ? addImage(src, width, height)
+          : useEditor.getState().fillSlot(chosen, src, width, height),
+      );
+      // The first file goes where the user clicked; the rest take the next free slots.
+      slot = null;
+    }
+    input.value = "";
+  };
 
   const anchors =
     selectedElement?.type === "text"
@@ -542,12 +592,14 @@ export const CanvasStage = () => {
               return null;
             })}
 
+            {arrangement && <LayoutDecorNodes arrangement={arrangement} />}
+
             {/* Transform handles for selected elements */}
             <Transformer
               ref={transformerRef}
-              rotateEnabled
+              rotateEnabled={!selectionInLayout}
               keepRatio={fixedRatio}
-              enabledAnchors={anchors}
+              enabledAnchors={selectionInLayout ? [] : anchors}
               flipEnabled={false}
               ignoreStroke
               onTransformStart={onTransformStart}
@@ -612,6 +664,15 @@ export const CanvasStage = () => {
             <MarkHandles el={handleElement} scale={scale} guidesRef={guidesRef} />
           )}
 
+          {arrangement && !markTool && !cropElement && (
+            <LayoutSlotsLayer
+              arrangement={arrangement}
+              dropSlot={dropSlot}
+              scale={scale}
+              onAdd={addToLayout}
+            />
+          )}
+
           {cropElement && (
             <CropOverlay
               key={cropElement.id}
@@ -624,6 +685,16 @@ export const CanvasStage = () => {
           {/* Topmost: guides must read over both content and the grid. */}
           <SnapGuides ref={guidesRef} />
         </Stage>
+
+        <input
+          ref={layoutFileRef}
+          type="file"
+          multiple
+          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          className="hidden"
+          onChange={onLayoutFiles}
+          aria-label="Add images to layout slot"
+        />
 
         {editingId && <TextEditor scale={scale} />}
 

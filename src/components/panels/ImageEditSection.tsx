@@ -10,6 +10,7 @@ import type {
   LensBlurMode,
 } from "@/types";
 import { cn } from "@/lib/utils";
+import { visibleCrop } from "@/lib/layouts";
 import { importImageFile } from "@/lib/importers";
 import {
   COLORS,
@@ -35,6 +36,7 @@ import {
   PanelTitle,
   SectionLabel,
 } from "./primitives";
+import { choiceClass } from "./choice";
 
 /* ------------------------------------------------------------------------------------------- */
 
@@ -112,8 +114,9 @@ const OptionThumb = ({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "flex cursor-pointer flex-col items-center gap-1 rounded-md border bg-chrome/50 p-1.5 text-center text-[9.5px] leading-tight transition-colors hover:border-p-500 hover:text-text",
-        active ? "border-primary text-text" : "border-hairline text-text-muted",
+        "flex cursor-pointer flex-col items-center gap-1 rounded-md border bg-chrome/50 p-1.5 text-center text-[9.5px] leading-tight transition-colors hover:text-text",
+        choiceClass(active),
+        active ? "text-text" : "text-text-muted",
       )}
     >
       <canvas
@@ -156,10 +159,11 @@ const FixTab = ({ image }: { image: ImageElement }) => {
 
   // Older projects can hold images stretched out of shape. A frame fits its picture
   // to the screen, so a framed image's box says nothing about the picture's shape.
+  const visible = visibleCrop(image);
   const trueRatio =
     picture && !image.deviceFrame
-      ? (picture.naturalWidth * (image.crop?.width ?? 1)) /
-        (picture.naturalHeight * (image.crop?.height ?? 1))
+      ? (picture.naturalWidth * (visible?.width ?? 1)) /
+        (picture.naturalHeight * (visible?.height ?? 1))
       : null;
   const stretched =
     trueRatio !== null &&
@@ -233,8 +237,9 @@ const BlendOption = ({
     title={variant.help}
     onClick={onClick}
     className={cn(
-      "flex h-11.25 cursor-pointer items-center gap-2 rounded-md border px-2 text-[10.5px] transition-colors hover:border-secondary hover:text-text",
-      active ? "border-primary text-text" : "border-border text-text-muted",
+      "flex h-11.25 cursor-pointer items-center gap-2 rounded-md border px-2 text-[10.5px] transition-colors hover:text-text",
+      choiceClass(active),
+      active ? "text-text" : "text-text-muted",
     )}
   >
     <BlendCircles blend={variant.id} />
@@ -295,8 +300,8 @@ const DoubleExposure = ({
                 aria-pressed={selected}
                 onClick={() => chooseSecond(selected ? undefined : upload.src)}
                 className={cn(
-                  "aspect-square cursor-pointer overflow-hidden rounded-sm border",
-                  selected ? "border-primary" : "border-hairline hover:border-p-500",
+                  "aspect-square cursor-pointer overflow-hidden rounded-sm border transition-colors",
+                  choiceClass(selected),
                 )}
               >
                 <img src={upload.src} alt="" className="size-full object-cover" />
@@ -449,7 +454,7 @@ const FocusPicker = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!picture || !canvas) return;
-    const crop = image.crop ?? { x: 0, y: 0, width: 1, height: 1 };
+    const crop = visibleCrop(image) ?? { x: 0, y: 0, width: 1, height: 1 };
     canvas.width = width;
     canvas.height = height;
     canvas
@@ -465,7 +470,7 @@ const FocusPicker = ({
         width,
         height,
       );
-  }, [picture, image.crop, width, height]);
+  }, [picture, image.crop, image.layoutCrop, width, height]); // eslint-disable-line react-hooks/exhaustive-deps -- `image` changes far more often than these
 
   const place = (event: React.PointerEvent<HTMLDivElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
@@ -550,10 +555,9 @@ const AdjustTab = ({
             aria-pressed={quickFixActive(fix)}
             onClick={() => setEdit({ adjust: { ...NO_ADJUST, ...fix.adjust } })}
             className={cn(
-              "cursor-pointer rounded-md border bg-chrome/50 px-1 py-1.5 text-[10.5px] transition-colors hover:border-p-500 hover:text-text",
-              quickFixActive(fix)
-                ? "border-primary text-text"
-                : "border-hairline text-text-muted",
+              "cursor-pointer rounded-md border bg-chrome/50 px-1 py-1.5 text-[10.5px] transition-colors hover:text-text",
+              choiceClass(quickFixActive(fix)),
+              quickFixActive(fix) ? "text-text" : "text-text-muted",
             )}
           >
             {fix.label}

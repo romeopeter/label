@@ -1,13 +1,27 @@
-import { memo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import type Konva from "konva";
 import { Image as KImage, Group, Rect } from "react-konva";
 import useImage from "use-image";
-import type { ImageElement, DeviceFrame } from "../../types";
+import type { ImageElement } from "../../types";
 import { useEditor } from "../../store/editor";
-import { MIN_FRAME_SIZE } from "@/lib/constants";
+import { visibleCrop } from "@/lib/layouts";
+import {
+  browserLookOf,
+  frameArtUrl,
+  frameShapeOf,
+  hasArtwork,
+  isFrameTurned,
+  pictureView,
+  screenBoxOf,
+  screenPathOf,
+  sourceOf,
+} from "@/lib/mockups";
 import { isImageTiltActive } from "@/lib/tilt";
 import { sameNodeProps } from "./nodeProps";
+import { BrowserBack, BrowserFront } from "./BrowserFrame";
 import { useEditedImage } from "./useEditedImage";
+import { useAltHeld } from "./usePictureDrag";
+import { WindowBack, WindowFront } from "./WindowFrame";
 
 /* ----------------------------------------------------------------- */
 
@@ -28,78 +42,30 @@ const shadowProps = (el: ImageElement) =>
       }
     : {};
 
-// Inset for clipped screenshot area within each device frame
-const FRAME_INSET: Record<
-  NonNullable<DeviceFrame>,
-  {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-    outerPad: number;
-    chromeColor: string;
-  }
-> = {
-  "macbook-light": {
-    top: 24,
-    right: 28,
-    bottom: 60,
-    left: 28,
-    outerPad: 0,
-    chromeColor: "#E7E5F5",
-  },
-  "macbook-dark": {
-    top: 24,
-    right: 28,
-    bottom: 60,
-    left: 28,
-    outerPad: 0,
-    chromeColor: "#1A1826",
-  },
-  "iphone-light": {
-    top: 60,
-    right: 16,
-    bottom: 60,
-    left: 16,
-    outerPad: 0,
-    chromeColor: "#E7E5F5",
-  },
-  "iphone-dark": {
-    top: 60,
-    right: 16,
-    bottom: 60,
-    left: 16,
-    outerPad: 0,
-    chromeColor: "#0F0E1A",
-  },
-  "browser-light": {
-    top: 36,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    outerPad: 0,
-    chromeColor: "#EEEDFE",
-  },
-  "browser-dark": {
-    top: 36,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    outerPad: 0,
-    chromeColor: "#1A1826",
-  },
-};
-
 const ImageNodeBody = ({ el, onSelect }: Props) => {
   const [img] = useImage(el.src, "anonymous");
+  const frame = el.deviceFrame;
+  const usesArt = !!frame && hasArtwork(frame);
+  const [art] = useImage(usesArt ? frameArtUrl(frame) : "", "anonymous");
   const pictureRef = useRef<Konva.Image>(null);
+  const crop = useMemo(() => visibleCrop(el), [el.crop, el.layoutCrop]); // eslint-disable-line react-hooks/exhaustive-deps -- only these two feed it
+  const inLayout = useEditor((s) => !!s.layout?.slots.some((slot) => slot.id === el.id));
   const { picture, edited } = useEditedImage(
     img,
     el.edit,
-    el.crop,
+    crop,
     () => pictureRef.current?.getLayer()?.batchDraw(),
   );
   const update = useEditor((s) => s.updateElement);
+  const altHeld = useAltHeld();
+
+  // Images saved before this was recorded learn their size on first load.
+  useEffect(() => {
+    if (img && el.naturalWidth === undefined) {
+      useEditor.getState().setNaturalSize(el.id, img.naturalWidth, img.naturalHeight);
+    }
+  }, [img, el.id, el.naturalWidth]);
+
   const sp = shadowProps(el);
   const selectedIds = useEditor((s) => s.selectedIds);
   const cropping = useEditor((s) => s.cropId === el.id);
@@ -108,7 +74,7 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
 
   // Holds the node while the image loads: a new image is selected straight away,
   // and the Transformer only attaches to nodes that already exist.
-  if (!img || !picture) {
+  if (!img || !picture || (usesArt && !art)) {
     return (
       <Group id={el.id} x={el.x} y={el.y} rotation={el.rotation} visible={!el.hidden}>
         <Rect width={el.width} height={el.height} opacity={0} />
@@ -116,39 +82,38 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
     );
   }
 
-  // A frame's insets stop fitting below its minimum. A plain image needs no
-  // floor here: flooring one side alone would break its proportions.
-  const minWidth = el.deviceFrame ? MIN_FRAME_SIZE.width : 0;
-  const minHeight = el.deviceFrame ? MIN_FRAME_SIZE.height : 0;
-
   const onTransform = (e: Konva.KonvaEventObject<Event>) => {
     const node = e.target;
     const sx = node.scaleX(); const sy = node.scaleY();
     node.scaleX(1); node.scaleY(1);
     update(el.id, {
       x: node.x(), y: node.y(),
-      width: Math.max(minWidth, el.width * sx),
-      height: Math.max(minHeight, el.height * sy),
+      width: el.width * sx,
+      height: el.height * sy,
       rotation: node.rotation(),
     });
   };
 
-  if (!el.deviceFrame) {
+  const nodeProps = {
+    id: el.id,
+    x: el.x,
+    y: el.y,
+    rotation: el.rotation,
+    opacity: el.opacity,
+    // Alt-dragging moves a mockup's picture instead; see usePictureDrag.
+    draggable: !el.locked && !inLayout && !(frame && altHeld),
+    visible: !el.hidden,
+    onClick: onSelect,
+    onTap: onSelect,
+    onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) =>
+      update(el.id, { x: e.target.x(), y: e.target.y() }),
+    onTransform,
+  };
+
+  const shape = frameShapeOf(el);
+  if (!frame || !shape) {
     return (
-      <Group
-        {...sp}
-        id={el.id}
-        x={el.x}
-        y={el.y}
-        rotation={el.rotation}
-        opacity={el.opacity}
-        draggable={!el.locked}
-        visible={!el.hidden}
-        onClick={onSelect}
-        onTap={onSelect}
-        onDragEnd={(e) => update(el.id, { x: e.target.x(), y: e.target.y() })}
-        onTransform={onTransform}
-      >
+      <Group {...sp} {...nodeProps}>
         {showTiltPlaceholder ? (
           <Rect width={el.width} height={el.height} opacity={0} />
         ) : (
@@ -160,11 +125,11 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
             visible={!cropping}
             // An edited picture has the crop baked in.
             crop={
-              !edited && el.crop ? {
-                x: el.crop.x * img.naturalWidth,
-                y: el.crop.y * img.naturalHeight,
-                width: el.crop.width * img.naturalWidth,
-                height: el.crop.height * img.naturalHeight,
+              !edited && crop ? {
+                x: crop.x * img.naturalWidth,
+                y: crop.y * img.naturalHeight,
+                width: crop.width * img.naturalWidth,
+                height: crop.height * img.naturalHeight,
               } : undefined
             }
             cornerRadius={el.cornerRadius}
@@ -176,119 +141,67 @@ const ImageNodeBody = ({ el, onSelect }: Props) => {
     );
   }
 
-  // Device frame overlay: draw chrome rect + clip image to screen area
-  const inset = FRAME_INSET[el.deviceFrame];
-  const screenX = inset.left;
-  const screenY = inset.top;
-  const screenW = el.width - inset.left - inset.right;
-  const screenH = el.height - inset.top - inset.bottom;
+  // The picture is drawn on the screen, and only ever the part that lands on it. Filling
+  // means taking a part with the screen's shape, so it's never stretched.
+  const screen = screenBoxOf(el, shape);
+  // An edited picture has the crop baked in.
+  const source = edited
+    ? { x: 0, y: 0, width: picture.width as number, height: picture.height as number }
+    : sourceOf(crop, img.naturalWidth, img.naturalHeight);
+  const { drawn, shown } = pictureView(source, screen, frame);
 
-  // Cover-fit what's left of the screenshot inside the screen
-  const visibleW = img.width * (el.crop?.width ?? 1);
-  const visibleH = img.height * (el.crop?.height ?? 1);
-  const ratio = Math.max(screenW / visibleW, screenH / visibleH);
-  const iw = visibleW * ratio;
-  const ih = visibleH * ratio;
-  const ix = screenX + (screenW - iw) / 2;
-  const iy = screenY + (screenH - ih) / 2;
-
-  const isBrowser = el.deviceFrame.startsWith("browser");
-  const isPhone = el.deviceFrame.startsWith("iphone");
-  const cornerR = isPhone ? 56 : isBrowser ? 12 : 18;
-
-  return (
+  const path = screenPathOf(el, shape);
+  const pictureNodes = (
     <Group
-      {...sp}
-      id={el.id}
-      x={el.x}
-      y={el.y}
-      rotation={el.rotation}
-      opacity={el.opacity}
-      draggable={!el.locked}
-      visible={!el.hidden}
-      onClick={onSelect}
-      onTap={onSelect}
-      onDragEnd={(e) => update(el.id, { x: e.target.x(), y: e.target.y() })}
-      onTransform={onTransform}
+      clipFunc={(ctx) => {
+        const { x, y, width, height, corners } = path;
+        const [topLeft, topRight, bottomRight, bottomLeft] = corners;
+        ctx.beginPath();
+        ctx.moveTo(x + topLeft, y);
+        ctx.arcTo(x + width, y, x + width, y + height, topRight);
+        ctx.arcTo(x + width, y + height, x, y + height, bottomRight);
+        ctx.arcTo(x, y + height, x, y, bottomLeft);
+        ctx.arcTo(x, y, x + width, y, topLeft);
+        ctx.closePath();
+      }}
     >
-      {/* Frame body */}
-      <Rect
-        x={0}
-        y={0}
-        width={el.width}
-        height={el.height}
-        fill={inset.chromeColor}
-        cornerRadius={cornerR}
-        stroke="rgba(0,0,0,0.25)"
-        strokeWidth={1}
-      />
-      {/* Browser dots */}
-      {isBrowser && (
-        <>
-          <Rect x={12} y={12} width={10} height={10} fill="#FF6B5B" cornerRadius={5} />
-          <Rect x={28} y={12} width={10} height={10} fill="#F8C24A" cornerRadius={5} />
-          <Rect x={44} y={12} width={10} height={10} fill="#54C56A" cornerRadius={5} />
-        </>
-      )}
-      {/* Screen */}
-      <Group
-        clipFunc={(ctx) => {
-          const r = isBrowser ? 0 : 8;
-          ctx.beginPath();
-          ctx.moveTo(screenX + r, screenY);
-          ctx.lineTo(screenX + screenW - r, screenY);
-          ctx.quadraticCurveTo(screenX + screenW, screenY, screenX + screenW, screenY + r);
-          ctx.lineTo(screenX + screenW, screenY + screenH - r);
-          ctx.quadraticCurveTo(screenX + screenW, screenY + screenH, screenX + screenW - r, screenY + screenH);
-          ctx.lineTo(screenX + r, screenY + screenH);
-          ctx.quadraticCurveTo(screenX, screenY + screenH, screenX, screenY + screenH - r);
-          ctx.lineTo(screenX, screenY + r);
-          ctx.quadraticCurveTo(screenX, screenY, screenX + r, screenY);
-          ctx.closePath();
-        }}
-      >
-        <Rect x={screenX} y={screenY} width={screenW} height={screenH} fill="#0F0E1A" />
-        <KImage
-          ref={pictureRef}
-          image={picture}
-          x={ix}
-          y={iy}
-          width={iw}
-          height={ih}
-          visible={!cropping}
-          // An edited picture has the crop baked in.
-          crop={
-            !edited && el.crop ? {
-              x: el.crop.x * img.naturalWidth,
-              y: el.crop.y * img.naturalHeight,
-              width: el.crop.width * img.naturalWidth,
-              height: el.crop.height * img.naturalHeight,
-            } : undefined
-          }
-        />
+      <Rect {...screen} fill={frame.barColor} listening={false} />
+      <KImage ref={pictureRef} name="mockup-picture" image={picture} {...drawn} crop={shown} />
+    </Group>
+  );
+
+  if (usesArt && art) {
+    // Drawn twice: a shadow cast by the frame would otherwise fall across the screen.
+    const artProps = isFrameTurned(frame)
+      ? { x: 0, y: el.height, width: el.height, height: el.width, rotation: -90 }
+      : { width: el.width, height: el.height };
+    return (
+      <Group {...nodeProps}>
+        <Group visible={!cropping}>
+          {el.shadow?.enabled && <KImage image={art} {...artProps} {...sp} listening={false} />}
+          {pictureNodes}
+          <KImage name="mockup-frame" image={art} {...artProps} />
+        </Group>
       </Group>
-      {/* MacBook hinge */}
-      {el.deviceFrame.startsWith("macbook") && (
-        <Rect
-          x={el.width / 2 - 60}
-          y={el.height - 14}
-          width={120}
-          height={6}
-          fill="rgba(0,0,0,0.2)"
-          cornerRadius={3}
-        />
-      )}
-      {/* iPhone notch */}
-      {isPhone && (
-        <Rect
-          x={el.width / 2 - 50}
-          y={20}
-          width={100}
-          height={26}
-          fill="#0F0E1A"
-          cornerRadius={13}
-        />
-      )}
+    );
+  }
+
+  const isBrowser = !!browserLookOf(frame);
+  return (
+    <Group {...nodeProps}>
+      <Group visible={!cropping}>
+        {isBrowser ? (
+          <BrowserBack el={el} frame={frame} shadow={sp} path={path} />
+        ) : (
+          <WindowBack el={el} frame={frame} shadow={sp} path={path} />
+        )}
+        {pictureNodes}
+        {isBrowser ? (
+          <BrowserFront el={el} frame={frame} />
+        ) : (
+          <WindowFront el={el} frame={frame} path={path} />
+        )}
+      </Group>
     </Group>
   );
 };

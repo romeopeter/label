@@ -30,6 +30,7 @@
   - [Not handled](#not-handled)
 - [7. Backgrounds & device frames](#7-backgrounds--device-frames)
   - [Background modes](#background-modes)
+  - [Abstract backgrounds](#abstract-backgrounds)
   - [Device frames](#device-frames)
 - [8. Text & shapes](#8-text--shapes)
   - [Text](#text)
@@ -93,7 +94,8 @@ static image (Brandbird parity).
    and freehand; plus text, emoji, icons, QR codes, numbers, badges, and a layer
    list with lock, hide and reorder for every element
 6. Export: static PNG/JPG (watermarked on free tier)
-7. Canvas size presets for common destinations
+7. Canvas size presets for common destinations, and layouts that place several images
+   together
 8. Image upload, presets and effects
 9. Above as free version
 
@@ -183,7 +185,8 @@ layer/
 │   │   └── emojis.json, icons.json  ← generated; see scripts/
 │   ├── lib/
 │   │   ├── utils.ts           ← cn()
-│   │   ├── constants.ts       ← CANVAS_SIZES, DEVICE_FRAMES, SYSTEM_FONTS
+│   │   ├── constants.ts       ← CANVAS_SIZES, SYSTEM_FONTS
+│   │   ├── mockups.ts         ← Device list and screen geometry
 │   │   ├── host.ts            ← desktop/web boundary (all Tauri calls)
 │   │   ├── importers.ts       ← file → image element
 │   │   ├── marks.ts           ← Mark helpers (numbering, stroke geometry, migration)
@@ -229,7 +232,7 @@ interface BaseElement {
 interface ImageElement extends BaseElement {
   type: 'image';
   src: string;              // object URL or data URL
-  deviceFrame: DeviceFrame;
+  deviceFrame: DeviceFrame | null;
   cornerRadius: number;
   transform: string;
 }
@@ -448,15 +451,19 @@ A fourth mode, **pattern**, ships in the current build (beyond the spec's
 three): duotone SVG tiles, rasterized and LRU-cached, drawn as a Konva
 `fillPatternImage`. See `src/lib/patterns/` and `src/types/pattern.ts`.
 
+A fifth, **abstract**, is also beyond the spec: backgrounds Layer draws itself. See
+[Abstract backgrounds](#abstract-backgrounds).
+
 ```ts
 interface BackgroundState {
-  mode: 'solid' | 'gradient' | 'image' | 'pattern';
+  mode: 'solid' | 'gradient' | 'image' | 'pattern' | 'abstract';
   color: string;
   gradient: { from: string; to: string; angle: number };
   imageSrc: string | null;
   imageBlur: number;
   imageOpacity: number;
   pattern: PatternConfig;
+  backdrop: BackdropConfig;
 }
 ```
 
@@ -469,34 +476,141 @@ so toggling modes restores previous values.
 - **Image blur:** Konva `Blur` filter requires `node.cache()` after the image
   loads, then `batchDraw()`.
 
-### Device frames
+### Abstract backgrounds
 
-Phase 1 frame library (bundled PNG assets), each with a designer-supplied
-screen-area rect in PNG-pixel coordinates (`src/lib/constants.ts`):
-
-| Frame | Asset | Screen area |
-|---|---|---|
-| MacBook (light) | `macbook-light.png` | ~24px inset top, larger insets sides |
-| MacBook (dark) | `macbook-dark.png` | same |
-| iPhone 15 (light) | `iphone-light.png` | ~16px inset, rounded corners |
-| iPhone 15 (dark) | `iphone-dark.png` | same |
-| Browser window (light) | `browser-light.png` | titlebar inset top |
-| Browser window (dark) | `browser-dark.png` | same |
+Backgrounds drawn by Layer, not taken from stock, so there are no licence terms and
+they stay sharp at any size. Code is in `src/lib/backdrops/`, types in
+`src/types/backdrop.ts`.
 
 ```ts
-export const DEVICE_FRAMES = [
-  { key: 'macbook-light', label: 'MacBook (light)', src: '/frames/macbook-light.png',
-    screen: { x: 24, y: 24, w: 920, h: 580, radius: 8 } },
-  { key: 'iphone-light',  label: 'iPhone (light)',  src: '/frames/iphone-light.png',
-    screen: { x: 14, y: 60, w: 286, h: 596, radius: 48 } },
-  // ...
-] as const;
+interface BackdropConfig {
+  style: 'soft' | 'waves' | 'streaks' | 'glow' | 'glass' | 'aurora' | 'silk' | 'marble';
+  seed: number;              // lays out the shapes; picks colours when none was picked
+  color: string | null;      // the colour Shuffle builds on, or null for any
+  colors: [deep, main, accent, highlight];  // saved, so files don't change if the generator does
+  blur: number;              // canvas px, 0–100
+  frost: number;             // 0–1
+  grain: number;             // 0–1
+}
 ```
 
-**Rendering:** the screenshot sits in a `Group` with `clipFunc` (rounded-rect
-path matching the scaled screen area); the frame PNG draws on top, occluding
-anti-aliasing spill. Frame + screenshot stay locked in one `Group` — dragging
-and resizing move both. Load images with `useImage` from `react-konva`.
+- **Panel:** Style (two rows of four), ten presets that between them show every style,
+  Shuffle with Back and Forward, Color, then Blur, Frost and Grain.
+- **Styles:** Soft (blurred patches), Waves (layered folds), Streaks (light pulled
+  along a diagonal), Glow (lights on a dark ground), Glass (clear panels over soft
+  colour, bending it at their edges; usually one is fluted), Aurora (curtains of light
+  over a night sky, with stars), Silk (glossy folds, lit from one side) and Marble
+  (wandering veins; light stone with dark veins, or dark with light ones, to match the
+  main colour).
+- **Shuffle** makes a new layout and palette in the current style, built on the
+  picked colour if there is one. **Back and Forward** move through what this session
+  has shown, like a browser's history: a new Shuffle partway back drops what was
+  ahead. They change the look and keep the effects. The trail is not saved, and is
+  not undo: each Shuffle, Back or Forward is one undo step of its own.
+- **Colour** is worked out in OKLCH, where equal steps look equal. From one colour
+  come a deep shade, the colour, an accent round the wheel (same, neighbours,
+  opposite or split) and a pale highlight, at the lightness of one of four moods.
+  Shadows lean towards blue-violet so dark yellows don't go olive, Shuffle skips the
+  muddy yellow-greens, and a grey stays grey.
+- **Frost** scatters what's behind it like frosted glass and makes it milkier.
+  **Blur** softens it. **Grain** adds film-like noise. All three are measured in
+  canvas pixels, so the export matches the preview.
+- **Stars** in Aurora are sized in canvas pixels, like grain, so an export has the
+  same stars as the preview.
+- **Drawing** uses a WebGL2 context of its own, separate from image editing's. The
+  noise uses an integer hash: a float one rounds differently at each place the GPU
+  uses it, which shows as seams. Without WebGL2 the colours show as a plain gradient.
+- **Export** draws it again at the export's scale (`prepareExportBackdrop`), as
+  patterns do.
+- **Moods per style:** a style can ask Shuffle for the moods it suits. Aurora only
+  gets dark ones, since it needs a night sky; Glow leans dark; Marble leans to light
+  and dark stone. The rest use the usual mix.
+
+### Device frames
+
+Twenty devices, each from one source only, plus five windows (see below). Every source
+is MIT, and its licence ships in `public/frames/`:
+
+| Source | Devices |
+|---|---|
+| [react-mockframe](https://github.com/mbdev3/react-mockframe) | iPhone 18 Pro, iPhone Duo, iPhone 17, Pixel 10, Galaxy S25, iPad Pro, iPad Mini, MacBook Pro |
+| [Devices.css](https://devicescss.xyz) | iPhone 14 Pro, Pixel 6 Pro, Galaxy S8, Surface Pro, MacBook, Surface Book, iMac, Pro Display, Surface Studio, Watch Ultra, Watch Series 8 |
+| [Monkr](https://github.com/blaineam/Monkr) | Laptop |
+
+The first two are pure CSS, which Konva can't draw, so `npm run devices:sync` renders
+each device in WebKit to a PNG in `public/frames/`, and writes
+`src/data/deviceFrames.json`.
+
+**Only Monkr's laptop is used.** Monkr's code says it's the one frame there that isn't
+vendor artwork. Its other frames are Apple's bezels, or what its docs call third-party
+art with no stated source, so its MIT licence can't be relied on for them.
+
+**Screen areas are measured, never typed in.** Each CSS device is rendered with a black
+screen and with a white one. A pixel that differs shows the screen, and how much it
+differs is how much it shows. That gives a true hole with soft corners, and keeps
+what sits over the screen, such as a notch. The screen's box comes from the hole
+itself, not the stylesheet, because the two differ by a screen's border. Its corner
+radii come from the stylesheet. All are stored as fractions of the device. Monkr's
+laptop is already a PNG, so its hole is measured from its transparency.
+
+```ts
+interface DeviceFrame {
+  device: string;            // "iphone-14-pro", a screen ("glass-light") or a browser ("chrome")
+  finish: string;            // "black"
+  landscape: boolean;        // ignored by devices that can't turn
+  fit: 'fill' | 'fit';       // fill crops to the screen; fit shows it all, with bars
+  zoom: number;              // 1 to 4, on top of fill or fit
+  panX: number;              // -1 to 1: a share of the room the picture has to move
+  panY: number;
+  barColor: string;          // around a picture that doesn't cover the screen
+  thickness: number;         // a screen frame's padding, against its design
+  roundness: number;         // a drawn frame's corners, against its design
+  address: string;           // what a browser shows
+}
+```
+
+**Rendering**, all in `ImageNode` with geometry from `src/lib/mockups.ts`:
+
+1. The frame, only if there's a shadow, so the shadow doesn't fall across the screen.
+2. The picture, clipped to the rounded screen. A screen's square corners stick out
+   past a phone's rounded edge, so being covered by the frame isn't enough.
+3. The frame again, on top.
+
+**Rules that keep the picture right:**
+- A framed image's box always has its device's shape, and resizes from corners only.
+- Fill takes the part of the picture with the screen's shape, so it's never stretched.
+- Crop keeps to the screen's shape, so what's chosen is what shows.
+- A wide picture puts a device that can turn on its side. The picture stays upright.
+- A screen or desktop browser wraps its picture exactly, so it changes height with the crop.
+- Old `.layer` files naming the six earlier frames open on the matching real device,
+  and retired devices (iPhone 14, X and 8) open on the iPhone 17. The old Browser opens
+  on Safari, and the old Glass and Inset on the light or dark tile of Tint and Matte.
+
+**The panel** has three tabs, with the gallery capped in height so the controls stay in
+view: Screens, Windows and Devices.
+
+**Screens** are generic frames: Plain, Tint Light and Dark, Shine, Matte Light and Dark,
+Line, Edge, Block, Paper, Pile and Steps. They take a picture of any shape, so
+they're drawn in `WindowFrame`, not from artwork, with their proportions in `SCREEN_LOOKS`.
+Tint and Shine are translucent over what's behind them; they don't blur it. These are our
+own designs and names. Don't copy shots.so's artwork, tile names or pixels: its terms reserve
+its designs. Saved ids (`glass-light`, `retro`) are older than the labels and stay as they are.
+
+**Windows** are browsers: Safari, Edge, Firefox, Brave and Chrome, plus tablet and mobile
+Safari and Chrome. They're drawn in `BrowserFrame` with sizes in `BROWSER_LOOKS`, follow
+each browser's general layout, and take any address. They use no vendor's logo or artwork.
+Desktop ones wrap their picture. Tablet and mobile ones keep their own shape, so they fill
+or fit like a device, and tablets can turn.
+
+**Controlling a mockup.** `pictureView` is the one place that works out what shows on a
+screen: fill or fit, then zoom, then moving, as a share of the room the picture has. The
+panel has sliders for these, and holding Alt while dragging moves the picture
+(`usePictureDrag`, not Konva's drag, since the frame stays put). Crop is a coarser version
+of the same thing, so it opens on what the screen shows and applying it resets zoom and
+moving. Size, rotation and centring work around the mockup's middle. Corners are capped so
+a picture's square corners can't poke past the frame.
+
+Devices are flat. 3D devices are a separate, later piece of work.
 
 ## 8. Text & shapes [↑ Go up](#contents)
 
@@ -652,13 +766,40 @@ An image can go on the canvas or become the background. It comes from one of thr
 
 - **Upload:** a file from the device, or drag and drop or paste.
 - **Screenshot:** anything on the desktop. **Add screenshot** in the Images and Background
-  panels. On macOS Layer hides and hands over to the system's own picker, so the user drags
-  over any area or presses Space to pick a window. Other systems and the web build use the
-  webview's screen picker, which takes a whole screen or window, then opens Crop to trim it.
+  panels. Layer first gets the whole screen: on macOS it hides itself and captures the
+  display it's on, with no system picker; other systems and the web build use the
+  webview's screen picker. Then the screen fills Layer's window to choose the area: drag
+  a box, then move it or pull its sides and corners. **Capture** (or Space or Enter)
+  keeps the box, or the whole screen if none was drawn; **Cancel** (or Esc) keeps
+  nothing. The area goes on as it is, without opening Crop. While the picker is open,
+  no key reaches the editor.
 - **Free images:** search Pixabay in the Images and Background panels (desktop app only).
   The search and download run in Rust, so the API key never reaches the webview. Following
   Pixabay's API terms, searches are cached in a file for 24 hours, results say they come from Pixabay,
   and a chosen image is downloaded into the project rather than linked.
+
+### Layout
+
+The **Layout** tool puts several images together on one canvas, in one click. Pick an
+arrangement and images on the canvas fill its slots in order. They stay normal images, so
+editing, shadows and frames still work, and marks and text aren't moved. **None** returns
+to free placement, with images staying where they are and looking the same.
+
+- **Arrangements:** Side by side, Stacked, Overlap up, Overlap down, Masonry, Do & don't,
+  Before & after, Arrow between, Three in a row, One big and two small, 2×2 and 3×3 grids,
+  Cascade and Fan.
+- **Settings:** Align (Start, Center, End), Spacing, Scale, Same width and Same shape. Same
+  shape trims images to their slots without touching the user's own crop.
+- **Filling slots:** any new image takes the next free slot, however it arrives. Clicking an
+  empty slot adds there, and dropping a file on a slot fills or replaces it. Several files
+  can be added at once. Images beyond the slots stay where they are.
+- **Moving:** a slot decides an image's place and size, so there are no resize handles.
+  Dragging inside a slot chooses which part of a trimmed picture shows; dragging onto
+  another slot swaps the two.
+- **Style all images** gives the others the selected image's shadow, corners, border and
+  frame. **Fit canvas to layout** resizes the canvas around the images with even padding.
+- **Labels, badges and arrows** are part of the artwork and export. Label text is edited in
+  the panel. Empty slots are an editing aid and don't export.
 
 ### Image editing
 
@@ -689,9 +830,15 @@ without WebGL2, images show unedited and the panel says so.
 
 ### Snapping
 
-Applies to moving elements, drawing marks and dragging line ends and callout tails.
-It doesn't apply to freehand strokes, curve handles or Transformer resizing, and Shift
-turns it off for that drag because it already pins the shape or angle.
+Applies to moving elements, resize handles, drawing marks, and dragging line ends and
+callout tails. It doesn't apply to freehand strokes, curve handles, rotated boxes or
+several elements at once. Shift turns it off for that drag, because it already pins the
+shape or angle.
+
+A guide shows while something is snapped. The Transformer fires drag events of its own
+as it follows the element, and they bubble to the same handler, so the handler ignores
+anything that isn't an element. Otherwise it snaps the Transformer, and its empty
+guides wipe the element's guide as soon as it's drawn.
 
 ## 9. Export [↑ Go up](#contents)
 
@@ -756,7 +903,7 @@ Versioned JSON snapshot of the editable state:
       "x": 120, "y": 80, "width": 960, "height": 480,
       "rotation": 0, "opacity": 1,
       "src": "data:image/png;base64,iVBORw0KGgo...",
-      "deviceFrame": "macbook-dark",
+      "deviceFrame": { "device": "macbook-pro", "finish": "spacegray", "landscape": true, "fit": "fill" },
       "cornerRadius": 0
     },
     {
@@ -1014,6 +1161,10 @@ survives reinstalls; users can put it in iCloud Drive for cross-machine sync.
   recurring inline `style={}`.
 - **Never write `border-t-400`** for the teal border colour (parses as
   `border-top-width: 400px`). Use `border-primary`.
+- **Presets and options select the same way everywhere:** `choiceClass(selected)`
+  in `src/components/panels/choice.ts`. Hover is the accent border
+  (`border-secondary`), as on the 3D presets; selected adds a ring of it. Tiles set
+  `aria-pressed`.
 
 ### Imports
 

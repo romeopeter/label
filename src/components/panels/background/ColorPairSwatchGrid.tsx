@@ -1,6 +1,7 @@
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PatternColorPair } from "@/types/pattern";
+import { choiceClass } from "../choice";
 
 interface SwatchProps {
   pair: PatternColorPair;
@@ -19,10 +20,8 @@ const PairSwatch = ({ pair, selected, onSelect, onDelete }: SwatchProps) => (
       aria-pressed={selected}
       onClick={onSelect}
       className={cn(
-        "aspect-square w-full cursor-pointer overflow-hidden rounded-md border transition-transform hover:scale-110",
-        // `border-primary` aliases t-400. Not `border-t-400` — Tailwind reads
-        // that as border-top-width: 400px, not a colour.
-        selected ? "border-primary ring-1 ring-primary/50" : "border-hairline hover:border-p-300",
+        "aspect-square w-full cursor-pointer overflow-hidden rounded-md border transition-colors",
+        choiceClass(selected),
       )}
       style={{
         background: `linear-gradient(135deg, ${pair.base} 0 50%, ${pair.accent} 50% 100%)`,
@@ -82,7 +81,7 @@ export const ColorPairSwatchGrid = ({
             type="button"
             aria-label="Create a custom colour pair"
             onClick={onAdd}
-            className="flex aspect-square w-full cursor-pointer items-center justify-center rounded-md border border-dashed border-hairline-strong text-text-faint transition-colors hover:border-p-300 hover:text-text"
+            className="flex aspect-square w-full cursor-pointer items-center justify-center rounded-md border border-dashed border-hairline-strong text-text-faint transition-colors hover:border-secondary hover:text-text"
           >
             <Plus className="h-3 w-3" />
           </button>

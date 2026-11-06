@@ -65,14 +65,36 @@ flag it before implementing.
   `useEditedImage`; Konva and export just read that canvas. Options live in `presets.ts`
   as data. Sampling with a jittered coordinate must use `textureLod`, or mipmaps blur it.
   See `implementation.md` §8.
+- **Device frames are generated, and measured.** `npm run devices:sync` renders
+  react-mockframe and Devices.css in WebKit to `public/frames/` and
+  `src/data/deviceFrames.json`, with each screen area measured from the render. Each
+  device comes from one source only; the script fails on a repeat. From Monkr, use only
+  its own laptop: its other frames are Apple's bezels or unsourced third-party art. Never type one in by hand. All geometry
+  lives in [mockups.ts](./src/lib/mockups.ts). A rounded screen must stay clipped: its
+  square corners poke out past a phone's edge. Screens (Tint, Pile and so on) wrap any picture, so they're drawn in `WindowFrame`
+  from `SCREEN_LOOKS`. Windows are browsers, drawn in `BrowserFrame` from `BROWSER_LOOKS`,
+  with no vendor's logo. Both are our own designs: don't copy artwork from shots.so, whose
+  terms reserve its designs and bar scraping. `pictureView` alone decides what a screen
+  shows, from fill or fit, zoom and moving. See `implementation.md` §7.
 - **Uploads and Images are split.** Uploads is an in-memory asset bucket
   (`uploadedImages` in Zustand). The Images tool adds images to the canvas
   directly and can insert from Uploads.
+- **Layouts arrange images; they don't own them.** `CanvasLayout` (`layout` in the
+  store, saved in `.layer`) lists which image is in which slot. `settleLayout` in
+  [layouts.ts](./src/lib/layouts.ts) is a pure function, and a store subscriber writes
+  its result onto those images after any change, so they stay ordinary elements that
+  Edit, Shadow and Mockup still work on. Adding a layout is mostly a new `LAYOUTS` entry.
+  A slot's trim is `layoutCrop`, never `crop`, which stays the user's: read what an
+  image shows through `visibleCrop`. Dragging is `useLayoutDrag`, not Konva's drag: inside
+  a slot it moves the picture, over another slot it swaps. Empty slots are an overlay
+  hidden from exports; badges, arrows and labels are artwork and do export.
 - **Screenshots are of the desktop, not a URL.** `captureScreen` in
-  [host.ts](./src/lib/host.ts): macOS desktop runs the system `screencapture`
-  picker from [capture.rs](./src-tauri/src/capture.rs), with the window hidden and
-  always restored; everything else uses the webview's `getDisplayMedia` picker.
-  Both the Images and Background panels use it via `ScreenshotButton`.
+  [host.ts](./src/lib/host.ts) gets the whole screen: macOS desktop runs `screencapture`
+  on Layer's display from [capture.rs](./src-tauri/src/capture.rs), with the window
+  hidden and always restored, and no system picker; everything else uses the
+  webview's `getDisplayMedia` picker. `ScreenAreaPicker` then chooses the area inside
+  Layer (Capture or Space, Cancel or Esc) and takes every key while open. Both the
+  Images and Background panels use it via `ScreenshotButton`.
 - **Searches are cached in a file.** `pixabay-searches.json` in the app cache folder,
   until SQLite lands. It holds searches and Pixabay's URLs, never the key.
 - **Pixabay's key stays in Rust.** `PIXELBAY_KEY` in `.env` is read by
@@ -103,6 +125,13 @@ flag it before implementing.
   never alone. The picker is a height-capped scroll strip. Custom colour pairs
   are in-memory only until SQLite lands.
 
+- **Abstract backgrounds are settings, drawn by Layer.** A fifth background mode,
+  beyond the spec. `BackdropConfig` saves its four colours as well as the seed, so a
+  file looks the same if the generator changes. It's drawn by its own WebGL2 context in
+  [src/lib/backdrops/](./src/lib/backdrops/) and drawn again at export scale. Its noise
+  hashes with integers: a float hash makes seams on the GPU. Back and Forward walk a
+  session-only trail in the store, not undo. See `implementation.md` §7.
+
 - **Layout grid is a viewport aid, not artwork.** It lives in the canvas view
   chrome next to zoom (not the Background panel, whose contents all export),
   renders as its own Konva `Layer` above content, and is hidden at capture time
@@ -119,6 +148,8 @@ flag it before implementing.
   [snapping.ts](./src/lib/snapping.ts) as pure functions (no Konva, no store).
   Drag is handled **once** on the content `Layer` in `CanvasStage`, not per
   node — Konva bubbles drag events, so one handler covers every element type.
+  The Transformer's own drag events bubble there too and must be ignored
+  (`isElementNode`), or they snap the Transformer and wipe the guide.
   Candidates are built on `dragstart` and reused, since nothing else moves
   mid-drag. Bounds come from `getClientRect` (so rotated elements align by the
   box you see) with shadow/stroke skipped. The threshold is in *screen* px and
@@ -150,7 +181,7 @@ layer/
 ├── AGENTS.md                  ← you are reading this
 ├── implementation.md          ← product spec (source of truth)
 ├── learn/                     ← conceptual docs (start at learn/README.md)
-├── scripts/                   ← emoji and icon data generators
+├── scripts/                   ← emoji, icon and device frame generators
 ├── src-tauri/                 ← Rust shell (commands in src/files.rs)
 ├── src/
 │   ├── App.tsx                ← shell + hotkeys + drag/drop
@@ -161,10 +192,11 @@ layer/
 │   │   └── pattern.ts         ← PatternConfig, PatternColorPair, Pro gate map
 │   ├── data/
 │   │   ├── curatedPatternPairs.ts
-│   │   └── emojis.json, icons.json  ← generated; see scripts/
+│   │   └── emojis.json, icons.json, deviceFrames.json  ← generated; see scripts/
 │   ├── lib/
 │   │   ├── utils.ts           ← cn()
-│   │   ├── constants.ts       ← CANVAS_SIZES, DEVICE_FRAMES, SYSTEM_FONTS
+│   │   ├── constants.ts       ← CANVAS_SIZES, SYSTEM_FONTS
+│   │   ├── mockups.ts         ← Device list and screen geometry
 │   │   ├── host.ts            ← desktop/web boundary (all Tauri calls)
 │   │   ├── importers.ts       ← file → image element
 │   │   ├── marks.ts           ← Mark helpers (numbering, stroke geometry, migration)
@@ -176,6 +208,7 @@ layer/
 │   │   ├── imageEdit/         ← Image edit options, shaders and WebGL renderer
 │   │   ├── exporters.ts       ← stage → PNG/JPG/clipboard, .layer save/load
 │   │   ├── patterns/          ← SVG tile generators, LRU raster cache, lookups
+│   │   ├── backdrops/         ← Abstract backgrounds: palettes, presets, shaders
 │   │   └── export/            ← export-time asset prep (pattern tile DPI swap)
 │   ├── store/editor.ts        ← Zustand
 │   ├── store/history.ts       ← Undo and redo
@@ -202,6 +235,7 @@ npm run tauri:dev   # native window + Vite hot reload
 npm run tauri:build # bundle the desktop app
 npm run emoji:sync  # regenerate emoji data (needs FREE_EMOJI_KEY in .env)
 npm run icons:sync  # regenerate icon data from lucide-static
+npm run devices:sync # regenerate device frames from their sources
 
 # from src-tauri/
 cargo fmt --check
@@ -233,6 +267,9 @@ real_pixabay` does the latter, and the macOS picker needs trying by hand.
   clip-paths, multi-stop gradients) into `@layer utilities` in
   [src/styles/app.css](./src/styles/app.css). Don't pile inline `style={}`
   for things that recur.
+- **Presets and options select the same way: `choiceClass(selected)`** from
+  [choice.ts](./src/components/panels/choice.ts), the accent border the 3D presets use.
+  Don't give a new tile its own hover or selected colours.
 - **Never write `border-t-400` for the teal border colour.** Tailwind parses it
   as `border-top-width: 400px`, because `border-t-<number>` is a width utility
   and wins over the `t-400` colour name. Use `border-primary` (aliased to
@@ -290,7 +327,7 @@ real_pixabay` does the latter, and the macOS picker needs trying by hand.
 - Each store element renders to exactly one Konva node — dispatch on
   `element.type` and `element.shape`.
 - Device frame + screenshot stay locked together via a Konva `Group`. The
-  screenshot is clipped to the frame's screen area via `clipFunc`. See
+  screenshot is clipped to the frame's rounded screen via `clipFunc`. See
   [learn/07-backgrounds-and-device-frames.md](./learn/07-backgrounds-and-device-frames.md).
 
 ### Adding a new element type
@@ -325,8 +362,11 @@ Phase 1 success criteria (from the spec):
 - ✅ Device frame that clips and follows the screenshot
 - ✅ Solid / gradient / image background with blur+opacity
 - ➕ Pattern background (beyond the spec's three modes — see scope note below)
+- ➕ Abstract background: Soft, Waves, Streaks, Glow, Glass, Aurora, Silk and Marble,
+  with presets, Shuffle, and Blur, Frost and Grain
 - ✅ Heading and body text with double-click in-place edit
 - ✅ Shape library: rect, rounded, ellipse, arrow, highlight, callout
+- ➕ Layouts: 14 arrangements that place several images on one canvas
 - ➕ Drawn shapes, arrows, lines, callouts, highlighter, freehand; emoji, icons,
   QR code, number, badge; layer lock/hide/reorder for every element
 - ✅ Export PNG/JPG/WebP at @2× (web download today)
@@ -347,11 +387,25 @@ spec as still authoritative for everything else.
 | Rust-side export gate | Needs Tauri | With shell |
 | Custom fonts upload | Phase 2 (system fonts only in Phase 1) | Phase 2 |
 | Brand kits | Phase 2 | Phase 2 |
-| Layout templates | Phase 2 | Phase 2 |
 | Website-by-URL capture / tweet import | Needs Tauri capture pipeline | With shell |
 | 3D image rendering effect | Prior implementation removed | Redesign needed |
 | Persisted custom pattern colour pairs | Needs SQLite | With shell |
 | Brand-derived pattern colour pairs | Needs the Phase-2 brand store | With brand kits |
+
+## Future additions
+
+Ideas agreed for later. Not started, so check with the user before building one.
+
+- **Layout: divider line.** A line between before and after images, in a style you can
+  change.
+- **Layout: overlap controls.** How far images overlap, and which one sits in front.
+- **Layout: tilt.** Tilts all images together, using the existing 3D tilt.
+- **Layout: per-slot backgrounds.** A colour or gradient behind each image, which helps
+  comparison posts.
+- **Layout: canvas size suggestions.** For example, a wide canvas for side by side and a
+  tall one for stacked.
+
+Left out on purpose: a custom layout builder, grids beyond 3×3, and automatic layout choice.
 
 ## Deferred Rust Implementations
 

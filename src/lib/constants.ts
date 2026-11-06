@@ -1,4 +1,4 @@
-import type { CanvasSize, DeviceFrame } from "../types";
+import type { CanvasSize } from "../types";
 
 export const CANVAS_SIZES: CanvasSize[] = [
   { label: "LinkedIn post", width: 1200, height: 628 },
@@ -13,16 +13,7 @@ export const CANVAS_SIZES: CanvasSize[] = [
   { label: "Custom", width: 800, height: 600 },
 ];
 
-export const DEVICE_FRAMES: { key: NonNullable<DeviceFrame>; label: string }[] = [
-  { key: "macbook-light", label: "MacBook · Light" },
-  { key: "macbook-dark", label: "MacBook · Dark" },
-  { key: "iphone-light", label: "iPhone · Light" },
-  { key: "iphone-dark", label: "iPhone · Dark" },
-  { key: "browser-light", label: "Browser · Light" },
-  { key: "browser-dark", label: "Browser · Dark" },
-];
-
-/** Below this a device frame's insets no longer leave room for the screen. */
+/** The smallest a framed image can be resized to by hand. */
 export const MIN_FRAME_SIZE = { width: 120, height: 80 };
 
 export const SYSTEM_FONTS = [

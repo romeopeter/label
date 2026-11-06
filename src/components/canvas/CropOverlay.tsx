@@ -9,6 +9,18 @@ import type Konva from "konva";
 import { Group, Image as KImage, Layer, Rect, Transformer } from "react-konva";
 import useImage from "use-image";
 import { useEditor } from "@/store/editor";
+import {
+  FRAME_DEFAULTS,
+  frameShape,
+  frameShapeOf,
+  largestIn,
+  pictureRatioOf,
+  pictureView,
+  screenBoxOf,
+  screenRatioOf,
+  sourceOf,
+  wrapsPicture,
+} from "@/lib/mockups";
 import type { ImageElement } from "@/types";
 import { useEditedImage } from "./useEditedImage";
 
@@ -21,6 +33,14 @@ export interface CropOverlayHandle {
 }
 
 const MIN_CROP_SIZE = 20;
+const CORNER_ANCHORS = ["top-left", "top-right", "bottom-left", "bottom-right"];
+const ALL_ANCHORS = [
+  ...CORNER_ANCHORS,
+  "top-center",
+  "middle-left",
+  "middle-right",
+  "bottom-center",
+];
 const WHOLE_IMAGE_SLOP = 0.5;
 
 const clamp = (value: number, min: number, max: number) =>
@@ -32,8 +52,14 @@ const clamp = (value: number, min: number, max: number) =>
  * pixels, so cropping again can always reach back out to the full image.
  *
  * A tilted image crops flat, and is tilted again afterwards. A framed image's
- * frame keeps its size, so it shows the original fitted inside the frame's box,
- * and applying changes only what the screen shows.
+ * frame keeps its size, and so does an image in a layout, whose slot decides its
+ * box. Those show the original fitted inside that box, and applying changes only
+ * what the picture shows.
+ *
+ * A device showing its picture in fill keeps the window to the screen's shape, so
+ * what's chosen here is exactly what the screen shows. A window takes any crop,
+ * and changes height to wrap it. Zoom and moving are a finer version of the same thing,
+ * so the window opens on what the screen shows, and applying it starts them over.
  */
 const CropWindow = forwardRef<
   CropOverlayHandle,
@@ -49,16 +75,43 @@ const CropWindow = forwardRef<
     layerRef.current?.batchDraw(),
   );
 
-  const framed = !!el.deviceFrame;
+  const inLayout = useEditor((s) => !!s.layout?.slots.some((slot) => slot.id === el.id));
+  const keepsBox = !!el.deviceFrame || inLayout;
   const crop = el.crop ?? { x: 0, y: 0, width: 1, height: 1 };
   const frameFit = Math.min(el.width / img.naturalWidth, el.height / img.naturalHeight);
-  const fullWidth = framed ? img.naturalWidth * frameFit : el.width / crop.width;
-  const fullHeight = framed ? img.naturalHeight * frameFit : el.height / crop.height;
-  const [box, setBox] = useState({
-    x: crop.x * fullWidth,
-    y: crop.y * fullHeight,
-    width: crop.width * fullWidth,
-    height: crop.height * fullHeight,
+  const fullWidth = keepsBox ? img.naturalWidth * frameFit : el.width / crop.width;
+  const fullHeight = keepsBox ? img.naturalHeight * frameFit : el.height / crop.height;
+  const frame = el.deviceFrame;
+  const lockedRatio =
+    frame && !wrapsPicture(frame) && frame.fit === "fill" ? screenRatioOf(el) : null;
+  const whole = { x: 0, y: 0, width: fullWidth, height: fullHeight };
+  const [box, setBox] = useState(() => {
+    const moved = !!frame && (frame.zoom !== 1 || frame.panX !== 0 || frame.panY !== 0);
+    const trims = !!frame && (wrapsPicture(frame) || frame.fit !== "fit");
+    const shape = moved && trims ? frameShapeOf(el) : null;
+    // What the screen shows now, as a share of the original.
+    const seen = shape && frame
+      ? (() => {
+          const { shown } = pictureView(
+            sourceOf(el.crop, img.naturalWidth, img.naturalHeight),
+            screenBoxOf(el, shape),
+            frame,
+          );
+          return {
+            x: shown.x / img.naturalWidth,
+            y: shown.y / img.naturalHeight,
+            width: shown.width / img.naturalWidth,
+            height: shown.height / img.naturalHeight,
+          };
+        })()
+      : crop;
+    const current = {
+      x: seen.x * fullWidth,
+      y: seen.y * fullHeight,
+      width: seen.width * fullWidth,
+      height: seen.height * fullHeight,
+    };
+    return lockedRatio ? largestIn(current, lockedRatio) : current;
   });
 
   // The group sits where the uncropped image's corner would be, so everything
@@ -68,7 +121,7 @@ const CropWindow = forwardRef<
     x: x * Math.cos(angle) - y * Math.sin(angle),
     y: x * Math.sin(angle) + y * Math.cos(angle),
   });
-  const offset = framed
+  const offset = keepsBox
     ? toWorld((fullWidth - el.width) / 2, (fullHeight - el.height) / 2)
     : toWorld(crop.x * fullWidth, crop.y * fullHeight);
   const originX = el.x - offset.x;
@@ -86,9 +139,12 @@ const CropWindow = forwardRef<
       apply: () => {
         const corner = toWorld(box.x, box.y);
         // Handle maths leaves float noise, so "the whole image" allows for it.
+        const largest = lockedRatio ? largestIn(whole, lockedRatio) : whole;
         const isWhole =
-          fullWidth - box.width < WHOLE_IMAGE_SLOP &&
-          fullHeight - box.height < WHOLE_IMAGE_SLOP;
+          Math.abs(box.x - largest.x) < WHOLE_IMAGE_SLOP &&
+          Math.abs(box.y - largest.y) < WHOLE_IMAGE_SLOP &&
+          largest.width - box.width < WHOLE_IMAGE_SLOP &&
+          largest.height - box.height < WHOLE_IMAGE_SLOP;
         const nextCrop = isWhole
           ? undefined
           : {
@@ -99,8 +155,27 @@ const CropWindow = forwardRef<
             };
         update(
           el.id,
-          framed
-            ? { crop: nextCrop }
+          keepsBox
+            ? {
+                crop: nextCrop,
+                ...(frame
+                  ? {
+                      deviceFrame: {
+                        ...frame,
+                        zoom: FRAME_DEFAULTS.zoom,
+                        panX: FRAME_DEFAULTS.panX,
+                        panY: FRAME_DEFAULTS.panY,
+                      },
+                    }
+                  : {}),
+                ...(frame && wrapsPicture(frame) && !inLayout
+                  ? {
+                      height:
+                        el.width /
+                        frameShape(frame, pictureRatioOf({ ...el, crop: nextCrop })).ratio,
+                    }
+                  : {}),
+              }
             : {
                 x: originX + corner.x,
                 y: originY + corner.y,
@@ -112,7 +187,7 @@ const CropWindow = forwardRef<
         setCropId(null);
       },
       reset: () => {
-        setBox({ x: 0, y: 0, width: fullWidth, height: fullHeight });
+        setBox(lockedRatio ? largestIn(whole, lockedRatio) : whole);
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuilt as the box moves
@@ -169,6 +244,28 @@ const CropWindow = forwardRef<
           }}
           onTransform={(event) => {
             const node = event.target;
+            if (lockedRatio) {
+              const anchor = transformerRef.current?.getActiveAnchor() ?? "";
+              const fromLeft = anchor.endsWith("left");
+              const fromTop = anchor.startsWith("top");
+              const right = box.x + box.width;
+              const bottom = box.y + box.height;
+              const roomX = fromLeft ? right : fullWidth - box.x;
+              const roomY = fromTop ? bottom : fullHeight - box.y;
+              const width = clamp(
+                box.width * node.scaleX(),
+                Math.min(MIN_CROP_SIZE, roomX),
+                Math.min(roomX, roomY * lockedRatio),
+              );
+              const height = width / lockedRatio;
+              const x = fromLeft ? right - width : box.x;
+              const y = fromTop ? bottom - height : box.y;
+              node.scaleX(1);
+              node.scaleY(1);
+              node.position({ x, y });
+              setBox({ x, y, width, height });
+              return;
+            }
             const right = node.x() + box.width * node.scaleX();
             const bottom = node.y() + box.height * node.scaleY();
             const x = clamp(node.x(), 0, fullWidth - MIN_CROP_SIZE);
@@ -185,7 +282,8 @@ const CropWindow = forwardRef<
       <Transformer
         ref={transformerRef}
         rotateEnabled={false}
-        keepRatio={false}
+        keepRatio={!!lockedRatio}
+        enabledAnchors={lockedRatio ? CORNER_ANCHORS : ALL_ANCHORS}
         flipEnabled={false}
         borderStroke="#FFFFFF"
         borderStrokeWidth={1.5}

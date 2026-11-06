@@ -1,5 +1,6 @@
 import type { LayerElement, ShapeElement, ShapeKind } from "@/types";
 import { placeConnector } from "./connectors";
+import { migrateFrame } from "./mockups";
 
 export const EMOJI_FONT_FAMILY =
   '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
@@ -64,11 +65,12 @@ export const strokeToElementFields = (
 };
 
 /**
- * Brings marks saved by earlier builds up to date. Arrows and lines used to be
+ * Brings elements saved by earlier builds up to date. Arrows and lines used to be
  * a horizontal line in a rotated box; callouts used to size themselves to their
- * text. Everything else loads as it was.
+ * text; device frames used to be plain names. Everything else loads as it was.
  */
 export const migrateElement = (el: LayerElement): LayerElement => {
+  if (el.type === "image") return migrateFrame(el);
   if (el.type !== "shape") return el;
 
   if ((el.shape === "arrow" || el.shape === "line") && !el.connector) {

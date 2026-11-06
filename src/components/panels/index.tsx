@@ -10,10 +10,10 @@ import { BorderPanel } from "./BorderPanel";
 import { WatermarkPanel } from "./WatermarkPanel";
 import { ThreeDPanel } from "./ThreeDPanel";
 import { ImagesPanel } from "./ImagesPanel";
+import { LayoutPanel } from "./LayoutPanel";
 import {
   AiPanel,
   TemplatesPanel,
-  LayoutPanel,
   BrandsPanel,
   MotionPanel,
   CustomizePanel,

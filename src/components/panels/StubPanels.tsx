@@ -112,23 +112,6 @@ export const ImagesPanel = () => (
   </div>
 );
 
-export const LayoutPanel = () => (
-  <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
-    <PanelTitle badge={<Badge variant="pro" />}>LAYOUT</PanelTitle>
-    <div className="pro-lock flex flex-col items-center gap-2.5 rounded-xl p-4 text-center">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-a-200/[0.12] text-a-200">
-        <Lock className="h-5 w-5" />
-      </div>
-      <p className="m-0 text-[11.5px] leading-[1.5] text-text-muted">
-        Arrange multiple images with smart layouts in Phase 2.
-      </p>
-      <Button variant="primary" size="block" disabled>
-        <Lock className="h-3 w-3" /> Unlock Layouts
-      </Button>
-    </div>
-  </div>
-);
-
 export const BrandsPanel = () => (
   <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
     <PanelTitle badge={<Badge variant="pro" />}>BRANDS</PanelTitle>

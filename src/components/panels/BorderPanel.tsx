@@ -10,6 +10,7 @@ import {
   SwitchRow,
 } from "./primitives";
 import { Linebreak } from "./primitives";
+import { choiceClass } from "./choice";
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
@@ -43,6 +44,17 @@ export const BorderPanel = () => {
         <PanelTitle>CORNER</PanelTitle>
         <PanelDesc>
           Select an element to add a border or rounded corners.
+        </PanelDesc>
+      </div>
+    );
+  }
+
+  if (el.type === "image" && el.deviceFrame) {
+    return (
+      <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
+        <PanelTitle>CORNER</PanelTitle>
+        <PanelDesc>
+          A device has its own edges. Set Mockup to None to add a border or rounded corners.
         </PanelDesc>
       </div>
     );
@@ -128,8 +140,8 @@ export const BorderPanel = () => {
               aria-pressed={active}
               onClick={() => applyPreset(p)}
               className={cn(
-                "bg-dot-grid bg-dot-grid-dense relative h-11.25 w-full cursor-pointer overflow-hidden rounded-md border transition-colors hover:border-secondary",
-                active ? "border-secondary" : "border-border",
+                "bg-dot-grid bg-dot-grid-dense relative h-11.25 w-full cursor-pointer overflow-hidden rounded-md border transition-colors",
+                choiceClass(active),
               )}
             >
               <span

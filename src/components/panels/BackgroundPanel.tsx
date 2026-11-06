@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { LayoutDashboard, Upload } from "lucide-react";
 import { useEditor } from "@/store/editor";
+import { cn } from "@/lib/utils";
 import { fileToDataURL } from "@/lib/importers";
 import { ScreenshotButton } from "./ScreenshotButton";
 import { StockImages } from "./StockImages";
@@ -15,6 +16,8 @@ import {
   Linebreak,
 } from "./primitives";
 import { PatternPanel } from "./background/PatternPanel";
+import { BackdropPanel } from "./background/BackdropPanel";
+import { choiceClass } from "./choice";
 
 const SWATCHES = [
   "#6E5BFF",
@@ -64,16 +67,18 @@ export const BackgroundPanel = () => {
 
       <div className="w-full max-w-full space-y-2.5">
         <SectionLabel>TYPE</SectionLabel>
+        {/* Five types only fit with tighter padding than the usual two or three. */}
         <ToggleGroup
           type="single"
           value={bg.mode}
           onValueChange={(v) => v && setBg({ mode: v as typeof bg.mode })}
           className="w-full"
         >
-          <ToggleGroupItem value="solid" className="cursor-pointer">Solid</ToggleGroupItem>
-          <ToggleGroupItem value="gradient" className="cursor-pointer">Gradient</ToggleGroupItem>
-          <ToggleGroupItem value="image" className="cursor-pointer">Image</ToggleGroupItem>
-          <ToggleGroupItem value="pattern" className="cursor-pointer">Pattern</ToggleGroupItem>
+          <ToggleGroupItem value="solid" className="cursor-pointer px-1">Solid</ToggleGroupItem>
+          <ToggleGroupItem value="gradient" className="cursor-pointer px-1">Gradient</ToggleGroupItem>
+          <ToggleGroupItem value="image" className="cursor-pointer px-1">Image</ToggleGroupItem>
+          <ToggleGroupItem value="pattern" className="cursor-pointer px-1">Pattern</ToggleGroupItem>
+          <ToggleGroupItem value="abstract" className="cursor-pointer px-1">Abstract</ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -91,8 +96,12 @@ export const BackgroundPanel = () => {
                     key={s}
                     type="button"
                     aria-label={s}
+                    aria-pressed={bg.mode === "solid" && bg.color.toLowerCase() === s.toLowerCase()}
                     onClick={() => setBg({ mode: "solid", color: s })}
-                    className="aspect-square cursor-pointer rounded-md border border-hairline transition-transform hover:scale-110 hover:border-p-300"
+                    className={cn(
+                      "aspect-square cursor-pointer rounded-md border transition-colors",
+                      choiceClass(bg.mode === "solid" && bg.color.toLowerCase() === s.toLowerCase()),
+                    )}
                     style={{ background: s }}
                   />
                 ))}
@@ -145,7 +154,11 @@ export const BackgroundPanel = () => {
                         gradient: { ...g, angle: 135 },
                       })
                     }
-                    className="aspect-square cursor-pointer rounded-md border border-hairline transition-transform hover:scale-110 hover:border-p-300"
+                    aria-pressed={bg.mode === "gradient" && bg.gradient.from === g.from && bg.gradient.to === g.to}
+                    className={cn(
+                      "aspect-square cursor-pointer rounded-md border transition-colors",
+                      choiceClass(bg.mode === "gradient" && bg.gradient.from === g.from && bg.gradient.to === g.to),
+                    )}
                     style={{
                       background: `linear-gradient(135deg, ${g.from}, ${g.to})`,
                     }}
@@ -207,6 +220,7 @@ export const BackgroundPanel = () => {
         )}
 
         {bg.mode === "pattern" && <PatternPanel />}
+        {bg.mode === "abstract" && <BackdropPanel />}
       </div>
 
       <Linebreak />

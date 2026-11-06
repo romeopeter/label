@@ -1,7 +1,9 @@
 import { Lock } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { PanelTitle, SectionLabel, LabeledSlider, SwitchRow } from "./primitives";
+import { choiceClass } from "./choice";
 
 export const WatermarkPanel = () => {
   const watermark = useEditor((s) => s.watermark);
@@ -27,14 +29,13 @@ export const WatermarkPanel = () => {
               key={i}
               type="button"
               aria-label={`Position ${i}`}
-              className={
-                "flex aspect-square items-center justify-center rounded-sm border transition-colors " +
-                (active
-                  ? "border-t-400 bg-t-400/[0.18]"
-                  : "border-dashed border-p-200/25 hover:border-p-300")
-              }
+              aria-pressed={active}
+              className={cn(
+                "flex aspect-square items-center justify-center rounded-sm border transition-colors",
+                choiceClass(active),
+              )}
             >
-              <span className={"h-1.5 w-1.5 rounded-full " + (active ? "bg-t-400" : "bg-transparent")} />
+              <span className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-secondary" : "bg-transparent")} />
             </button>
           );
         })}

@@ -1,4 +1,5 @@
 import type { PatternConfig } from "./pattern";
+import type { BackdropConfig } from "./backdrop";
 
 export type ElementKind = "image" | "text" | "shape" | "icon";
 
@@ -43,14 +44,27 @@ export type CalloutKind = "speech" | "round" | "thought" | "shout" | "label";
 
 export type MarkEffect = "none" | "soft" | "hard" | "glow";
 
-export type DeviceFrame =
-  | null
-  | "macbook-light"
-  | "macbook-dark"
-  | "iphone-light"
-  | "iphone-dark"
-  | "browser-light"
-  | "browser-dark";
+/** A device around an image. Its ids and screen areas live in `lib/mockups.ts`. */
+export interface DeviceFrame {
+  device: string;
+  finish: string;
+  /** Ignored by devices that can't turn. */
+  landscape: boolean;
+  /** Fill crops to the screen's shape; fit shows the whole picture, with bars. */
+  fit: "fill" | "fit";
+  /** How far the picture is zoomed in from there. 1 is not at all. */
+  zoom: number;
+  /** Where the picture sits in the room it has, from -1 to 1. 0 is centred. */
+  panX: number;
+  panY: number;
+  /** Shows around a picture that doesn't cover the screen. */
+  barColor: string;
+  /** How thick a screen frame is and how round a frame's corners are, against its design. */
+  thickness: number;
+  roundness: number;
+  /** What a browser shows in its address bar. */
+  address: string;
+}
 
 export interface BaseElement {
   id: string;
@@ -80,14 +94,25 @@ export interface BaseElement {
   };
 }
 
+export interface ImageCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ImageElement extends BaseElement {
   type: "image";
   src: string; // object URL or data URL
-  deviceFrame: DeviceFrame;
+  deviceFrame: DeviceFrame | null;
   cornerRadius: number;
   transform: string;
   /** The visible part of the original, as 0–1 fractions. Absent shows it all. */
-  crop?: { x: number; y: number; width: number; height: number };
+  crop?: ImageCrop;
+  /** A layout slot's extra trim, as fractions of `crop`. Kept apart so `crop` stays the user's. */
+  layoutCrop?: ImageCrop;
+  naturalWidth?: number;
+  naturalHeight?: number;
   /** Non-destructive edits. `src` stays the original. */
   edit?: ImageEdit;
 }
@@ -189,7 +214,7 @@ export interface ShapeElement extends BaseElement {
 
 export type LayerElement = ImageElement | TextElement | ShapeElement;
 
-export type BackgroundMode = "solid" | "gradient" | "image" | "pattern";
+export type BackgroundMode = "solid" | "gradient" | "image" | "pattern" | "abstract";
 
 export interface BackgroundState {
   mode: BackgroundMode;
@@ -199,6 +224,8 @@ export interface BackgroundState {
   imageBlur: number;
   imageOpacity: number;
   pattern: PatternConfig;
+  /** Drawn by Layer from a few colours. Absent in projects saved before it existed. */
+  backdrop: BackdropConfig;
 }
 
 /**
@@ -239,10 +266,51 @@ export interface CanvasSize {
 
 export * from "./pattern";
 
+export type LayoutId =
+  | "side"
+  | "stacked"
+  | "overlap-up"
+  | "overlap-down"
+  | "masonry"
+  | "do-dont"
+  | "before-after"
+  | "arrow-between"
+  | "row-3"
+  | "hero"
+  | "grid-2"
+  | "grid-3"
+  | "cascade"
+  | "fan";
+
+export type LayoutAlign = "start" | "center" | "end";
+
+export interface LayoutSlot {
+  id: string | null;
+  /** Which part shows when the slot trims its image, as fractions. Centred if unset. */
+  focus?: { x: number; y: number };
+}
+
+/** Images in `slots` follow this: their place and size are worked out, not set by hand. */
+export interface CanvasLayout {
+  id: LayoutId;
+  align: LayoutAlign;
+  /** 0 to 100. */
+  spacing: number;
+  /** 30 to 100: how much of the canvas the layout fills. */
+  scale: number;
+  sameWidth: boolean;
+  sameShape: boolean;
+  showLabels: boolean;
+  labels: string[];
+  slots: LayoutSlot[];
+}
+
 export interface LayerProject {
   version: 1;
   canvas: { width: number; height: number };
   background: BackgroundState;
   elements: LayerElement[];
   watermark: boolean;
+  /** Absent in projects saved before layouts existed. */
+  layout?: CanvasLayout | null;
 }

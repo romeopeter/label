@@ -1,6 +1,7 @@
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import useImage from "use-image";
 import type { ImageElement } from "@/types";
+import { visibleCrop } from "@/lib/layouts";
 import { parseImageTilt } from "@/lib/tilt";
 import { useEditedImage } from "./useEditedImage";
 
@@ -13,7 +14,8 @@ export const TiltedImageOverlay = forwardRef<HTMLDivElement, Props>(
   ({ image, scale }, ref) => {
     const tilt = parseImageTilt(image.transform);
     const [original] = useImage(image.src, "anonymous");
-    const { picture, edited } = useEditedImage(original, image.edit, image.crop);
+    const visible = useMemo(() => visibleCrop(image), [image.crop, image.layoutCrop]); // eslint-disable-line react-hooks/exhaustive-deps -- only these two feed it
+    const { picture, edited } = useEditedImage(original, image.edit, visible);
     const editedHost = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -23,7 +25,7 @@ export const TiltedImageOverlay = forwardRef<HTMLDivElement, Props>(
       host.replaceChildren(picture);
     }, [edited, picture]);
 
-    const crop = image.crop ?? { x: 0, y: 0, width: 1, height: 1 };
+    const crop = visible ?? { x: 0, y: 0, width: 1, height: 1 };
     const shadow = image.shadow?.enabled
       ? `${image.shadow.offsetX * scale}px ${image.shadow.offsetY * scale}px ${
           image.shadow.blur * scale
