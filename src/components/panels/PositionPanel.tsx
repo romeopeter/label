@@ -1,13 +1,31 @@
-import { useEditor } from "@/store/editor";
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
 import {
-  PanelTitle,
-  SectionLabel,
-  LabeledSlider,
-  PanelDesc,
-  SwitchRow,
-} from "./primitives";
+  ArrowDown,
+  ArrowDownLeft,
+  ArrowDownRight,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpLeft,
+  ArrowUpRight,
+  CircleDot,
+} from "lucide-react";
+import { useEditor } from "@/store/editor";
+import { cn } from "@/lib/utils";
+import { PanelTitle, SectionLabel, LabeledSlider, PanelDesc } from "./primitives";
+import { choiceClass } from "./choice";
+
+/** The nine places, left to right and top to bottom, each pointing where it sends the layer. */
+const PLACES = [
+  { label: "Top left", icon: ArrowUpLeft },
+  { label: "Top", icon: ArrowUp },
+  { label: "Top right", icon: ArrowUpRight },
+  { label: "Left", icon: ArrowLeft },
+  { label: "Center", icon: CircleDot },
+  { label: "Right", icon: ArrowRight },
+  { label: "Bottom left", icon: ArrowDownLeft },
+  { label: "Bottom", icon: ArrowDown },
+  { label: "Bottom right", icon: ArrowDownRight },
+];
 
 /* ---------------------------------------------------------------------------------------------- */
 
@@ -42,44 +60,41 @@ export const PositionPanel = () => {
     );
   }
 
-  const align = (h: number, v: number) => {
-    const x =
-      h === 0
-        ? 0
-        : h === 1
-          ? (canvas.width - el.width) / 2
-          : canvas.width - el.width;
-    const y =
-      v === 0
-        ? 0
-        : v === 1
-          ? (canvas.height - el.height) / 2
-          : canvas.height - el.height;
-    update(el.id, { x, y });
+  const placeOf = (h: number, v: number) => ({
+    x: (h * (canvas.width - el.width)) / 2,
+    y: (v * (canvas.height - el.height)) / 2,
+  });
+  /** Where the layer already sits, so that place shows as chosen. */
+  const isAt = (h: number, v: number) => {
+    const place = placeOf(h, v);
+    return Math.abs(el.x - place.x) < 0.5 && Math.abs(el.y - place.y) < 0.5;
   };
 
   return (
     <div className="flex flex-col gap-2.5 px-4 pb-6 pt-4">
       <PanelTitle>POSITION</PanelTitle>
-      <PanelDesc>
-        Snap the selected layer to a position, or set X/Y manually.
-      </PanelDesc>
+      <PanelDesc>Move the selected layer to an edge, a corner or the center, or set X and Y.</PanelDesc>
 
-      <div className="grid w-27.5 grid-cols-3 gap-0.75 rounded-md border border-hairline bg-chrome/60 p-[3px]">
-        {Array.from({ length: 9 }).map((_, i) => {
+      <div className="grid w-full grid-cols-3 gap-1.5">
+        {PLACES.map(({ label, icon: Icon }, i) => {
           const h = i % 3;
           const v = Math.floor(i / 3);
+          const here = isAt(h, v);
           return (
             <button
-              key={i}
+              key={label}
               type="button"
-              aria-label={`Align ${i}`}
-              onClick={() => align(h, v)}
+              title={label}
+              aria-label={label}
+              aria-pressed={here}
+              onClick={() => update(el.id, placeOf(h, v))}
               className={cn(
-                "flex aspect-square items-center justify-center rounded-sm border border-dashed border-p-200/25 bg-transparent transition-colors hover:border-secondary",
+                "flex h-11 cursor-pointer items-center justify-center rounded-md border bg-chrome/50 transition-colors hover:text-text",
+                choiceClass(here),
+                here ? "text-text" : "text-text-muted",
               )}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-transparent" />
+              <Icon className="h-4 w-4" />
             </button>
           );
         })}
@@ -161,9 +176,6 @@ export const PositionPanel = () => {
         onChange={(v) => update(el.id, { opacity: v / 100 })}
       />
 
-      <SwitchRow label="LOCK ASPECT">
-        <Switch />
-      </SwitchRow>
     </div>
   );
 };

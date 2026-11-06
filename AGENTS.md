@@ -111,9 +111,14 @@ flag it before implementing.
   app can still be dug out of the binary; only a server would change that. Only
   photographs: `image_type=photo` plus a tag filter in `pixabay.rs`. With no search,
   the panel shows a random page of editors' picks.
-- **3D panel UI remains, but image 3D rendering is disabled.** The previous
-  sliced-image perspective renderer in `ImageNode` was removed because it was
-  incorrect. Do not reintroduce that approach.
+- **3D tilt is drawn by Layer, in Konva.** [tiltRender.ts](./src/lib/tiltRender.ts)
+  draws the picture as one perspective-correct WebGL quad, turned the way CSS turns an
+  element (rotateX, rotateY, rotateZ about the centre), with rounded corners, border
+  and inner shade in the same pass, at 2× for exports. It shows whether or not the
+  image is selected, and screen and export are the same pixels. Perspective follows
+  the element's size, not the zoom. Never slice the picture into strips (the old,
+  wrong approach), and don't bring back the CSS overlay with `dom-to-image`: it
+  distorted exports.
 - **Rust-side export gate is still deferred** — see
   [Deferred Rust Implementations](#deferred-rust-implementations).
 - **Background patterns ship as a 4th background mode.** Duotone tiles
@@ -404,7 +409,6 @@ spec as still authoritative for everything else.
 | Custom fonts upload | Phase 2 (system fonts only in Phase 1) | Phase 2 |
 | Brand kits | Phase 2 | Phase 2 |
 | Website-by-URL capture / tweet import | Needs Tauri capture pipeline | With shell |
-| 3D image rendering effect | Prior implementation removed | Redesign needed |
 | Persisted custom pattern colour pairs | Needs SQLite | With shell |
 | Saved backgrounds in SQLite | A JSON file in the app data folder stands in | With SQLite |
 | Brand-derived pattern colour pairs | Needs the Phase-2 brand store | With brand kits |

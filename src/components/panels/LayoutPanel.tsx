@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { LayoutPanelLeft, Maximize, Upload, WandSparkles } from "lucide-react";
+import { LayoutPanelLeft, Maximize, Upload, Paintbrush } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import type { CanvasLayout, LayoutAlign, LayoutId } from "@/types";
 import { cn } from "@/lib/utils";
@@ -265,25 +265,35 @@ export const LayoutPanel = () => {
 
           <div className="flex flex-col gap-2">
             <Button
-              variant="ghost"
+              variant="outline"
               size="block"
+              className="cursor-pointer"
               disabled={filled.length < 2 || !styleSource}
               onClick={() => styleSource && matchLayoutStyle(styleSource)}
             >
-              <WandSparkles className="h-3 w-3" /> Style all images
+              <Paintbrush className="h-3 w-3" /> Apply style to images
             </Button>
             <PanelHelp>
-              Gives every image the selected one's shadow, corners, border and frame.
+              {filled.length < 2
+                ? "Add two or more images to the layout to share a style."
+                : !styleSource
+                  ? "Select an image in the layout, then apply its style to the rest."
+                  : "Gives every image the selected one's shadow, corners, border and frame."}
             </PanelHelp>
             <Button
-              variant="ghost"
+              variant="outline"
               size="block"
+              className="cursor-pointer"
               disabled={!filled.length}
               onClick={fitCanvasToLayout}
             >
               <Maximize className="h-3 w-3" /> Fit canvas to layout
             </Button>
-            <PanelHelp>Resizes the canvas around the images, with even padding.</PanelHelp>
+            <PanelHelp>
+              {filled.length
+                ? "Resizes the canvas around the images, with even padding."
+                : "Add images to the layout, then fit the canvas around them."}
+            </PanelHelp>
           </div>
         </>
       )}

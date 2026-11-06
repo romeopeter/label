@@ -103,7 +103,6 @@ static image (Brandbird parity).
 
 - Custom fonts (system fonts only)
 - Website-by-URL capture / tweet import (no button; needs Tauri capture pipeline)
-- 3D image rendering effect (prior implementation removed; redesign needed)
 
 ### Commands
 
@@ -835,8 +834,9 @@ to free placement, with images staying where they are and looking the same.
 - **Moving:** a slot decides an image's place and size, so there are no resize handles.
   Dragging inside a slot chooses which part of a trimmed picture shows; dragging onto
   another slot swaps the two.
-- **Style all images** gives the others the selected image's shadow, corners, border and
-  frame. **Fit canvas to layout** resizes the canvas around the images with even padding.
+- **Apply style to images** gives the others the selected image's shadow, corners, border
+  and frame. **Fit canvas to layout** resizes the canvas around the images with even
+  padding. Both are outline buttons, and their help says why when one can't be used.
 - **Labels, badges and arrows** are part of the artwork and export. Label text is edited in
   the panel. Empty slots are an editing aid and don't export.
 
@@ -885,6 +885,23 @@ allow few WebGL contexts, so never create one per image. The crop is baked in be
 effects run, so fish-eye and lens blur centre on what's visible; the crop window itself
 shows the unedited original. Work is capped at 4096 px on the longest side. On a device
 without WebGL2, images show unedited and the panel says so.
+
+### Position, 3D and Corner
+
+- **Position:** a full-width grid of nine places, each an arrow pointing where it sends
+  the layer (a dot for the centre), styled like every other option, with the place the
+  layer is at shown as chosen. Then X, Y, width, height, rotation and opacity.
+- **3D:** tilt sliders and presets. The tilt is drawn by Layer
+  (`src/lib/tiltRender.ts`): one perspective-correct WebGL quad, turned in the same
+  order CSS uses, with corners, border and the inner shade in the same pass, at twice
+  the size for sharp exports. It shows whether or not the image is selected, and the
+  export is the same pixels. Perspective scales with the element, so zoom doesn't
+  change it.
+- **Corner:** corner presets (Square, Slight, Soft, Round, Rounder, Full) and a
+  Roundness slider, both as a share of the shorter side, so a preset looks the same on
+  any image; then border presets (None, Thin, Medium, Thick), a width and a colour. A
+  border is on when it has a width, so there's no switch. It's drawn inside the edge,
+  so the element keeps its size and the border follows the corners.
 
 ### Snapping
 
@@ -1263,10 +1280,8 @@ survives reinstalls; users can put it in iCloud Drive for cross-machine sync.
 
 - Custom fonts (system fonts only)
 - Website-by-URL capture / tweet import (Tauri capture pipeline)
-- 3D image rendering effect (redesign needed)
 - HEIC/HEIF decode, PSD import
 
 ### Known follow-ups
 
-- CSS 3D tilt rasterization issue (tilt feature)
 - Auto website/tweet capture (no button; Tauri pipeline planned)

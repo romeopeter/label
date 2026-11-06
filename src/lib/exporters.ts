@@ -3,7 +3,6 @@ import { getStage } from "../components/canvas/stageRef";
 import { useEditor } from "../store/editor";
 import { saveExport, saveProject } from "./host";
 import { openLayerFile } from "./importers";
-import { isImageTiltActive } from "./tilt";
 import { prepareExportTiles } from "./export/prepareExportTiles";
 import { prepareExportBackdrop } from "./export/prepareExportBackdrop";
 import { GRID_LAYER_NAME } from "../components/canvas/GridOverlay";
@@ -22,13 +21,6 @@ const dataURLtoBlob = (dataUrl: string): Blob => {
   return new Blob([buf], { type: mime });
 };
 
-const loadHtmlImage = (src: string): Promise<HTMLImageElement> =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
 
 /**
  * Hide everything that is editor chrome rather than artwork, run the capture,
@@ -60,67 +52,6 @@ const withOverlaysHidden = async <T,>(
   }
 };
 
-const renderTiltedImageIntoStage = async (stage: Konva.Stage) => {
-  const { elements, selectedIds } = useEditor.getState();
-  const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
-  const image = elements.find((el) => el.id === selectedId);
-
-  if (
-    !image ||
-    image.type !== "image" ||
-    image.hidden ||
-    image.deviceFrame ||
-    !isImageTiltActive(image.transform)
-  ) {
-    return null;
-  }
-
-  const overlay = document.querySelector<HTMLElement>(
-    `[data-tilted-image-id="${image.id}"]`,
-  );
-  const originalNode = stage.findOne(`#${image.id}`);
-  const layer = originalNode?.getLayer();
-
-  if (!overlay || !originalNode || !layer) return null;
-
-  try {
-    const domtoimage = await import("dom-to-image-more");
-    const dataUrl = await domtoimage.toPng(overlay, {
-      width: overlay.offsetWidth,
-      height: overlay.offsetHeight,
-      bgcolor: "transparent",
-      cacheBust: true,
-      // A tilted image has no text, so there's nothing to embed fonts for.
-      disableEmbedFonts: true,
-    });
-    const flatImage = await loadHtmlImage(dataUrl);
-    const temporaryNode = new Konva.Image({
-      image: flatImage,
-      x: image.x,
-      y: image.y,
-      width: image.width,
-      height: image.height,
-      rotation: image.rotation,
-      listening: false,
-    });
-
-    layer.add(temporaryNode);
-    temporaryNode.zIndex(originalNode.getZIndex());
-    layer.batchDraw();
-
-    return () => {
-      temporaryNode.destroy();
-      layer.batchDraw();
-    };
-  } catch (error) {
-    throw new Error(
-      `Failed to rasterize CSS 3D image ${image.id}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-      { cause: error },
-    );
-  }
-};
 
 export const renderCanvasDataURL = (
   format: "png" | "jpg" | "webp" = "png",
@@ -130,7 +61,6 @@ export const renderCanvasDataURL = (
   if (!stage) return Promise.resolve(null);
 
   return withOverlaysHidden(stage, async () => {
-    const cleanupTiltedImage = await renderTiltedImageIntoStage(stage);
     // The stage is scaled to fit, and the pixelRatio below compensates for that,
     // so the background pattern is rasterized at `pixelRatio` device pixels per
     // canvas unit regardless of the current zoom.
@@ -154,7 +84,6 @@ export const renderCanvasDataURL = (
         height: canvas.height * scaleY,
       });
     } finally {
-      cleanupTiltedImage?.();
       cleanupPatternTiles?.();
       cleanupBackdrop?.();
     }

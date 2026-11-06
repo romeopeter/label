@@ -36,7 +36,6 @@
     "@tauri-apps/api": "^2.12.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dom-to-image-more": "^3.10.2",
     "konva": "^9.3.16",
     "lucide-react": "^0.460.0",
     "qrcode-generator": "^2.0.4",

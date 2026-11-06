@@ -445,7 +445,7 @@ test.describe("whole-layout actions", () => {
       s.updateElement(${JSON.stringify(second)}, ${JSON.stringify(look)});
       s.selectElement(${JSON.stringify(second)});
     })()`);
-    await page.getByRole("button", { name: "Style all images" }).click();
+    await page.getByRole("button", { name: "Apply style to images" }).click();
 
     for (const id of [first, third]) {
       const img = await element<Img>(page, id);

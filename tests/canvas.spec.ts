@@ -351,19 +351,20 @@ test.describe("crop on framed and tilted images", () => {
         transform: tilt.serializeImageTilt({ ...tilt.DEFAULT_IMAGE_TILT, tiltX: 20, tiltY: 15 }),
       });
     })()`);
-    const overlay = page.locator(`[data-tilted-image-id="${id}"]`);
-    await expect(overlay).toHaveCount(1);
+    // Drawn by Layer's tilt renderer, in the canvas.
+    const tiltShows = () => page.evaluate<boolean>(`!!ST().findOne(".tilted-picture")?.isVisible()`);
+    await expect.poll(tiltShows).toBe(true);
 
     const crop = page.getByRole("button", { name: "Crop", exact: true });
     await expect(crop).toBeEnabled();
     await crop.click();
-    await expect(overlay).toHaveCount(0);
+    await expect.poll(tiltShows).toBe(false);
     await page.waitForTimeout(200);
 
     await dragBy(page, await handle(page, "bottom-right"), { x: -100, y: -50 });
     await page.getByRole("button", { name: "Apply crop" }).click();
     expect((await element<Box>(page, id)).crop?.width).toBeLessThan(1);
-    await expect(overlay).toHaveCount(1);
+    await expect.poll(tiltShows).toBe(true);
     expect(errors).toEqual([]);
   });
 });

@@ -7,7 +7,6 @@ import { Background } from "./Background";
 import { ImageNode } from "./ImageNode";
 import { TextNode } from "./TextNode";
 import { ShapeNode } from "./ShapeNode";
-import { TiltedImageOverlay } from "./TiltedImageOverlay";
 import { LayoutDecorNodes, LayoutSlotsLayer } from "./LayoutOverlay";
 import { useLayoutDrag } from "./useLayoutDrag";
 import { usePictureDrag } from "./usePictureDrag";
@@ -32,8 +31,7 @@ import {
   type SnapCandidates,
 } from "@/lib/snapping";
 import { importImageFile } from "../../lib/importers";
-import type { ImageElement, LayerElement, TextElement } from "@/types";
-import { isImageTiltActive } from "@/lib/tilt";
+import type { LayerElement, TextElement } from "@/types";
 import { MIN_FRAME_SIZE } from "@/lib/constants";
 import { FIXED_RATIO_SHAPES } from "@/lib/marks";
 
@@ -117,7 +115,6 @@ export const CanvasStage = () => {
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const tiltOverlayRef = useRef<HTMLDivElement>(null);
   const guidesRef = useRef<SnapGuidesHandle>(null);
   const draftRef = useRef<MarkDraftHandle>(null);
   const cropRef = useRef<CropOverlayHandle>(null);
@@ -464,14 +461,6 @@ export const CanvasStage = () => {
       }
     : null;
 
-  const selectedTiltedImage =
-    selectedElement?.type === "image" &&
-    !selectedElement.hidden &&
-    !selectedElement.deviceFrame &&
-    selectedElement.id !== cropId &&
-    isImageTiltActive(selectedElement.transform)
-      ? (selectedElement as ImageElement)
-      : null;
 
   const updateSelectedText = (patch: Partial<TextElement>) => {
     if (!selectedToolbarElement || selectedToolbarElement.type !== "text")
@@ -698,13 +687,6 @@ export const CanvasStage = () => {
 
         {editingId && <TextEditor scale={scale} />}
 
-        {selectedTiltedImage && (
-          <TiltedImageOverlay
-            ref={tiltOverlayRef}
-            image={selectedTiltedImage}
-            scale={scale}
-          />
-        )}
 
         {selectedToolbarElement && toolbarPosition && (
           <SelectionToolbar
